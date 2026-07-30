@@ -1,8 +1,7 @@
 import crypto from "crypto";
 import Payment from "../models/Payment.js";
 import User from "../models/User.js";
-
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+import { PLAN_DURATION_MS } from "../utils/plans.js";
 
 // POST /api/payments/webhook
 // Configure this URL in the Razorpay dashboard (Settings -> Webhooks) for the
@@ -31,7 +30,8 @@ export async function razorpayWebhook(req, res) {
       const user = await User.findById(payment.user);
       if (user) {
         user.plan = payment.plan;
-        user.planExpiresAt = new Date(Date.now() + THIRTY_DAYS_MS);
+        user.billingPeriod = payment.billingPeriod || "monthly";
+        user.planExpiresAt = new Date(Date.now() + PLAN_DURATION_MS[payment.billingPeriod || "monthly"]);
         await user.save();
       }
     }

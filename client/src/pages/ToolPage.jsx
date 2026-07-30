@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import api from "../api/client.js";
 import QuestionCard from "../components/QuestionCard.jsx";
+import useDocumentMeta from "../hooks/useDocumentMeta.js";
 
 const DIFF_TABS = [
   { key: "all", label: "All" },
@@ -26,6 +27,13 @@ export default function ToolPage() {
       .catch(() => setError("This category could not be found."))
       .finally(() => setLoading(false));
   }, [toolSlug, categorySlug]);
+
+  useDocumentMeta(
+    data ? `${data.tool.name} ${data.category.name} Interview Questions` : null,
+    data
+      ? `${data.questions.length} ${data.tool.name} ${data.category.name} interview questions, answered and tiered by difficulty.`
+      : null
+  );
 
   if (loading) return <p style={{ color: "var(--muted)" }}>Loading questions…</p>;
   if (error) return <p className="error-text">{error}</p>;

@@ -18,7 +18,7 @@ export default function Subscriptions() {
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
         <thead>
           <tr>
-            {["Name", "Email", "Plan", "Renews / Expires", "Since"].map((h) => (
+            {["Name", "Email", "Plan", "Billing", "Renews / Expires", "Since"].map((h) => (
               <th key={h} style={{ textAlign: "left", color: "var(--muted)", fontWeight: 700, fontSize: 11, textTransform: "uppercase", padding: "8px 10px", borderBottom: "1px solid var(--line)" }}>
                 {h}
               </th>
@@ -33,6 +33,7 @@ export default function Subscriptions() {
                 <td style={{ padding: "8px 10px", borderBottom: "1px solid var(--line)" }}>{s.name}</td>
                 <td style={{ padding: "8px 10px", borderBottom: "1px solid var(--line)" }}>{s.email}</td>
                 <td style={{ padding: "8px 10px", borderBottom: "1px solid var(--line)", textTransform: "capitalize" }}>{s.plan}</td>
+                <td style={{ padding: "8px 10px", borderBottom: "1px solid var(--line)", textTransform: "capitalize" }}>{s.billingPeriod || "monthly"}</td>
                 <td style={{ padding: "8px 10px", borderBottom: "1px solid var(--line)", color: expired ? "var(--locked)" : "var(--ink)" }}>
                   {s.planExpiresAt ? new Date(s.planExpiresAt).toLocaleDateString() : "—"} {expired && "(expired)"}
                 </td>
@@ -44,7 +45,7 @@ export default function Subscriptions() {
           })}
           {subs.length === 0 && (
             <tr>
-              <td colSpan={5} style={{ padding: 16, color: "var(--muted)" }}>No active subscriptions yet.</td>
+              <td colSpan={6} style={{ padding: 16, color: "var(--muted)" }}>No active subscriptions yet.</td>
             </tr>
           )}
         </tbody>

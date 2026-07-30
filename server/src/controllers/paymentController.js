@@ -2,28 +2,30 @@ import crypto from "crypto";
 import { razorpay } from "../utils/razorpay.js";
 import Payment from "../models/Payment.js";
 import User from "../models/User.js";
-import { PLANS } from "../utils/plans.js";
+import { planPrice, PLAN_DURATION_MS } from "../utils/plans.js";
 
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-
-// POST /api/payments/order  { plan: "pro" | "premium" }
+// POST /api/payments/order  { plan: "pro" | "premium", billingPeriod?: "monthly" | "yearly" }
 export async function createOrder(req, res) {
-  const { plan } = req.body;
+  const { plan, billingPeriod = "monthly" } = req.body;
   if (!["pro", "premium"].includes(plan)) {
     return res.status(400).json({ message: "Invalid plan" });
   }
+  if (!["monthly", "yearly"].includes(billingPeriod)) {
+    return res.status(400).json({ message: "Invalid billing period" });
+  }
 
-  const amount = PLANS[plan].price; // INR
+  const amount = planPrice(plan, billingPeriod); // INR
   const order = await razorpay.orders.create({
     amount: amount * 100, // paise
     currency: "INR",
     receipt: `acs_${req.user._id}_${Date.now()}`,
-    notes: { userId: String(req.user._id), plan },
+    notes: { userId: String(req.user._id), plan, billingPeriod },
   });
 
   await Payment.create({
     user: req.user._id,
     plan,
+    billingPeriod,
     amount,
     razorpayOrderId: order.id,
     status: "created",
@@ -64,7 +66,8 @@ export async function verifyPayment(req, res) {
 
   const user = await User.findById(req.user._id);
   user.plan = payment.plan;
-  user.planExpiresAt = new Date(Date.now() + THIRTY_DAYS_MS);
+  user.billingPeriod = payment.billingPeriod || "monthly";
+  user.planExpiresAt = new Date(Date.now() + PLAN_DURATION_MS[payment.billingPeriod || "monthly"]);
   await user.save();
 
   res.json({ message: "Payment verified", user: user.toSafeJSON() });

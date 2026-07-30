@@ -11,18 +11,24 @@ export async function getOverview(_req, res) {
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  const [totalUsers, newUsersThisWeek, planCounts, activeSubscribers, newSubsThisWeek] = await Promise.all([
+  const [totalUsers, newUsersThisWeek, planCounts, activeSubs, newSubsThisWeek] = await Promise.all([
     User.countDocuments(),
     User.countDocuments({ createdAt: { $gte: weekAgo } }),
     User.aggregate([{ $group: { _id: "$plan", count: { $sum: 1 } } }]),
-    User.countDocuments({ plan: { $ne: "free" }, planExpiresAt: { $gt: now } }),
+    User.find({ plan: { $ne: "free" }, planExpiresAt: { $gt: now } }).select("plan billingPeriod").lean(),
     User.countDocuments({ plan: { $ne: "free" }, planExpiresAt: { $gt: now }, updatedAt: { $gte: weekAgo } }),
   ]);
 
   const planMix = { free: 0, pro: 0, premium: 0 };
   for (const row of planCounts) planMix[row._id] = row.count;
 
-  const mrr = planMix.pro * PLANS.pro.price + planMix.premium * PLANS.premium.price;
+  // Yearly subscribers are normalized to a monthly-equivalent so MRR reflects
+  // actual run-rate rather than double-counting a year's revenue every month.
+  const mrr = activeSubs.reduce((sum, u) => {
+    const yearly = u.billingPeriod === "yearly";
+    return sum + (yearly ? PLANS[u.plan].yearly / 12 : PLANS[u.plan].monthly);
+  }, 0);
+  const activeSubscribers = activeSubs.length;
   const conversionRate = totalUsers ? ((activeSubscribers / totalUsers) * 100).toFixed(1) : "0.0";
 
   const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
@@ -48,7 +54,7 @@ export async function getOverview(_req, res) {
     newUsersThisWeek,
     activeSubscribers,
     newSubsThisWeek,
-    mrr,
+    mrr: Math.round(mrr),
     conversionRate,
     planMix,
     dailyRevenue,
@@ -101,7 +107,7 @@ export async function listSubscriptions(req, res) {
 
   const [users, total] = await Promise.all([
     User.find(filter)
-      .select("name email plan planExpiresAt createdAt")
+      .select("name email plan billingPeriod planExpiresAt createdAt")
       .sort({ planExpiresAt: -1 })
       .skip(skip)
       .limit(Number(limit))

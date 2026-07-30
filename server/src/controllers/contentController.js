@@ -1,7 +1,8 @@
 import Tool from "../models/Tool.js";
 import Category from "../models/Category.js";
 import Question from "../models/Question.js";
-import { canViewAnswer, DIFFICULTY_REQUIRED_PLAN } from "../utils/plans.js";
+import { canViewAnswer, getEffectivePlan, DIFFICULTY_REQUIRED_PLAN } from "../utils/plans.js";
+import { escapeRegex } from "../utils/regex.js";
 
 // GET /api/content/tools
 // Returns every tool grouped by its group, each with its categories and a
@@ -80,7 +81,7 @@ export async function getCategoryQuestions(req, res) {
     .sort({ order: 1, createdAt: 1 })
     .lean();
 
-  const userPlan = req.user?.plan || "free";
+  const userPlan = getEffectivePlan(req.user);
 
   const payload = questions.map((q) => {
     const unlocked = canViewAnswer(userPlan, q.difficulty);
@@ -95,4 +96,35 @@ export async function getCategoryQuestions(req, res) {
   });
 
   res.json({ tool, category, questions: payload });
+}
+
+// GET /api/content/search?q=...
+// Answer gating: req.user is attached (if logged in) by attachUserIfPresent.
+export async function searchQuestions(req, res) {
+  const q = (req.query.q || "").trim();
+  if (q.length < 2) return res.json({ query: q, results: [] });
+
+  const matches = await Question.find({ published: true, question: { $regex: escapeRegex(q), $options: "i" } })
+    .populate("tool", "name slug")
+    .populate("category", "name slug")
+    .limit(30)
+    .lean();
+
+  const userPlan = getEffectivePlan(req.user);
+
+  const results = matches.map((question) => {
+    const unlocked = canViewAnswer(userPlan, question.difficulty);
+    return {
+      id: question._id,
+      question: question.question,
+      difficulty: question.difficulty,
+      requiredPlan: DIFFICULTY_REQUIRED_PLAN[question.difficulty],
+      unlocked,
+      answer: unlocked ? question.answer : null,
+      tool: { name: question.tool.name, slug: question.tool.slug },
+      category: { name: question.category.name, slug: question.category.slug },
+    };
+  });
+
+  res.json({ query: q, results });
 }

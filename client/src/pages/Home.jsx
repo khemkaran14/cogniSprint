@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/client.js";
+import useDocumentMeta from "../hooks/useDocumentMeta.js";
 
 const GROUPS = [
   { key: "assistants", label: "AI Coding Assistants" },
@@ -19,6 +20,11 @@ export default function Home() {
       .then(({ data }) => setTools(data.tools))
       .finally(() => setLoading(false));
   }, []);
+
+  useDocumentMeta(
+    null,
+    "Claude, GitHub Copilot, Cursor, Antigravity and Foundation Model interview questions, answered and tiered by difficulty."
+  );
 
   const totalQuestions = tools.reduce(
     (sum, t) => sum + t.categories.reduce((s, c) => s + c.questionCount, 0),

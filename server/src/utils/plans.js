@@ -10,12 +10,33 @@ export const DIFFICULTY_REQUIRED_PLAN = {
 };
 
 export const PLANS = {
-  free: { name: "Free", price: 0, billingPeriod: null },
-  pro: { name: "Pro", price: 499, billingPeriod: "monthly" },
-  premium: { name: "Premium", price: 999, billingPeriod: "monthly" },
+  free: { name: "Free", monthly: 0, yearly: 0 },
+  pro: { name: "Pro", monthly: 499, yearly: 4999 },
+  premium: { name: "Premium", monthly: 999, yearly: 9999 },
+};
+
+export function planPrice(plan, billingPeriod) {
+  return PLANS[plan][billingPeriod === "yearly" ? "yearly" : "monthly"];
+}
+
+export const PLAN_DURATION_MS = {
+  monthly: 30 * 24 * 60 * 60 * 1000,
+  yearly: 365 * 24 * 60 * 60 * 1000,
 };
 
 export function canViewAnswer(userPlan, difficulty) {
   const required = DIFFICULTY_REQUIRED_PLAN[difficulty] ?? "free";
   return PLAN_RANK[userPlan ?? "free"] >= PLAN_RANK[required];
+}
+
+// A user's stored `plan` field only gets swept back to "free" once a day (see
+// jobs/planExpiry.js). Anything that gates content must call this instead of
+// reading user.plan directly, so a lapsed subscription is never honored in
+// the window before that sweep runs.
+export function getEffectivePlan(user) {
+  if (!user) return "free";
+  if (user.plan !== "free" && user.planExpiresAt && new Date(user.planExpiresAt) <= new Date()) {
+    return "free";
+  }
+  return user.plan || "free";
 }

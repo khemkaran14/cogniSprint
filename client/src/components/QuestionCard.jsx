@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import api from "../api/client.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const TIER_STYLE = {
   free: { background: "var(--secondary-tint)", color: "var(--secondary)", label: "Free" },
@@ -8,8 +10,29 @@ const TIER_STYLE = {
 };
 
 export default function QuestionCard({ q }) {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
+  const [state, setState] = useState({ bookmarked: false, practiced: false });
   const tier = TIER_STYLE[q.requiredPlan] || TIER_STYLE.free;
+
+  useEffect(() => {
+    if (!user) return;
+    api.get("/bookmarks/state", { params: { ids: q.id } }).then(({ data }) => {
+      if (data.state[q.id]) setState(data.state[q.id]);
+    });
+  }, [user, q.id]);
+
+  async function toggleBookmark(e) {
+    e.stopPropagation();
+    const { data } = await api.post(`/bookmarks/${q.id}/toggle-bookmark`);
+    setState(data);
+  }
+
+  async function togglePracticed(e) {
+    e.stopPropagation();
+    const { data } = await api.post(`/bookmarks/${q.id}/toggle-practiced`);
+    setState(data);
+  }
 
   return (
     <div className="card" style={{ marginBottom: 10, overflow: "hidden" }}>
@@ -43,13 +66,59 @@ export default function QuestionCard({ q }) {
           {tier.label}
         </span>
         <span style={{ fontWeight: 600, fontSize: 15, lineHeight: 1.4 }}>{q.question}</span>
+        {user && (
+          <span style={{ marginLeft: "auto", display: "flex", gap: 4, flex: "none" }}>
+            <span
+              role="button"
+              aria-label={state.practiced ? "Mark as not practiced" : "Mark as practiced"}
+              title={state.practiced ? "Practiced" : "Mark as practiced"}
+              onClick={togglePracticed}
+              style={{
+                display: "flex",
+                width: 26,
+                height: 26,
+                borderRadius: "50%",
+                alignItems: "center",
+                justifyContent: "center",
+                color: state.practiced ? "var(--secondary)" : "var(--muted)",
+                background: state.practiced ? "var(--secondary-tint)" : "transparent",
+                cursor: "pointer",
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M5 13l4 4 10-10" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <span
+              role="button"
+              aria-label={state.bookmarked ? "Remove bookmark" : "Save for later"}
+              title={state.bookmarked ? "Saved" : "Save for later"}
+              onClick={toggleBookmark}
+              style={{
+                display: "flex",
+                width: 26,
+                height: 26,
+                borderRadius: "50%",
+                alignItems: "center",
+                justifyContent: "center",
+                color: state.bookmarked ? "var(--accent-strong)" : "var(--muted)",
+                background: state.bookmarked ? "var(--accent-tint)" : "transparent",
+                cursor: "pointer",
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill={state.bookmarked ? "currentColor" : "none"}>
+                <path d="M6 3h12v18l-6-4-6 4V3z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+              </svg>
+            </span>
+          </span>
+        )}
         <svg
           width="16"
           height="16"
           viewBox="0 0 24 24"
           fill="none"
           style={{
-            marginLeft: "auto",
+            marginLeft: user ? 0 : "auto",
             flex: "none",
             color: "var(--muted)",
             transform: open ? "rotate(90deg)" : "none",

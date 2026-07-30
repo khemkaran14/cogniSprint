@@ -3,8 +3,10 @@
 A membership-gated interview-prep platform for AI tools (Claude, GitHub Copilot,
 Cursor, Google Antigravity, OpenAI, Gemini, and more). Free users get every
 Easy question; Pro and Premium subscribers unlock Medium and Hard answers via
-Razorpay-billed subscriptions. Includes a full admin panel for managing users,
-subscriptions, payments, and content.
+Razorpay-billed subscriptions (monthly or yearly). Includes a full admin panel
+for managing users, subscriptions, payments, and content, plus search,
+bookmarks/progress tracking, and basic SEO (per-page meta tags, sitemap,
+robots.txt).
 
 ```
 server/   Express + MongoDB (Mongoose) API, JWT auth, Razorpay subscriptions
@@ -136,3 +138,27 @@ The seed script (`server/src/seed/seed.js`) populates a realistic tool/category
 structure with clearly-marked placeholder questions (except for "Claude Code",
 which has real hand-written sample content) — replace them via
 **Admin → Content — Questions** before launch.
+
+## 6. Since the initial build
+
+- **Security**: `helmet` on every response; rate limiting on auth (login/
+  register) and payment endpoints, plus a lighter cap across the whole API.
+- **Plan expiry**: a daily job (`server/src/jobs/planExpiry.js`) downgrades
+  lapsed Pro/Premium users back to Free. Answer-gating never trusts the stored
+  `plan` field alone — `getEffectivePlan()` in `utils/plans.js` checks
+  `planExpiresAt` directly, so a lapsed subscription is never honored even in
+  the window before that job next runs.
+- **Search**: `GET /api/content/search?q=` searches question text across
+  every tool, respecting the same answer gating as everywhere else. There's a
+  search box in the navbar and a `/search` results page.
+- **Bookmarks & progress**: signed-in users can save a question for later or
+  mark it practiced (icons on every question card); both show up on the
+  Dashboard, along with a practiced/total count.
+- **Yearly billing**: Pro and Premium can be billed monthly or yearly (about
+  17% off) — toggle on the Pricing page. `User.billingPeriod` is stored
+  alongside `plan` so MRR in the admin overview correctly treats a yearly
+  subscriber as a monthly-equivalent amount rather than double-counting a
+  year's revenue in one month.
+- **SEO**: `/sitemap.xml` and `/robots.txt` are generated server-side from the
+  live tools/categories; the client sets a per-page `<title>` and meta
+  description on Home, Tool pages, Pricing, and Search.

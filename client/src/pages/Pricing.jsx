@@ -2,13 +2,22 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import useDocumentMeta from "../hooks/useDocumentMeta.js";
+
+const PRICES = {
+  pro: { monthly: 499, yearly: 4999 },
+  premium: { monthly: 999, yearly: 9999 },
+};
+
+function yearlySavingsPct(plan) {
+  const fullYear = PRICES[plan].monthly * 12;
+  return Math.round((1 - PRICES[plan].yearly / fullYear) * 100);
+}
 
 const PLANS = [
   {
     key: "free",
     name: "Free",
-    price: "₹0",
-    period: "",
     features: [
       { ok: true, text: "All Easy questions, every tool" },
       { ok: true, text: "Full tool & category cloud" },
@@ -20,8 +29,6 @@ const PLANS = [
   {
     key: "pro",
     name: "Pro",
-    price: "₹499",
-    period: "/mo",
     featured: true,
     features: [
       { ok: true, text: "Everything in Free" },
@@ -34,8 +41,6 @@ const PLANS = [
   {
     key: "premium",
     name: "Premium",
-    price: "₹999",
-    period: "/mo",
     features: [
       { ok: true, text: "Everything in Pro" },
       { ok: true, text: "All Hard & system-design questions" },
@@ -49,8 +54,11 @@ const PLANS = [
 export default function Pricing() {
   const { user, refresh } = useAuth();
   const navigate = useNavigate();
+  const [billingPeriod, setBillingPeriod] = useState("monthly");
   const [busyPlan, setBusyPlan] = useState(null);
   const [message, setMessage] = useState("");
+
+  useDocumentMeta("Pricing", "Free, Pro and Premium plans for AI Career Shield — unlock Medium and Hard interview questions across every AI tool.");
 
   async function handleSubscribe(planKey) {
     if (planKey === "free") return;
@@ -67,7 +75,7 @@ export default function Pricing() {
     setMessage("");
     setBusyPlan(planKey);
     try {
-      const { data: order } = await api.post("/payments/order", { plan: planKey });
+      const { data: order } = await api.post("/payments/order", { plan: planKey, billingPeriod });
 
       const rzp = new window.Razorpay({
         key: order.keyId,
@@ -75,7 +83,7 @@ export default function Pricing() {
         currency: order.currency,
         order_id: order.orderId,
         name: "AI Career Shield",
-        description: `${planKey === "pro" ? "Pro" : "Premium"} membership`,
+        description: `${planKey === "pro" ? "Pro" : "Premium"} membership (${billingPeriod})`,
         prefill: { name: user.name, email: user.email },
         theme: { color: "#c97a1f" },
         handler: async (response) => {
@@ -112,6 +120,29 @@ export default function Pricing() {
         Cancel anytime. Prices in INR, billed via Razorpay.
       </p>
 
+      <div style={{ display: "flex", justifyContent: "center", marginTop: 22 }}>
+        <div style={{ display: "flex", gap: 2, background: "var(--paper-raised)", border: "1px solid var(--line)", borderRadius: 9, padding: 3 }}>
+          {["monthly", "yearly"].map((period) => (
+            <button
+              key={period}
+              onClick={() => setBillingPeriod(period)}
+              style={{
+                all: "unset",
+                cursor: "pointer",
+                fontSize: 13,
+                fontWeight: 700,
+                padding: "7px 16px",
+                borderRadius: 6,
+                background: billingPeriod === period ? "var(--ink)" : "transparent",
+                color: billingPeriod === period ? "var(--paper)" : "var(--muted)",
+              }}
+            >
+              {period === "monthly" ? "Monthly" : `Yearly · Save ${yearlySavingsPct("pro")}%`}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {message && (
         <p style={{ textAlign: "center", marginTop: 16, fontWeight: 600, color: "var(--secondary)" }}>{message}</p>
       )}
@@ -121,75 +152,82 @@ export default function Pricing() {
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
           gap: 18,
-          marginTop: 32,
+          marginTop: 28,
           alignItems: "stretch",
         }}
       >
-        {PLANS.map((plan) => (
-          <div
-            key={plan.key}
-            className="card"
-            style={{
-              padding: "26px 22px",
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-              position: "relative",
-              borderColor: plan.featured ? "var(--accent)" : undefined,
-            }}
-          >
-            {plan.featured && (
-              <span
-                style={{
-                  position: "absolute",
-                  top: -12,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  background: "var(--accent)",
-                  color: "#fff",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "4px 12px",
-                  borderRadius: 100,
-                }}
-              >
-                Most Popular
-              </span>
-            )}
-            <span className="mono" style={{ fontSize: 13, letterSpacing: "0.04em", textTransform: "uppercase", color: "var(--muted)" }}>
-              {plan.name}
-              {user?.plan === plan.key && (
-                <span style={{ marginLeft: 8, color: "var(--secondary)" }}>· Current Plan</span>
-              )}
-            </span>
-            <div style={{ fontSize: 34, fontWeight: 800 }}>
-              {plan.price}
-              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--muted)" }}>{plan.period}</span>
-            </div>
-            <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
-              {plan.features.map((f, i) => (
-                <li key={i} style={{ display: "flex", gap: 9, fontSize: 13.5, lineHeight: 1.4, color: f.ok ? "var(--ink)" : "var(--muted)" }}>
-                  <span>{f.ok ? "✓" : "✗"}</span>
-                  <span>{f.text}</span>
-                </li>
-              ))}
-            </ul>
-            <button
-              className={plan.featured ? "btn btn-primary" : "btn btn-ghost"}
-              style={{ width: "100%", justifyContent: "center", marginTop: "auto" }}
-              disabled={busyPlan === plan.key || user?.plan === plan.key}
-              onClick={() => handleSubscribe(plan.key)}
+        {PLANS.map((plan) => {
+          const price = plan.key === "free" ? 0 : PRICES[plan.key][billingPeriod];
+          return (
+            <div
+              key={plan.key}
+              className="card"
+              style={{
+                padding: "26px 22px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+                position: "relative",
+                borderColor: plan.featured ? "var(--accent)" : undefined,
+              }}
             >
-              {user?.plan === plan.key
-                ? "Current Plan"
-                : plan.key === "free"
-                ? "Start Free"
-                : busyPlan === plan.key
-                ? "Starting checkout…"
-                : `Go ${plan.name} →`}
-            </button>
-          </div>
-        ))}
+              {plan.featured && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: -12,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    background: "var(--accent)",
+                    color: "#fff",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "4px 12px",
+                    borderRadius: 100,
+                  }}
+                >
+                  Most Popular
+                </span>
+              )}
+              <span className="mono" style={{ fontSize: 13, letterSpacing: "0.04em", textTransform: "uppercase", color: "var(--muted)" }}>
+                {plan.name}
+                {user?.plan === plan.key && (
+                  <span style={{ marginLeft: 8, color: "var(--secondary)" }}>· Current Plan</span>
+                )}
+              </span>
+              <div style={{ fontSize: 34, fontWeight: 800 }}>
+                ₹{price.toLocaleString()}
+                {plan.key !== "free" && (
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--muted)" }}>
+                    {billingPeriod === "monthly" ? "/mo" : "/yr"}
+                  </span>
+                )}
+              </div>
+              <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+                {plan.features.map((f, i) => (
+                  <li key={i} style={{ display: "flex", gap: 9, fontSize: 13.5, lineHeight: 1.4, color: f.ok ? "var(--ink)" : "var(--muted)" }}>
+                    <span>{f.ok ? "✓" : "✗"}</span>
+                    <span>{f.text}</span>
+                  </li>
+                ))}
+              </ul>
+              <button
+                className={plan.featured ? "btn btn-primary" : "btn btn-ghost"}
+                style={{ width: "100%", justifyContent: "center", marginTop: "auto" }}
+                disabled={busyPlan === plan.key || user?.plan === plan.key}
+                onClick={() => handleSubscribe(plan.key)}
+              >
+                {user?.plan === plan.key
+                  ? "Current Plan"
+                  : plan.key === "free"
+                  ? "Start Free"
+                  : busyPlan === plan.key
+                  ? "Starting checkout…"
+                  : `Go ${plan.name} →`}
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
