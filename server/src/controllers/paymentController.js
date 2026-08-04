@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { razorpay } from "../utils/razorpay.js";
+import { getRazorpay } from "../utils/razorpay.js";
 import Payment from "../models/Payment.js";
 import User from "../models/User.js";
 import { planPrice, PLAN_DURATION_MS } from "../utils/plans.js";
@@ -15,7 +15,7 @@ export async function createOrder(req, res) {
   }
 
   const amount = planPrice(plan, billingPeriod); // INR
-  const order = await razorpay.orders.create({
+  const order = await getRazorpay().orders.create({
     amount: amount * 100, // paise
     currency: "INR",
     receipt: `acs_${req.user._id}_${Date.now()}`,
