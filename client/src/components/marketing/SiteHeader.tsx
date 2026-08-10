@@ -6,10 +6,12 @@ import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { mainNav } from "@/config/navigation";
 import { brand } from "@/config/brand";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/auth/AuthContext";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const { user } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 glass-panel">
@@ -38,6 +40,7 @@ export function SiteHeader() {
 
         <div className="hidden items-center gap-2 lg:flex">
           <ThemeToggle />
+          <LinkButton to={user ? "/account" : "/login"} size="sm" variant="secondary">{user ? "My account" : "Sign in"}</LinkButton>
           <LinkButton to="/pricing" size="sm">
             {brand.primaryCta}
           </LinkButton>
@@ -68,6 +71,7 @@ export function SiteHeader() {
               </Link>
             ))}
             <div className="mt-2 px-3">
+              <LinkButton to={user ? "/account" : "/login"} variant="secondary" className="mb-2 w-full" onClick={() => setOpen(false)}>{user ? "My account" : "Sign in"}</LinkButton>
               <LinkButton to="/pricing" className="w-full" onClick={() => setOpen(false)}>
                 {brand.primaryCta}
               </LinkButton>

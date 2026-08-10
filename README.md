@@ -85,11 +85,14 @@ See `PAYMENT_SETUP.md` for the full setup and test-mode walkthrough.
 - **Client unit tests** (`client/tests/unit/`): the challenge scoring engine (`scoreSkill`, `buildChallengeResult`, `feedbackForScore`).
 - **Client E2E tests** (`client/tests/e2e/`): homepage, the full 5-skill challenge flow end-to-end, checkout form validation and its honest "payment not configured" failure state, and legal/about/contact pages. API calls are intercepted with Playwright's `page.route()` against fixture data (`tests/e2e/mockApi.ts`), so these run without a live MongoDB — useful in CI or any environment (like the one this was built in) where a database isn't available.
 
+## Account foundation
+
+CogniSprint now includes secure account registration, sign-in/out, opaque database-backed sessions in HttpOnly cookies, email verification, and password recovery. Passwords use Node's `scrypt`; raw session and account-action tokens are never stored in MongoDB. The account page is deliberately small until course entitlements and the learner dashboard land in the next milestones.
+
 ## What's not built yet
 
 Consistent with the companion Next.js build's approach — say plainly what's missing rather than stub it out:
 
-- Authentication, user accounts, sessions
 - The learner dashboard, lesson pages, progress tracking, monthly assessments, certificates
 - Entitlement granting after payment (the `Order` model and payment verification are real and working; there's no `User`/`Entitlement` model yet to grant access to)
 - Gamification backend (streaks, XP, achievement unlocking)
