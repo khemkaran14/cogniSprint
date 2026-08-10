@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { verifyWebhookSignature } from "../lib/razorpay.js";
 import { Order } from "../models/Order.js";
+import { grantPaidOrderEntitlement, revokeOrderEntitlement } from "../lib/entitlements.js";
 
 export const webhooksRouter = Router();
 
@@ -45,12 +46,21 @@ webhooksRouter.post("/razorpay", async (req, res) => {
 
   if (event.event === "payment.captured" && orderId) {
     // Idempotent: re-delivering the same event just re-applies the same state.
-    await Order.updateOne(
+    const order = await Order.findOneAndUpdate(
       { providerOrderId: orderId },
-      { status: "paid", providerPaymentId: paymentId }
+      { status: "paid", providerPaymentId: paymentId },
+      { new: true }
     );
+    await grantPaidOrderEntitlement(order);
   } else if (event.event === "payment.failed" && orderId) {
     await Order.updateOne({ providerOrderId: orderId, status: { $ne: "paid" } }, { status: "failed" });
+  } else if (event.event === "payment.refunded" && orderId) {
+    const order = await Order.findOneAndUpdate(
+      { providerOrderId: orderId },
+      { status: "refunded" },
+      { new: true }
+    );
+    await revokeOrderEntitlement(order);
   }
 
   res.json({ received: true });

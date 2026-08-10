@@ -9,7 +9,9 @@ import { contactRouter } from "./routes/contact.js";
 import { challengeRouter } from "./routes/challenge.js";
 import { checkoutRouter } from "./routes/checkout.js";
 import { webhooksRouter } from "./routes/webhooks.js";
-import { publicFormLimiter, checkoutLimiter } from "./middleware/rateLimit.js";
+import { authRouter } from "./routes/auth.js";
+import { entitlementsRouter } from "./routes/entitlements.js";
+import { publicFormLimiter, checkoutLimiter, authLimiter } from "./middleware/rateLimit.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
@@ -20,7 +22,7 @@ app.use(
     contentSecurityPolicy: false, // the client app (served separately) owns its own CSP
   })
 );
-app.use(cors({ origin: CLIENT_URL, credentials: false }));
+app.use(cors({ origin: CLIENT_URL, credentials: true }));
 
 // Razorpay webhooks need the raw request body to verify the HMAC signature,
 // so that route is mounted with express.raw() before the JSON body parser
@@ -38,6 +40,8 @@ app.use("/api/newsletter", publicFormLimiter, newsletterRouter);
 app.use("/api/contact", publicFormLimiter, contactRouter);
 app.use("/api/challenge", publicFormLimiter, challengeRouter);
 app.use("/api/checkout", checkoutLimiter, checkoutRouter);
+app.use("/api/auth", authLimiter, authRouter);
+app.use("/api/entitlements", entitlementsRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: `No route for ${req.method} ${req.path}` });

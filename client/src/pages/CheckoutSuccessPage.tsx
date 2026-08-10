@@ -60,7 +60,7 @@ export default function CheckoutSuccessPage() {
         </Alert>
 
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <LinkButton to="/brain-training-course" size="lg">See your first module <ArrowRight className="h-4 w-4" /></LinkButton>
+          <LinkButton to="/account" size="lg">View my course access <ArrowRight className="h-4 w-4" /></LinkButton>
           <Link to="/contact" className="inline-flex items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border-strong)] px-5 py-3 text-sm font-semibold text-[var(--color-ink)] hover:border-[var(--color-brand-blue)]">
             Contact support
           </Link>

@@ -21,6 +21,12 @@ const RefundPolicyPage = lazy(() => import("@/pages/legal/RefundPolicyPage"));
 const DisclaimerPage = lazy(() => import("@/pages/legal/DisclaimerPage"));
 const CookiePolicyPage = lazy(() => import("@/pages/legal/CookiePolicyPage"));
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
+const LoginPage = lazy(() => import("@/pages/auth/LoginPage"));
+const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage"));
+const ForgotPasswordPage = lazy(() => import("@/pages/auth/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("@/pages/auth/ResetPasswordPage"));
+const VerifyEmailPage = lazy(() => import("@/pages/auth/VerifyEmailPage"));
+const AccountPage = lazy(() => import("@/pages/AccountPage"));
 
 export default function App() {
   return (
@@ -28,6 +34,11 @@ export default function App() {
       <ScrollToTop />
       <Suspense fallback={<LoadingState label="Loading…" />}>
         <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route element={<MarketingLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/brain-training-course" element={<CoursePage />} />
@@ -40,6 +51,7 @@ export default function App() {
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/blog" element={<BlogIndexPage />} />
             <Route path="/blog/:slug" element={<BlogArticlePage />} />
+            <Route path="/account" element={<AccountPage />} />
             <Route path="/legal/terms" element={<TermsPage />} />
             <Route path="/legal/privacy" element={<PrivacyPage />} />
             <Route path="/legal/refund-policy" element={<RefundPolicyPage />} />

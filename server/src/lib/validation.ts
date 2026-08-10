@@ -42,3 +42,25 @@ export const verifyPaymentSchema = z.object({
   razorpay_payment_id: z.string().min(1),
   razorpay_signature: z.string().min(1),
 });
+
+const passwordSchema = z.string().min(8, "Password must be at least 8 characters").max(128);
+
+export const registerSchema = z.object({
+  name: z.string().trim().min(2, "Enter your name").max(80),
+  email: z.string().trim().email("Enter a valid email address").transform((value) => value.toLowerCase()),
+  password: passwordSchema,
+  acceptedTerms: z.literal(true),
+});
+
+export const loginSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address").transform((value) => value.toLowerCase()),
+  password: z.string().min(1, "Password is required").max(128),
+});
+
+export const emailSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address").transform((value) => value.toLowerCase()),
+});
+
+export const tokenSchema = z.object({ token: z.string().min(32) });
+
+export const resetPasswordSchema = tokenSchema.extend({ password: passwordSchema });
