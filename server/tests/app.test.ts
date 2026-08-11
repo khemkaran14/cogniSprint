@@ -1,0 +1,38 @@
+import type { AddressInfo } from "node:net";
+import { afterEach, describe, expect, it } from "vitest";
+import type { Server } from "node:http";
+import { createApp } from "../src/app.js";
+
+let server: Server | undefined;
+
+afterEach(() => {
+  server?.close();
+  server = undefined;
+});
+
+async function get(path: string) {
+  server = createApp().listen(0);
+  await new Promise<void>((resolve) => server?.once("listening", resolve));
+  const { port } = server.address() as AddressInfo;
+  return fetch(`http://127.0.0.1:${port}${path}`);
+}
+
+describe("server application", () => {
+  it("serves the health endpoint", async () => {
+    const response = await get("/api/health");
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ status: "ok" });
+  });
+
+  it("mounts entitlements as an authenticated endpoint", async () => {
+    const response = await get("/api/entitlements");
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({ error: "Please sign in to continue." });
+  });
+
+  it("returns a JSON 404 for unknown routes", async () => {
+    const response = await get("/api/does-not-exist");
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toEqual({ error: "No route for GET /api/does-not-exist" });
+  });
+});

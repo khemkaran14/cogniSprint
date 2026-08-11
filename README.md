@@ -83,7 +83,7 @@ Nothing beyond MongoDB is required to see the full marketing site, curriculum, b
 
 ## Database
 
-`server/src/models/` defines Mongoose schemas for `Product`, `Price`, `Coupon`, `Order`, `Module` (curriculum), `FaqItem`, `BlogArticle`. `server/src/seed/` seeds all of them except orders (orders are created by real checkout attempts). This is deliberately a smaller entity set than a full learning-platform schema — users, entitlements, lessons, progress, assessments, achievements and certificates are Phase 4/5 work and not built here; see "What's not built yet."
+`server/src/models/` defines Mongoose schemas for catalogue content, users, sessions, account tokens, orders and product entitlements. `server/src/seed/` seeds catalogue content; users and transactional records are created by real application activity. Lessons, progress, assessments, achievements and certificates remain future learning-platform work; see "What's not built yet."
 
 ## Razorpay integration
 
@@ -120,4 +120,9 @@ Consistent with the companion Next.js build's approach — say plainly what's mi
 
 - `server/` and `client/` deploy independently (e.g. server on Render/Railway/Fly, client static build on Vercel/Netlify/S3+CloudFront). Set `CLIENT_URL` on the server for CORS and `VITE_API_URL` on the client to the deployed API origin.
 - MongoDB: Atlas or any managed MongoDB-compatible host works; just set `MONGODB_URI`.
+- Keep `.env` values as plain text (for example, `CLIENT_URL=http://localhost:5173`, not a Markdown link). An Atlas
+  URI must contain the real database-user password rather than `<db_password>`; URL-encode special characters.
+- `querySrv ECONNREFUSED` means the DNS resolver refused Atlas's SRV lookup. Try another DNS resolver or disable the
+  VPN/firewall that blocks SRV records. For local development, start `docker compose up -d` and use
+  `mongodb://127.0.0.1:27017/cognisprint`.
 - Because this is a client-rendered SPA, true search-engine SEO is weaker than a server-rendered app (see `ARCHITECTURE.md` for the specific trade-off and what `react-helmet-async` does and doesn't cover).

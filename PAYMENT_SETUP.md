@@ -13,11 +13,11 @@
 
 ## What's NOT implemented yet
 
-- There's no `User` or `Entitlement` model, so a `paid` order doesn't unlock any course access — nothing to grant access *to* yet
-- No idempotency guard beyond "update by `providerOrderId`" — safe for repeated webhook deliveries of the same event, but there's no dedupe table keyed on `providerPaymentId` for defense in depth
-- Refunds are not implemented (process manually via the Razorpay dashboard for now)
+- User accounts and product entitlements exist, and paid/refunded events grant or revoke access, but protected lesson content is not built yet.
+- Unique provider order/payment IDs and idempotent entitlement upserts prevent common duplicate updates, but there is no webhook-event ledger keyed by Razorpay event ID for defense in depth.
+- Refund webhooks revoke entitlements, but initiating refunds and tracking partial-refund amounts still require operational work.
 
-**The payment verification and persistence layers are real and safe to build on.** The "grant course access" step after a paid order is the explicit next milestone.
+**The payment verification, persistence and entitlement layers are real foundations.** Protected lessons and production-grade payment reconciliation are the next milestones.
 
 ## Test mode setup
 
@@ -57,9 +57,9 @@ Compared with a timing-safe comparison. Unit-tested in `server/tests/razorpay-si
 
 Before switching to live `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`:
 
-- [ ] `User`/`Entitlement` models exist and a paid order actually grants access (see README "What's not built yet")
-- [ ] Refund handling implemented via the Razorpay Refunds API, matching the published Refund & Cancellation Policy
-- [ ] An idempotency key or dedupe check on `providerPaymentId` before granting access, in case the webhook and the client callback both fire
+- [x] `User`/`Entitlement` models exist and a paid order grants product access
+- [ ] Refund initiation and partial-refund tracking match the published Refund & Cancellation Policy
+- [ ] A webhook-event ledger deduplicates deliveries by Razorpay event ID
 - [ ] Live webhook URL registered with its own secret set in the production environment
 - [ ] A support process exists for failed/disputed payments before launch
 
