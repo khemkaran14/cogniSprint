@@ -105,13 +105,17 @@ See `PAYMENT_SETUP.md` for the full setup and test-mode walkthrough.
 
 ## Account foundation
 
-CogniSprint now includes secure account registration, sign-in/out, opaque database-backed sessions in HttpOnly cookies, email verification, and password recovery. Passwords use Node's `scrypt`; raw session and account-action tokens are never stored in MongoDB. The account page is deliberately small until course entitlements and the learner dashboard land in the next milestones.
+CogniSprint now includes secure account registration, sign-in/out, opaque database-backed sessions in HttpOnly cookies, email verification, and password recovery. Passwords use Node's `scrypt`; raw session and account-action tokens are never stored in MongoDB. The account page lists product entitlements and links active learners to their protected dashboard.
+
+## Learning foundation
+
+Paid learners have a protected `/learn` dashboard backed by active product entitlements. Published lessons are seeded separately from curriculum marketing metadata, omit answer keys from learner-facing responses, accept server-scored submissions, and persist each learner's best score, attempt count and completion status. The initial Getting Started lessons establish the workflow; authoring and reviewing the full advertised curriculum remains content work rather than generated filler.
 
 ## What's not built yet
 
 Consistent with the companion Next.js build's approach — say plainly what's missing rather than stub it out:
 
-- The learner dashboard, lesson pages, progress tracking, monthly assessments, certificates
+- The complete 365-day lesson library, detailed progress analytics, monthly assessments and certificates
 - Gamification backend (streaks, XP, achievement unlocking)
 - Admin panel
 - Community/referrals
