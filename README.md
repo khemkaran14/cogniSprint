@@ -26,6 +26,19 @@ See `server/README.md`-equivalent notes below and `ARCHITECTURE.md` for how the 
 
 ## Local setup
 
+### Prerequisite
+
+Use **Node.js 22.13 or newer** with npm 10 or newer. The committed lockfiles use
+`lockfileVersion: 3`, which the npm 6 bundled with Node.js 14 cannot install.
+With `nvm`, select the repository's pinned version before installing:
+
+```bash
+nvm install
+nvm use
+node --version   # v22.13.0
+npm --version    # 10.x or newer
+```
+
 ```bash
 # 1. Start MongoDB
 docker compose up -d
@@ -42,6 +55,11 @@ cd client
 npm install
 npm run dev                  # http://localhost:5173, proxies /api to :4000
 ```
+
+If `npm ci` reports that it cannot find a usable lockfile while showing Node 14
+or npm 6 in verbose output, it is a toolchain mismatch—not a missing lockfile.
+Run `nvm install && nvm use`, remove any partially created `node_modules`
+directory, and run `npm ci` again inside both `server/` and `client/`.
 
 Nothing beyond MongoDB is required to see the full marketing site, curriculum, blog and free challenge working. Razorpay and Resend both degrade to an honest "not configured" state (see below) rather than failing or faking success.
 
@@ -85,13 +103,17 @@ See `PAYMENT_SETUP.md` for the full setup and test-mode walkthrough.
 - **Client unit tests** (`client/tests/unit/`): the challenge scoring engine (`scoreSkill`, `buildChallengeResult`, `feedbackForScore`).
 - **Client E2E tests** (`client/tests/e2e/`): homepage, the full 5-skill challenge flow end-to-end, checkout form validation and its honest "payment not configured" failure state, and legal/about/contact pages. API calls are intercepted with Playwright's `page.route()` against fixture data (`tests/e2e/mockApi.ts`), so these run without a live MongoDB — useful in CI or any environment (like the one this was built in) where a database isn't available.
 
+## Account foundation
+
+CogniSprint now includes secure account registration, sign-in/out, opaque database-backed sessions in HttpOnly cookies, email verification, and password recovery. Passwords use Node's `scrypt`; raw session and account-action tokens are never stored in MongoDB. The account page is deliberately small until course entitlements and the learner dashboard land in the next milestones.
+
+Paid orders are associated with the signed-in user and idempotently grant a product entitlement after either client-side payment verification or a verified `payment.captured` webhook. Refunded payments revoke access. Order lookups are owner-scoped, and the account page displays the learner's current access.
+
 ## What's not built yet
 
 Consistent with the companion Next.js build's approach — say plainly what's missing rather than stub it out:
 
-- Authentication, user accounts, sessions
 - The learner dashboard, lesson pages, progress tracking, monthly assessments, certificates
-- Entitlement granting after payment (the `Order` model and payment verification are real and working; there's no `User`/`Entitlement` model yet to grant access to)
 - Gamification backend (streaks, XP, achievement unlocking)
 - Admin panel
 - Community/referrals

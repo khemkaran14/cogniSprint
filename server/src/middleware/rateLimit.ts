@@ -15,3 +15,11 @@ export const checkoutLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: "Too many requests. Please try again shortly." },
 });
+
+export const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many account requests. Please try again shortly." },
+});

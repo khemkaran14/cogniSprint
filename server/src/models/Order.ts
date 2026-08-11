@@ -5,6 +5,7 @@ const orderSchema = new Schema(
     customerName: { type: String, required: true },
     customerEmail: { type: String, required: true, index: true },
     customerPhone: { type: String, required: true },
+    userId: { type: Types.ObjectId, ref: "User", required: true, index: true },
     productId: { type: Types.ObjectId, ref: "Product", required: true },
     couponId: { type: Types.ObjectId, ref: "Coupon" },
     amount: { type: Number, required: true },

@@ -6,6 +6,8 @@ import { Coupon } from "../models/Coupon.js";
 import { Order } from "../models/Order.js";
 import { applyCoupon } from "../lib/pricing.js";
 import { createRazorpayOrder, isRazorpayConfigured, verifyPaymentSignature } from "../lib/razorpay.js";
+import { requireAuth } from "../middleware/auth.js";
+import { grantPaidOrderEntitlement } from "../lib/entitlements.js";
 
 export const checkoutRouter = Router();
 
@@ -21,8 +23,8 @@ checkoutRouter.get("/coupon/:code", async (req, res) => {
   });
 });
 
-checkoutRouter.get("/order/:providerOrderId", async (req, res) => {
-  const order = await Order.findOne({ providerOrderId: req.params.providerOrderId })
+checkoutRouter.get("/order/:providerOrderId", requireAuth, async (req, res) => {
+  const order = await Order.findOne({ providerOrderId: req.params.providerOrderId, userId: res.locals.user._id })
     .populate("productId", "name")
     .lean();
   if (!order) return res.status(404).json({ error: "Order not found." });
@@ -36,13 +38,17 @@ checkoutRouter.get("/order/:providerOrderId", async (req, res) => {
   });
 });
 
-checkoutRouter.post("/create-order", async (req, res) => {
+checkoutRouter.post("/create-order", requireAuth, async (req, res) => {
   const parsed = createOrderSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(422).json({ error: "Invalid input.", issues: parsed.error.flatten().fieldErrors });
   }
 
   const { productSlug, couponCode, customer } = parsed.data;
+
+  if (customer.email.toLowerCase() !== res.locals.user.email) {
+    return res.status(422).json({ error: "Checkout email must match your signed-in account." });
+  }
 
   const product = await Product.findOne({ slug: productSlug, status: "active" });
   if (!product) return res.status(404).json({ error: "Product not found." });
@@ -72,6 +78,7 @@ checkoutRouter.post("/create-order", async (req, res) => {
     customerName: customer.name,
     customerEmail: customer.email,
     customerPhone: customer.phone,
+    userId: res.locals.user._id,
     productId: product._id,
     couponId: coupon?._id,
     amount,
@@ -105,7 +112,7 @@ checkoutRouter.post("/create-order", async (req, res) => {
   }
 });
 
-checkoutRouter.post("/verify", async (req, res) => {
+checkoutRouter.post("/verify", requireAuth, async (req, res) => {
   const parsed = verifyPaymentSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(422).json({ error: "Invalid input.", issues: parsed.error.flatten().fieldErrors });
@@ -125,10 +132,13 @@ checkoutRouter.post("/verify", async (req, res) => {
   }
 
   const order = await Order.findOneAndUpdate(
-    { providerOrderId: razorpay_order_id },
+    { providerOrderId: razorpay_order_id, userId: res.locals.user._id },
     { status: "paid", providerPaymentId: razorpay_payment_id },
     { new: true }
   );
 
-  res.json({ verified: true, orderId: order?._id });
+  if (!order) return res.status(404).json({ verified: false, error: "Order not found." });
+  await grantPaidOrderEntitlement(order);
+
+  res.json({ verified: true, orderId: order._id, accessGranted: true });
 });

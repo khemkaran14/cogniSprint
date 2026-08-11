@@ -81,7 +81,7 @@ No challenge attempt is persisted — there's no `User` model yet for it to belo
 5. `POST /api/webhooks/razorpay` independently verifies `X-Razorpay-Signature` against the raw request body and updates the same `Order` on `payment.captured`/`payment.failed` — a second confirmation path that doesn't depend on the client callback firing.
 6. `GET /api/checkout/order/:providerOrderId` lets the success page display the real, persisted order status/amount — not a value trusted from the URL or client state.
 
-**What's still missing to call this "done":** there's no `User` or `Entitlement` model, so a paid order doesn't yet unlock anything. That's explicitly the next milestone, not a hidden gap — see `PAYMENT_SETUP.md`.
+Paid checkout now requires a signed-in account. Each order belongs to that user, and successful client verification or a verified `payment.captured` webhook idempotently upserts a product entitlement. A refund webhook revokes the entitlement. Owner-scoped order lookups prevent another user from reading a payment merely by knowing its provider order ID.
 
 ## SEO trade-off (CSR vs. the Next.js sibling)
 
