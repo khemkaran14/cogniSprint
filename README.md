@@ -83,7 +83,7 @@ Nothing beyond MongoDB is required to see the full marketing site, curriculum, b
 
 ## Database
 
-`server/src/models/` defines Mongoose schemas for `Product`, `Price`, `Coupon`, `Order`, `Module` (curriculum), `FaqItem`, `BlogArticle`. `server/src/seed/` seeds all of them except orders (orders are created by real checkout attempts). This is deliberately a smaller entity set than a full learning-platform schema — users, entitlements, lessons, progress, assessments, achievements and certificates are Phase 4/5 work and not built here; see "What's not built yet."
+`server/src/models/` defines Mongoose schemas for catalogue content, users, sessions, account tokens, orders and product entitlements. `server/src/seed/` seeds catalogue content; users and transactional records are created by real application activity. Lessons, progress, assessments, achievements and certificates remain future learning-platform work; see "What's not built yet."
 
 ## Razorpay integration
 
