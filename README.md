@@ -26,6 +26,19 @@ See `server/README.md`-equivalent notes below and `ARCHITECTURE.md` for how the 
 
 ## Local setup
 
+### Prerequisite
+
+Use **Node.js 22.13 or newer** with npm 10 or newer. The committed lockfiles use
+`lockfileVersion: 3`, which the npm 6 bundled with Node.js 14 cannot install.
+With `nvm`, select the repository's pinned version before installing:
+
+```bash
+nvm install
+nvm use
+node --version   # v22.13.0
+npm --version    # 10.x or newer
+```
+
 ```bash
 # 1. Start MongoDB
 docker compose up -d
@@ -42,6 +55,11 @@ cd client
 npm install
 npm run dev                  # http://localhost:5173, proxies /api to :4000
 ```
+
+If `npm ci` reports that it cannot find a usable lockfile while showing Node 14
+or npm 6 in verbose output, it is a toolchain mismatch—not a missing lockfile.
+Run `nvm install && nvm use`, remove any partially created `node_modules`
+directory, and run `npm ci` again inside both `server/` and `client/`.
 
 Nothing beyond MongoDB is required to see the full marketing site, curriculum, blog and free challenge working. Razorpay and Resend both degrade to an honest "not configured" state (see below) rather than failing or faking success.
 
