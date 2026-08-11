@@ -94,7 +94,6 @@ CogniSprint now includes secure account registration, sign-in/out, opaque databa
 Consistent with the companion Next.js build's approach — say plainly what's missing rather than stub it out:
 
 - The learner dashboard, lesson pages, progress tracking, monthly assessments, certificates
-- Entitlement granting after payment (the `Order` model and payment verification are real and working; there's no `User`/`Entitlement` model yet to grant access to)
 - Gamification backend (streaks, XP, achievement unlocking)
 - Admin panel
 - Community/referrals

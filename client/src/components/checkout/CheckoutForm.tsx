@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +12,7 @@ import { PaymentStatus } from "@/components/checkout/PaymentStatus";
 import { apiGet, apiPost, ApiError } from "@/lib/api";
 import { loadRazorpayScript } from "@/lib/loadRazorpayScript";
 import type { Product } from "@/types/content";
+import { useAuth } from "@/auth/AuthContext";
 
 const customerSchema = z.object({
   name: z.string().trim().min(2, "Enter your full name"),
@@ -30,6 +31,7 @@ type OrderState =
 type CouponPreview = { code: string; discountType: "flat" | "percentage"; discountValue: number };
 
 export function CheckoutForm({ product }: { product: Product }) {
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const price = product.price!;
   const [couponInput, setCouponInput] = useState("");
@@ -40,8 +42,18 @@ export function CheckoutForm({ product }: { product: Product }) {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
-  } = useForm<CustomerInput>({ resolver: zodResolver(customerSchema) });
+  } = useForm<CustomerInput>({
+    resolver: zodResolver(customerSchema),
+    defaultValues: { name: "", email: "", phone: "", acceptedTerms: false },
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    setValue("name", user.name);
+    setValue("email", user.email);
+  }, [setValue, user]);
 
   const discountedAmount = coupon
     ? coupon.discountType === "flat"
@@ -116,6 +128,27 @@ export function CheckoutForm({ product }: { product: Product }) {
     return <PaymentStatus status="failed" message={orderState.message} onRetry={() => setOrderState({ phase: "form" })} />;
   }
 
+  if (loading) return <PaymentStatus status="processing" />;
+
+  if (!user) {
+    return (
+      <div className="surface-card mx-auto max-w-xl p-6 text-center sm:p-8">
+        <h2 className="text-xl font-semibold">Sign in before checkout</h2>
+        <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
+          Your purchase is linked to your CogniSprint account so course access can be granted automatically.
+        </p>
+        <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+          <Link to="/login" state={{ from: "/checkout" }} className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-brand-blue)] px-5 text-sm font-semibold text-white">
+            Sign in
+          </Link>
+          <Link to="/register" className="inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border-strong)] px-5 text-sm font-semibold">
+            Create account
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="surface-card p-6 sm:p-8">
@@ -129,7 +162,8 @@ export function CheckoutForm({ product }: { product: Product }) {
           </div>
           <div>
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" autoComplete="email" {...register("email")} />
+            <Input id="email" type="email" autoComplete="email" readOnly {...register("email")} />
+            <p className="mt-1.5 text-xs text-[var(--color-ink-muted)]">Access will be granted to this account.</p>
             <FieldError>{errors.email?.message}</FieldError>
           </div>
           <div>
