@@ -107,8 +107,6 @@ See `PAYMENT_SETUP.md` for the full setup and test-mode walkthrough.
 
 CogniSprint now includes secure account registration, sign-in/out, opaque database-backed sessions in HttpOnly cookies, email verification, and password recovery. Passwords use Node's `scrypt`; raw session and account-action tokens are never stored in MongoDB. The account page is deliberately small until course entitlements and the learner dashboard land in the next milestones.
 
-Paid orders are associated with the signed-in user and idempotently grant a product entitlement after either client-side payment verification or a verified `payment.captured` webhook. Refunded payments revoke access. Order lookups are owner-scoped, and the account page displays the learner's current access.
-
 ## What's not built yet
 
 Consistent with the companion Next.js build's approach — say plainly what's missing rather than stub it out:

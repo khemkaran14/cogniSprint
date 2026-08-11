@@ -10,7 +10,6 @@ import { challengeRouter } from "./routes/challenge.js";
 import { checkoutRouter } from "./routes/checkout.js";
 import { webhooksRouter } from "./routes/webhooks.js";
 import { authRouter } from "./routes/auth.js";
-import { entitlementsRouter } from "./routes/entitlements.js";
 import { publicFormLimiter, checkoutLimiter, authLimiter } from "./middleware/rateLimit.js";
 
 const app = express();
@@ -41,7 +40,6 @@ app.use("/api/contact", publicFormLimiter, contactRouter);
 app.use("/api/challenge", publicFormLimiter, challengeRouter);
 app.use("/api/checkout", checkoutLimiter, checkoutRouter);
 app.use("/api/auth", authLimiter, authRouter);
-app.use("/api/entitlements", entitlementsRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: `No route for ${req.method} ${req.path}` });
