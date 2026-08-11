@@ -129,6 +129,4 @@ Consistent with the companion Next.js build's approach — say plainly what's mi
 - `querySrv ECONNREFUSED` means the DNS resolver refused Atlas's SRV lookup. Try another DNS resolver or disable the
   VPN/firewall that blocks SRV records. For local development, start `docker compose up -d` and use
   `mongodb://127.0.0.1:27017/cognisprint`.
-- Production container definitions are provided for the API and SPA. `/api/health` is the liveness probe and
-  `/api/ready` is the readiness probe; the latter returns `503` until MongoDB is connected.
 - Because this is a client-rendered SPA, true search-engine SEO is weaker than a server-rendered app (see `ARCHITECTURE.md` for the specific trade-off and what `react-helmet-async` does and doesn't cover).
