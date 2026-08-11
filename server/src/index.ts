@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import { connectDB } from "./lib/db.js";
+import { validateEnvironment } from "./lib/env.js";
 import { catalogueRouter } from "./routes/catalogue.js";
 import { newsletterRouter } from "./routes/newsletter.js";
 import { contactRouter } from "./routes/contact.js";
@@ -51,6 +52,7 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 });
 
 async function start() {
+  validateEnvironment();
   await connectDB();
   app.listen(PORT, () => {
     console.info(`[server] listening on http://localhost:${PORT}`);
