@@ -1,0 +1,32 @@
+import { describe, expect, it } from "vitest";
+import { validateEnvironment } from "../src/lib/env.js";
+
+const validEnv = {
+  MONGODB_URI: "mongodb://127.0.0.1:27017/cognisprint",
+  CLIENT_URL: "http://localhost:5173",
+};
+
+describe("validateEnvironment", () => {
+  it("accepts a valid local configuration", () => {
+    expect(() => validateEnvironment(validEnv)).not.toThrow();
+  });
+
+  it("rejects an Atlas password placeholder", () => {
+    expect(() =>
+      validateEnvironment({
+        ...validEnv,
+        MONGODB_URI: "mongodb+srv://user:<db_password>@cluster.example.net/cognisprint",
+      })
+    ).toThrow(/placeholder/);
+  });
+
+  it("rejects a Markdown-formatted client URL", () => {
+    expect(() => validateEnvironment({ ...validEnv, CLIENT_URL: "[http://localhost:5000](http://localhost:5000)" })).toThrow(
+      /plain URL/
+    );
+  });
+
+  it("requires both Razorpay credentials", () => {
+    expect(() => validateEnvironment({ ...validEnv, RAZORPAY_KEY_ID: "rzp_test_example" })).toThrow(/both be set/);
+  });
+});
