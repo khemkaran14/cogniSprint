@@ -8,8 +8,7 @@ import { CurriculumModule } from "../models/Module.js";
 import { FaqItem } from "../models/FaqItem.js";
 import { BlogArticle } from "../models/BlogArticle.js";
 import { Lesson } from "../models/Lesson.js";
-import { Assessment } from "../models/Assessment.js";
-import { productSeed, priceSeed, couponSeed, curriculumSeed, lessonSeed, assessmentSeed, faqSeed, blogSeed } from "./data.js";
+import { productSeed, priceSeed, couponSeed, curriculumSeed, lessonSeed, faqSeed, blogSeed } from "./data.js";
 
 async function run() {
   await connectDB();
@@ -39,21 +38,9 @@ async function run() {
     const { moduleSlug, ...lessonData } = lesson;
     const module = await CurriculumModule.findOne({ slug: moduleSlug });
     if (!module) throw new Error(`Cannot seed lesson: module ${moduleSlug} was not found.`);
-    const prerequisiteSlug = "prerequisiteSlug" in lessonData ? lessonData.prerequisiteSlug : undefined;
-    const prerequisite = prerequisiteSlug ? await Lesson.findOne({ slug: prerequisiteSlug }) : null;
-    if (prerequisiteSlug && !prerequisite) throw new Error(`Cannot seed lesson: prerequisite ${prerequisiteSlug} was not found.`);
-    const persistedLesson = { ...lessonData } as typeof lessonData & { prerequisiteSlug?: string };
-    delete persistedLesson.prerequisiteSlug;
-    await Lesson.findOneAndUpdate(
-      { slug: lesson.slug },
-      { ...persistedLesson, moduleId: module._id, prerequisiteLessonId: prerequisite?._id ?? null },
-      { upsert: true }
-    );
+    await Lesson.findOneAndUpdate({ slug: lesson.slug }, { ...lessonData, moduleId: module._id }, { upsert: true });
   }
   console.info(`[seed] ${lessonSeed.length} lessons ready`);
-
-  for (const assessment of assessmentSeed) await Assessment.findOneAndUpdate({ slug: assessment.slug }, assessment, { upsert: true });
-  console.info(`[seed] ${assessmentSeed.length} assessment baseline ready`);
 
   await FaqItem.deleteMany({});
   await FaqItem.insertMany(faqSeed);

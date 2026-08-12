@@ -15,17 +15,17 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 | Public marketing/catalogue/challenge | Implemented | Public React routes, catalogue APIs and mocked browser flows exist. |
 | Accounts and opaque sessions | Foundation | Register/login/logout, verification and reset exist; profile, device/session management and privacy workflows remain. |
 | Razorpay checkout and entitlements | Foundation | Server-priced persisted orders, signed verification, event dedupe and entitlement grant/revoke exist; operational refunds, reconciliation and customer history remain. |
-| Protected lessons and progress | Foundation | Entitlement gating, progression, resumable drafts, retry-safe scoring, overall/module/skill/activity analytics and CSV export exist for three lessons; the remaining 362 sessions remain. |
+| Protected lessons and progress | Foundation | Entitlement gating, three lessons, server scoring and progress persistence exist; the remaining 362 sessions and progression rules remain. |
 | XP, streak and badges | Foundation | Derived UTC streak, XP and four badge rules exist; persistent achievement events, timezone preference and reminders remain. |
 | Certificates | Foundation | Eligibility, claim and public verification APIs exist; UI, PDF/email delivery and admin revocation remain. |
-| Assessments | Foundation | Entitlement-protected catalogue, attempt UI, retry-safe server scoring, per-skill results and one technical baseline exist; eleven assessments and qualified content review remain. |
+| Assessments | Not implemented | No assessment models, routes, UI or reviewed question bank. |
 | Admin/support tooling | Not implemented | No admin console, scoped permissions or audit ledger. |
 | Community/referrals | Not implemented | No product implementation or moderation operation. |
 | Runtime/deployment foundation | Foundation | CI, containers, SPA fallback, request IDs, readiness and graceful shutdown exist; provider deployment, migrations, monitoring and real full-stack tests remain. |
 
 ## Repository gates before a staging deployment
 
-- [x] Add a versioned MongoDB migration runner and migration lock; seed execution remains separate from production schema migration.
+- [ ] Add a versioned MongoDB migration runner and migration lock; do not use seed execution as a production schema migration.
 - [ ] Add provider-specific staging deployment configuration for both client and API.
 - [ ] Build and scan both container images in CI.
 - [ ] Add a real MongoDB-backed integration suite for auth, entitlements, learning and webhook replay.
@@ -49,9 +49,9 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 
 - [ ] Author and review the remaining 362 daily sessions, exercises, explanations and required media.
 - [ ] Reconcile database counts with every lesson/exercise claim on public pages.
-- [x] Add prerequisites, timezone-aware daily scheduling, resumable drafts, idempotent attempts and module/course completion rules.
-- [x] Add owner-scoped overall, per-skill, per-module and daily progress analytics with an accessible UI and CSV export.
-- [ ] Expand the retry-safe assessment foundation into twelve monthly assessments with qualified, reviewed question banks (one technical baseline is seeded).
+- [ ] Add prerequisites, daily scheduling, resumable attempts and module/course completion rules.
+- [ ] Add detailed per-skill and per-module progress analytics.
+- [ ] Implement twelve monthly assessments with server-side scoring and reviewed question banks.
 - [ ] Add learner certificate status/claim UI, accessible PDF output, email delivery and admin revocation.
 - [ ] Deliver the advertised workbook and worksheets through entitlement-protected downloads.
 - [ ] Add content draft/review/approval/publish states and an auditable release process.

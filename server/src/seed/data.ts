@@ -149,7 +149,7 @@ export const curriculumSeed = [
 
 export const lessonSeed = [
   {
-    moduleSlug: "getting-started", position: 1, sequenceNumber: 1, unlockDay: 1, slug: "build-your-15-minute-routine", title: "Build Your 15-Minute Routine",
+    moduleSlug: "getting-started", position: 1, slug: "build-your-15-minute-routine", title: "Build Your 15-Minute Routine",
     summary: "Create a small, repeatable practice cue that fits your day.", estimatedMinutes: 8, status: "published" as const,
     content: [
       "Consistency starts with a reliable cue. Choose an existing event—such as finishing breakfast—and place CogniSprint immediately after it.",
@@ -159,34 +159,18 @@ export const lessonSeed = [
     exercises: [{ prompt: "Which plan is most likely to become a repeatable routine?", options: ["Practise whenever inspiration appears", "Practise after breakfast at the same desk", "Complete a week of exercises every Sunday"], correctIndex: 1, explanation: "Attaching a small session to a stable daily cue makes the behavior easier to repeat." }],
   },
   {
-    moduleSlug: "getting-started", position: 2, sequenceNumber: 2, unlockDay: 2, prerequisiteSlug: "build-your-15-minute-routine", slug: "accuracy-before-speed", title: "Accuracy Before Speed",
+    moduleSlug: "getting-started", position: 2, slug: "accuracy-before-speed", title: "Accuracy Before Speed",
     summary: "Learn why controlled, correct practice comes before faster responses.", estimatedMinutes: 7, status: "published" as const,
     content: ["Speed is useful only when the underlying method is reliable. Begin slowly enough to notice each decision.", "Once a method is accurate, shorten response time gradually while continuing to record mistakes."],
     exercises: [{ prompt: "What should you do when faster practice causes frequent mistakes?", options: ["Guess more quickly", "Return to a controlled pace and review the method", "Skip the skill"], correctIndex: 1, explanation: "Reducing speed temporarily helps restore a correct and repeatable method." }],
   },
   {
-    moduleSlug: "getting-started", position: 3, sequenceNumber: 3, unlockDay: 3, prerequisiteSlug: "accuracy-before-speed", slug: "reflect-on-errors", title: "Reflect on Errors",
+    moduleSlug: "getting-started", position: 3, slug: "reflect-on-errors", title: "Reflect on Errors",
     summary: "Turn mistakes into specific changes for the next attempt.", estimatedMinutes: 8, status: "published" as const,
     content: ["After an incorrect answer, identify whether the cause was knowledge, attention, or strategy.", "Write one short adjustment for the next attempt. Specific adjustments are more useful than simply promising to try harder."],
     exercises: [{ prompt: "Which reflection is most actionable?", options: ["I am bad at this", "I will try harder", "I missed the sign; next time I will circle it before calculating"], correctIndex: 2, explanation: "A specific observed cause and a concrete next action make reflection useful." }],
   },
 ];
-
-// This repository seed is a technical baseline only. A qualified reviewer must
-// approve and publish the complete twelve-assessment bank before it is sold.
-export const assessmentSeed = [{
-  slug: "month-1-foundations-check", title: "Month 1 Foundations Check", month: 1,
-  description: "A short baseline check across the six CogniSprint practice categories.",
-  passingScore: 60, estimatedMinutes: 10, status: "published" as const,
-  questions: [
-    { skill: "mental-math", prompt: "What is 48 + 27?", options: ["65", "75", "85"], correctIndex: 1, explanation: "48 + 20 + 7 = 75." },
-    { skill: "memory", prompt: "Which sequence exactly matches 7, 2, 9, 4?", options: ["7, 2, 9, 4", "7, 9, 2, 4", "2, 7, 9, 4"], correctIndex: 0, explanation: "The first option preserves every item and its order." },
-    { skill: "focus", prompt: "How many times does the letter P appear in APPLE PIE?", options: ["2", "3", "4"], correctIndex: 1, explanation: "APPLE contains two Ps and PIE contains one." },
-    { skill: "logic", prompt: "All tulips are flowers. This is a tulip. What follows?", options: ["It is a flower", "All flowers are tulips", "Nothing follows"], correctIndex: 0, explanation: "The stated rule applies to the identified tulip." },
-    { skill: "observation", prompt: "Which item differs from the others?", options: ["AB12", "AB12", "AB21"], correctIndex: 2, explanation: "The final option reverses the two digits." },
-    { skill: "critical-thinking", prompt: "A claim has no source. What is the best next step?", options: ["Share it immediately", "Check independent reliable evidence", "Assume it is false"], correctIndex: 1, explanation: "Verifying with reliable independent evidence is more justified than accepting or rejecting it without review." },
-  ],
-}];
 
 export const faqSeed = [
   { category: "general", question: "How much time does this take each day?", answer: "Each daily session targets around 15 minutes, split across mental math, memory, focus, logic, observation and critical thinking. It's a target, not a hard cut-off — you can finish a task even if it runs slightly over." },

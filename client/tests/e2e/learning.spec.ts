@@ -86,20 +86,3 @@ test("progress analytics presents summaries, accessible tables and CSV export", 
   await expect(page.getByRole("table")).toHaveCount(2);
   await expect(page.getByRole("link", { name: "Export CSV" })).toHaveAttribute("href", /\/api\/learning\/analytics\.csv$/);
 });
-
-test("monthly assessment hides answer keys and renders server-scored skill results", async ({ page }) => {
-  await mockLearner(page);
-  const assessment = { slug: "month-1-foundations-check", title: "Month 1 Foundations Check", description: "Baseline", questions: [
-    { prompt: "What is 48 + 27?", skill: "mental-math", options: ["65", "75", "85"] },
-    { prompt: "Which item differs?", skill: "observation", options: ["AB12", "AB12", "AB21"] },
-  ] };
-  await page.route("**/api/assessments/month-1-foundations-check", (route) => route.fulfill({ json: { assessment, attempts: [] } }));
-  await page.route("**/api/assessments/month-1-foundations-check/submit", (route) => route.fulfill({ status: 201, json: { attempt: { score: 100, correct: 2, total: 2, passed: true, skillResults: [{ skill: "mental-math", score: 100 }, { skill: "observation", score: 100 }] } } }));
-  await page.goto("/learn/assessments/month-1-foundations-check");
-  await page.getByRole("radio", { name: "75" }).check();
-  await page.getByRole("radio", { name: "AB21" }).check();
-  await page.getByRole("button", { name: "Submit assessment" }).click();
-  await expect(page.getByRole("heading", { name: "100%" })).toBeVisible();
-  await expect(page.getByText("2 of 2 correct · Passed")).toBeVisible();
-  await expect(page.getByText("mental-math:")).toBeVisible();
-});

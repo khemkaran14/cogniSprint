@@ -75,9 +75,6 @@ Nothing beyond MongoDB is required to see the full marketing site, curriculum, b
 | `server/` | `npm run dev` | Start Express with hot reload (tsx) |
 | `server/` | `npm run build` / `npm start` | Compile to `dist/` and run it |
 | `server/` | `npm run seed` | Populate catalogue content and initial published lessons |
-| `server/` | `npm run migrate` | Apply pending production database migrations under a distributed lock |
-| `server/` | `npm run migrate:status` | Report pending migrations without changing the database |
-| `server/` | `npm run migrate:prod` | Apply migrations from a compiled production/container artifact |
 | `server/` | `npm test` | Server unit and HTTP application tests (no live database required) |
 | `client/` | `npm run dev` | Vite dev server |
 | `client/` | `npm run build` | Typecheck + production build |
@@ -86,7 +83,7 @@ Nothing beyond MongoDB is required to see the full marketing site, curriculum, b
 
 ## Database
 
-`server/src/models/` defines Mongoose schemas for catalogue content, users, sessions, account tokens, orders, entitlements, lessons, lesson progress, assessment attempts, certificates and retained webhook events. `server/src/seed/` seeds catalogue content, three initial Getting Started lessons and one technical assessment baseline; users and transactional records are created by real application activity. The remaining eleven assessments still require qualified content review, while persistent achievement records, referrals, community and admin/audit models are not implemented yet.
+`server/src/models/` defines Mongoose schemas for catalogue content, users, sessions, account tokens, orders and product entitlements. `server/src/seed/` seeds catalogue content; users and transactional records are created by real application activity. Lessons, progress, assessments, achievements and certificates remain future learning-platform work; see "What's not built yet."
 
 ## Razorpay integration
 
@@ -110,6 +107,10 @@ See `PAYMENT_SETUP.md` for the full setup and test-mode walkthrough.
 
 CogniSprint now includes secure account registration, sign-in/out, opaque database-backed sessions in HttpOnly cookies, email verification, and password recovery. Passwords use Node's `scrypt`; raw session and account-action tokens are never stored in MongoDB. The account page lists product entitlements and links active learners to their protected dashboard.
 
+## Learning foundation
+
+Paid learners have a protected `/learn` dashboard backed by active product entitlements. Published lessons are seeded separately from curriculum marketing metadata, omit answer keys from learner-facing responses, accept server-scored submissions, and persist each learner's best score, attempt count and completion status. The initial Getting Started lessons establish the workflow; authoring and reviewing the full advertised curriculum remains content work rather than generated filler.
+
 ## Current implementation matrix
 
 | Area | Status | What that means |
@@ -117,8 +118,8 @@ CogniSprint now includes secure account registration, sign-in/out, opaque databa
 | Marketing, curriculum catalogue, blog, legal and free challenge | Implemented | Public pages and API-backed catalogue content exist. |
 | Accounts and sessions | Foundation implemented | Registration, login/logout, verification, reset and secure opaque sessions exist; profile editing, device/session management and data-rights workflows remain. |
 | Checkout and entitlements | Foundation implemented | Server-priced Razorpay orders, signed callback/webhook verification, persisted orders and grant/revoke behavior exist; refund initiation, partial refunds, reconciliation and customer order history remain. |
-| Protected learning | Foundation implemented | Active entitlements gate `/learn`; sequential prerequisites, daily unlocks, resumable drafts, idempotent submissions and module/course completion are implemented for three Getting Started lessons. The remaining 362 sessions are not present. |
-| Progress and gamification | Partial | Overall, per-skill, per-module and daily activity analytics, CSV export, completion, attempts, recorded duration, best score, computed XP, timezone-aware streak and four badge rules exist. Persistent achievement history does not. |
+| Protected learning | Foundation implemented | Active entitlements gate `/learn`; three Getting Started lessons demonstrate server-scored exercises and persisted progress. The remaining 362 sessions are not present. |
+| Progress and gamification | Partial | Completion, attempts, best score, computed XP, UTC streak and four computed badge rules exist. Detailed skill analytics and persistent achievement history do not. |
 | Certificates | Backend foundation | Eligibility/status, claim and public verification APIs exist. Eligibility deliberately requires at least 365 published and completed lessons. There is no certificate UI, PDF, email delivery or admin revocation workflow. |
 | Monthly assessments | Not implemented | Curriculum marketing metadata mentions them, but there is no assessment engine or reviewed question bank. |
 | Admin, community and referrals | Not implemented | No routes, models or UI exist for these product areas. |
@@ -132,12 +133,10 @@ Only three initial Getting Started lessons are seeded. They prove the workflow; 
 
 ## What remains
 
-- Author and independently review the remaining 362 daily sessions, associated media and twelve assessments.
-- Add assessment models and learner-facing certificate delivery. Progression, daily scheduling, resumable drafts and detailed practice analytics now exist for published lessons.
-- Complete refund/partial-refund operations, reconciliation, order history and reliable transactional email.
-- Add admin/audit, privacy/export/deletion, referral and—only with moderation operations—community functionality.
-- Add provider-specific deployment, centralized monitoring, backup/restore validation and real database/full-stack tests. A versioned, locked migration runner is available via `npm run migrate`.
-- Complete the owner-controlled launch gates in `PRODUCTION_READINESS.md`: secret rotation, Razorpay KYC/live setup, Atlas/DNS/email setup, legal/security/accessibility review and educational approval.
+- The complete 365-day lesson library, detailed progress analytics, monthly assessments and certificates
+- Gamification backend (streaks, XP, achievement unlocking)
+- Admin panel
+- Community/referrals
 
 ## Deployment notes
 
@@ -148,7 +147,5 @@ Only three initial Getting Started lessons are seeded. They prove the workflow; 
 - `querySrv ECONNREFUSED` means the DNS resolver refused Atlas's SRV lookup. Try another DNS resolver or disable the
   VPN/firewall that blocks SRV records. For local development, start `docker compose up -d` and use
   `mongodb://127.0.0.1:27017/cognisprint`.
-- Production container definitions are provided for the API and SPA. `/api/health` is the liveness probe and
-  `/api/ready` is the readiness probe; the latter returns `503` until MongoDB is connected.
 - Because this is a client-rendered SPA, true search-engine SEO is weaker than a server-rendered app (see `ARCHITECTURE.md` for the specific trade-off and what `react-helmet-async` does and doesn't cover).
 - Deployment artifacts are a foundation, not evidence of a live production environment. Use the acceptance gates in `PRODUCTION_READINESS.md`.
