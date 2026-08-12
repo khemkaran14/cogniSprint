@@ -7,7 +7,8 @@ import { Coupon } from "../models/Coupon.js";
 import { CurriculumModule } from "../models/Module.js";
 import { FaqItem } from "../models/FaqItem.js";
 import { BlogArticle } from "../models/BlogArticle.js";
-import { productSeed, priceSeed, couponSeed, curriculumSeed, faqSeed, blogSeed } from "./data.js";
+import { Lesson } from "../models/Lesson.js";
+import { productSeed, priceSeed, couponSeed, curriculumSeed, lessonSeed, faqSeed, blogSeed } from "./data.js";
 
 async function run() {
   await connectDB();
@@ -32,6 +33,14 @@ async function run() {
     await CurriculumModule.findOneAndUpdate({ slug: module.slug }, module, { upsert: true });
   }
   console.info(`[seed] ${curriculumSeed.length} curriculum modules ready`);
+
+  for (const lesson of lessonSeed) {
+    const { moduleSlug, ...lessonData } = lesson;
+    const module = await CurriculumModule.findOne({ slug: moduleSlug });
+    if (!module) throw new Error(`Cannot seed lesson: module ${moduleSlug} was not found.`);
+    await Lesson.findOneAndUpdate({ slug: lesson.slug }, { ...lessonData, moduleId: module._id }, { upsert: true });
+  }
+  console.info(`[seed] ${lessonSeed.length} lessons ready`);
 
   await FaqItem.deleteMany({});
   await FaqItem.insertMany(faqSeed);
