@@ -31,16 +31,7 @@ export function validateEnvironment(env: NodeJS.ProcessEnv = process.env): void 
     throw new Error("MONGODB_URI still contains a placeholder. Replace <db_password> with the database user's URL-encoded password.");
   }
 
-  if (env.CLIENT_URL) {
-    for (const value of env.CLIENT_URL.split(",").map((item) => item.trim())) requireHttpUrl("CLIENT_URL", value);
-  }
-
-  if (env.COOKIE_SAME_SITE && !["lax", "none"].includes(env.COOKIE_SAME_SITE.toLowerCase())) {
-    throw new Error("COOKIE_SAME_SITE must be lax or none.");
-  }
-  if (env.COOKIE_DOMAIN && !env.COOKIE_DOMAIN.startsWith(".")) {
-    throw new Error("COOKIE_DOMAIN must start with a dot, for example .cognisprint.com.");
-  }
+  if (env.CLIENT_URL) requireHttpUrl("CLIENT_URL", env.CLIENT_URL);
 
   const razorpayKeyId = env.RAZORPAY_KEY_ID?.trim();
   const razorpayKeySecret = env.RAZORPAY_KEY_SECRET?.trim();
@@ -49,8 +40,5 @@ export function validateEnvironment(env: NodeJS.ProcessEnv = process.env): void 
   }
   if (razorpayKeyId && !/^rzp_(test|live)_/.test(razorpayKeyId)) {
     throw new Error("RAZORPAY_KEY_ID must be a Razorpay test or live key ID.");
-  }
-  if (env.NODE_ENV === "production" && razorpayKeyId && !env.RAZORPAY_WEBHOOK_SECRET) {
-    throw new Error("RAZORPAY_WEBHOOK_SECRET is required when Razorpay is enabled in production.");
   }
 }

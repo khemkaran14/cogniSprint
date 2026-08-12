@@ -24,26 +24,8 @@ describe("server application", () => {
     await expect(response.json()).resolves.toEqual({ status: "ok" });
   });
 
-  it("reports not-ready until the database is connected", async () => {
-    const response = await get("/api/ready");
-    expect(response.status).toBe(503);
-    await expect(response.json()).resolves.toEqual({ status: "not_ready", database: "disconnected" });
-  });
-
   it("mounts entitlements as an authenticated endpoint", async () => {
     const response = await get("/api/entitlements");
-    expect(response.status).toBe(401);
-    await expect(response.json()).resolves.toEqual({ error: "Please sign in to continue." });
-  });
-
-  it("protects the learning dashboard", async () => {
-    const response = await get("/api/learning/dashboard");
-    expect(response.status).toBe(401);
-    await expect(response.json()).resolves.toEqual({ error: "Please sign in to continue." });
-  });
-
-  it("protects monthly assessments", async () => {
-    const response = await get("/api/assessments");
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({ error: "Please sign in to continue." });
   });

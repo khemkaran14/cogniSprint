@@ -7,10 +7,7 @@ const certificateSchema = new Schema(
     verificationCode: { type: String, required: true, unique: true, index: true },
     learnerName: { type: String, required: true },
     issuedAt: { type: Date, required: true, default: Date.now },
-    emailSentAt: { type: Date },
-    emailDeliveryStatus: { type: String, enum: ["pending", "sent", "failed"], default: "pending" },
     revokedAt: { type: Date },
-    revocationReason: { type: String },
   },
   { timestamps: true }
 );

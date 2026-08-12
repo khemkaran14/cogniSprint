@@ -17,7 +17,7 @@ Browser
         ├── /api/checkout/create-order, /api/checkout/verify,
         │   /api/checkout/coupon/:code, /api/checkout/order/:id          → MongoDB + Razorpay
         ├── /api/auth/*, /api/entitlements                              → MongoDB accounts + access
-        ├── /api/learning/*, /api/assessments/*, /api/certificates/*     → MongoDB learning records
+        ├── /api/learning/*, /api/certificates/*                        → MongoDB learning records
         └── /api/webhooks/razorpay                                      → signed, deduplicated provider events
 ```
 
@@ -29,11 +29,10 @@ There is no server-side rendering. Every page is a client-rendered React compone
 server/
   src/
     models/       Catalogue, accounts, orders, entitlements, lessons/progress, certificates, webhook events
-    routes/       Public catalogue/forms plus auth, checkout, entitlements, learning, assessments and certificates
+    routes/       Public catalogue/forms plus auth, checkout, entitlements, learning and certificates
     lib/          Database, auth/security, Razorpay, email, pricing, validation and gamification helpers
     middleware/   Authentication, entitlement, rate-limit and request-context middleware
     seed/         data.ts (source content) + run.ts (upserts everything into MongoDB)
-    migrations/   Immutable ordered migrations, distributed lease lock and CLI runner
     app.ts        Testable Express construction, middleware ordering and route mounting
     index.ts      Environment validation, database startup, listening and graceful shutdown
   tests/          Vitest — pure logic + signature verification, no DB required
@@ -79,17 +78,13 @@ Challenge attempts are not persisted. A `User` model now exists, but associating
 ## Learning and certificate flow
 
 1. `requireAuth` resolves the opaque session cookie and `requireActiveEntitlement` requires an active product entitlement for every learning endpoint.
-2. `GET /api/learning/dashboard` joins globally sequenced published lessons with progress, calculates the program day in the learner's IANA timezone, enforces scheduled/prerequisite availability, and derives module/course completion, XP, streak and badge summaries.
-3. `GET /api/learning/lessons/:slug` rejects locked lessons, creates an idempotent started-progress record and returns content, resumable draft answers and navigation without `correctIndex` or explanations.
-4. `PATCH /api/learning/lessons/:slug/draft` persists partial answer indexes after validating them against the server-side option lists.
-5. `POST /api/learning/lessons/:slug/complete` validates every answer, scores against server-side keys, applies the pass mark and atomically records attempts/best score. A UUID and answer hash make client retries idempotent and reject conflicting reuse.
-6. `PATCH /api/learning/preferences` validates and stores the learner's IANA timezone for calendar-day unlock behavior.
-7. `GET /api/learning/analytics` aggregates submissions and progress into overall, module, skill and learner-local daily activity views; `analytics.csv` provides a portable owner-scoped export.
-8. `/api/assessments` lists published checks without answer keys; assessment detail returns safe questions, and submission uses retry-safe UUIDs, server-only scoring and owner-scoped per-skill attempt history.
-8. Certificate status and claim routes require active entitlement. Claiming also requires at least 365 published lessons and completion of every required lesson, preventing the initial demonstration content from yielding a program certificate; delivery attempts are recorded and the client provides an accessible print/save-PDF view.
-9. Public verification returns only the learner name, issue date and product for an existing non-revoked certificate. Provider retry operations and audited admin revocation remain launch gates.
+2. `GET /api/learning/dashboard` joins published lessons with the current learner's progress and derives completion, XP, streak and badge summaries.
+3. `GET /api/learning/lessons/:slug` creates an idempotent started-progress record and returns lesson content without `correctIndex` or explanations.
+4. `POST /api/learning/lessons/:slug/complete` validates answer count, scores against server-side answer keys and persists attempts, best score and completion.
+5. Certificate status and claim routes require active entitlement. Claiming also requires at least 365 published lessons and completion of every required lesson, preventing the initial demonstration content from yielding a program certificate.
+6. Public verification returns only the learner name, issue date and product for an existing non-revoked certificate.
 
-The engine remains a foundation: the reviewed assessment bank and remaining curriculum content are not present. Current skill analytics inherit skills from each lesson's module; future mixed-skill lessons may need exercise-level skill tags.
+The engine is a foundation: prerequisite scheduling, resumable drafts, detailed analytics, assessments, PDF certificate delivery and the remaining curriculum content are not present.
 
 ## Payment flow
 
@@ -131,6 +126,6 @@ If SEO is a hard requirement for a specific page (most likely the homepage, cour
 - **No SSR/prerendering** — see the SEO section above.
 - **Challenge questions are a fixed set**, not randomized or DB-backed — acceptable for a lead-generation tool; a determined visitor could look up answers, which doesn't matter for an honest practice snapshot that explicitly isn't a secure assessment.
 - **E2E tests mock the API layer** rather than running against a live MongoDB, because this environment couldn't reach MongoDB's download servers (network policy, not a shortcut) — see the client's `tests/e2e/mockApi.ts`. Wire up a MongoDB instance (the included `docker-compose.yml`) to additionally run these against the real backend.
-- **Only three lessons and one technical assessment baseline are seeded** — the workflow is implemented, but the complete 365-day library and twelve qualified, reviewed assessments require human authoring and approval.
+- **Only three lessons are seeded** — the learning workflow is implemented, but the complete 365-day library and twelve assessments require human authoring and review.
 - **Gamification is derived, not event-sourced** — XP, UTC streak and four badges are computed from lesson progress; persistent achievement history, learner timezone rules and notification preferences remain future work.
 - **Certificate delivery is API-only** — eligibility, claiming and public verification exist; learner UI, PDF/email delivery and admin revocation tooling do not.

@@ -10,9 +10,4 @@ describe("Certificate", () => {
   it("uses unique public verification codes", () => {
     expect(Certificate.schema.path("verificationCode").options.unique).toBe(true);
   });
-
-  it("tracks certificate email delivery and revocation metadata", () => {
-    expect(Certificate.schema.path("emailDeliveryStatus").options.enum).toEqual(["pending", "sent", "failed"]);
-    expect(Certificate.schema.path("revocationReason")).toBeDefined();
-  });
 });
