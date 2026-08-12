@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, Navigate } from "react-router-dom";
-import { Award, BookOpenCheck, CheckCircle2, Clock3, Flame, LockKeyhole, Sparkles } from "lucide-react";
+import { BookOpenCheck, CheckCircle2, Clock3, LockKeyhole } from "lucide-react";
 import { useAuth } from "@/auth/AuthContext";
 import { Alert } from "@/components/ui/Alert";
 import { Container } from "@/components/ui/Container";
@@ -11,7 +11,7 @@ import { apiGet, ApiError } from "@/lib/api";
 
 type DashboardLesson = { _id: string; slug: string; title: string; summary: string; estimatedMinutes: number; progress: { status: "started" | "completed"; bestScore: number } | null };
 type DashboardModule = { _id: string; position: number; title: string; description: string; lessons: DashboardLesson[] };
-type Dashboard = { summary: { totalLessons: number; completedLessons: number; streak: number; xp: number; badges: { key: string; label: string }[] }; modules: DashboardModule[] };
+type Dashboard = { summary: { totalLessons: number; completedLessons: number }; modules: DashboardModule[] };
 
 export default function LearningDashboardPage() {
   const { user, loading } = useAuth();
@@ -41,12 +41,6 @@ export default function LearningDashboardPage() {
               <div className="flex items-center justify-between gap-4"><span className="font-semibold">Overall lesson progress</span><span className="text-sm text-[var(--color-ink-muted)]">{dashboard.data.summary.completedLessons}/{dashboard.data.summary.totalLessons} complete</span></div>
               <ProgressBar className="mt-4" value={percent} label={`${percent}% complete`} />
             </div>
-            <div className="mt-4 grid gap-4 sm:grid-cols-3">
-              <div className="surface-card p-5"><Flame className="text-[var(--color-warning)]" aria-hidden /><p className="mt-3 text-2xl font-semibold">{dashboard.data.summary.streak}</p><p className="text-sm text-[var(--color-ink-muted)]">day streak</p></div>
-              <div className="surface-card p-5"><Sparkles className="text-[var(--color-brand-blue)]" aria-hidden /><p className="mt-3 text-2xl font-semibold">{dashboard.data.summary.xp}</p><p className="text-sm text-[var(--color-ink-muted)]">experience points</p></div>
-              <div className="surface-card p-5"><Award className="text-[var(--color-success)]" aria-hidden /><p className="mt-3 text-2xl font-semibold">{dashboard.data.summary.badges.length}</p><p className="text-sm text-[var(--color-ink-muted)]">badges earned</p></div>
-            </div>
-            {dashboard.data.summary.badges.length ? <div className="mt-4 flex flex-wrap gap-2" aria-label="Earned badges">{dashboard.data.summary.badges.map((badge) => <span key={badge.key} className="rounded-[var(--radius-full)] bg-[var(--color-success-surface)] px-3 py-1 text-xs font-semibold text-[var(--color-success)]">{badge.label}</span>)}</div> : null}
             <div className="mt-8 space-y-6">
               {dashboard.data.modules.map((module) => (
                 <section key={module._id} className="surface-card p-6">

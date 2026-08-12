@@ -14,7 +14,7 @@
 ## What's NOT implemented yet
 
 - User accounts and product entitlements exist, and paid/refunded events grant or revoke access, but protected lesson content is not built yet.
-- Unique provider order/payment IDs, idempotent entitlement upserts and a retained webhook-event ledger prevent duplicate delivery from applying the same event twice.
+- Unique provider order/payment IDs and idempotent entitlement upserts prevent common duplicate updates, but there is no webhook-event ledger keyed by Razorpay event ID for defense in depth.
 - Refund webhooks revoke entitlements, but initiating refunds and tracking partial-refund amounts still require operational work.
 
 **The payment verification, persistence and entitlement layers are real foundations.** Protected lessons and production-grade payment reconciliation are the next milestones.
@@ -59,7 +59,7 @@ Before switching to live `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`:
 
 - [x] `User`/`Entitlement` models exist and a paid order grants product access
 - [ ] Refund initiation and partial-refund tracking match the published Refund & Cancellation Policy
-- [x] A webhook-event ledger deduplicates deliveries by Razorpay event ID
+- [ ] A webhook-event ledger deduplicates deliveries by Razorpay event ID
 - [ ] Live webhook URL registered with its own secret set in the production environment
 - [ ] A support process exists for failed/disputed payments before launch
 
