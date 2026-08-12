@@ -5,7 +5,6 @@ import { requireActiveEntitlement } from "../middleware/entitlement.js";
 import { CurriculumModule } from "../models/Module.js";
 import { Lesson } from "../models/Lesson.js";
 import { LessonProgress } from "../models/LessonProgress.js";
-import { learningStats } from "../lib/gamification.js";
 
 export const learningRouter = Router();
 learningRouter.use(requireAuth, requireActiveEntitlement);
@@ -23,7 +22,6 @@ learningRouter.get("/dashboard", async (_req, res, next) => {
       summary: {
         totalLessons: lessons.length,
         completedLessons: progress.filter((item) => item.status === "completed").length,
-        ...learningStats(progress),
       },
       modules: modules.map((module) => ({
         ...module,
