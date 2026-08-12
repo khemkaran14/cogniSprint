@@ -9,9 +9,12 @@
 - Client-side Razorpay Checkout modal (`client/src/lib/loadRazorpayScript.ts`, `components/checkout/CheckoutForm.tsx`)
 - Server-side HMAC-SHA256 signature verification of the client callback (`verifyPaymentSignature`), using `crypto.timingSafeEqual`
 - Server-side webhook signature verification (`verifyWebhookSignature`) at `POST /api/webhooks/razorpay`, which also updates the `Order` on `payment.captured`/`payment.failed`
+- Webhook delivery deduplication keyed by `X-Razorpay-Event-Id`, with retained processing/processed/failed records
+- Idempotent product-entitlement grant on capture and entitlement revocation on full refund events
+- Signed-in checkout ownership and owner-scoped order status lookup
 - An honest "payment isn't connected yet" UI state when Razorpay env vars aren't set — checkout never fakes a success
 
-## What's NOT implemented yet
+## What remains before Live Mode
 
 - User accounts and product entitlements exist, and paid/refunded events grant or revoke access, but protected lesson content is not built yet.
 - Unique provider order/payment IDs and idempotent entitlement upserts prevent common duplicate updates, but there is no webhook-event ledger keyed by Razorpay event ID for defense in depth.
@@ -36,12 +39,12 @@
 
 1. Razorpay dashboard → Settings → Webhooks → Add New Webhook.
 2. URL: `https://<your-deployed-api-domain>/api/webhooks/razorpay`
-3. Select at least `payment.captured` and `payment.failed`.
+3. Select at least `payment.captured`, `payment.failed` and `payment.refunded`; add applicable dispute events before Live Mode.
 4. Copy the generated webhook secret into `RAZORPAY_WEBHOOK_SECRET`.
 5. For local testing, tunnel the server (ngrok or similar) and trigger a test event from the dashboard.
 6. Check server logs for `[razorpay-webhook] verified event: ...` — an invalid or missing signature returns `400`/`501` and is logged as a warning, never silently accepted.
 
-Note: the webhook route is mounted with `express.raw({ type: "application/json" })` in `server/src/index.ts`, mounted *before* the global `express.json()` parser — this is required because the signature is computed over the exact raw request bytes, and a body-parser that re-serializes JSON would break verification.
+Note: the webhook route is mounted with `express.raw({ type: "application/json" })` in `server/src/app.ts`, before the global `express.json()` parser. Signature verification requires the exact raw request bytes; parsing and re-serializing JSON first would invalidate the signature.
 
 ## Signature verification reference
 
@@ -61,6 +64,7 @@ Before switching to live `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`:
 - [ ] Refund initiation and partial-refund tracking match the published Refund & Cancellation Policy
 - [ ] A webhook-event ledger deduplicates deliveries by Razorpay event ID
 - [ ] Live webhook URL registered with its own secret set in the production environment
+- [ ] A real low-value Live payment and full refund have passed end to end
 - [ ] A support process exists for failed/disputed payments before launch
 
 ## Troubleshooting
