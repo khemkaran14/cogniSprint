@@ -33,7 +33,6 @@ server/
     lib/          Database, auth/security, Razorpay, email, pricing, validation and gamification helpers
     middleware/   Authentication, entitlement, rate-limit and request-context middleware
     seed/         data.ts (source content) + run.ts (upserts everything into MongoDB)
-    migrations/   Immutable ordered migrations, distributed lease lock and CLI runner
     app.ts        Testable Express construction, middleware ordering and route mounting
     index.ts      Environment validation, database startup, listening and graceful shutdown
   tests/          Vitest — pure logic + signature verification, no DB required
