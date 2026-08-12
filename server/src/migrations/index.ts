@@ -1,6 +1,4 @@
 import { createApplicationIndexes } from "./001-create-application-indexes.js";
-import { createLearningProgressionIndexes } from "./002-create-learning-progression-indexes.js";
-import { createAnalyticsIndexes } from "./003-create-analytics-indexes.js";
 import type { Migration } from "./types.js";
 
-export const migrations: Migration[] = [createApplicationIndexes, createLearningProgressionIndexes, createAnalyticsIndexes];
+export const migrations: Migration[] = [createApplicationIndexes];

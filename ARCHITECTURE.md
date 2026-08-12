@@ -33,7 +33,6 @@ server/
     lib/          Database, auth/security, Razorpay, email, pricing, validation and gamification helpers
     middleware/   Authentication, entitlement, rate-limit and request-context middleware
     seed/         data.ts (source content) + run.ts (upserts everything into MongoDB)
-    migrations/   Immutable ordered migrations, distributed lease lock and CLI runner
     app.ts        Testable Express construction, middleware ordering and route mounting
     index.ts      Environment validation, database startup, listening and graceful shutdown
   tests/          Vitest — pure logic + signature verification, no DB required
@@ -79,16 +78,13 @@ Challenge attempts are not persisted. A `User` model now exists, but associating
 ## Learning and certificate flow
 
 1. `requireAuth` resolves the opaque session cookie and `requireActiveEntitlement` requires an active product entitlement for every learning endpoint.
-2. `GET /api/learning/dashboard` joins globally sequenced published lessons with progress, calculates the program day in the learner's IANA timezone, enforces scheduled/prerequisite availability, and derives module/course completion, XP, streak and badge summaries.
-3. `GET /api/learning/lessons/:slug` rejects locked lessons, creates an idempotent started-progress record and returns content, resumable draft answers and navigation without `correctIndex` or explanations.
-4. `PATCH /api/learning/lessons/:slug/draft` persists partial answer indexes after validating them against the server-side option lists.
-5. `POST /api/learning/lessons/:slug/complete` validates every answer, scores against server-side keys, applies the pass mark and atomically records attempts/best score. A UUID and answer hash make client retries idempotent and reject conflicting reuse.
-6. `PATCH /api/learning/preferences` validates and stores the learner's IANA timezone for calendar-day unlock behavior.
-7. `GET /api/learning/analytics` aggregates submissions and progress into overall, module, skill and learner-local daily activity views; `analytics.csv` provides a portable owner-scoped export.
-8. Certificate status and claim routes require active entitlement. Claiming also requires at least 365 published lessons and completion of every required lesson, preventing the initial demonstration content from yielding a program certificate.
-9. Public verification returns only the learner name, issue date and product for an existing non-revoked certificate.
+2. `GET /api/learning/dashboard` joins published lessons with the current learner's progress and derives completion, XP, streak and badge summaries.
+3. `GET /api/learning/lessons/:slug` creates an idempotent started-progress record and returns lesson content without `correctIndex` or explanations.
+4. `POST /api/learning/lessons/:slug/complete` validates answer count, scores against server-side answer keys and persists attempts, best score and completion.
+5. Certificate status and claim routes require active entitlement. Claiming also requires at least 365 published lessons and completion of every required lesson, preventing the initial demonstration content from yielding a program certificate.
+6. Public verification returns only the learner name, issue date and product for an existing non-revoked certificate.
 
-The engine is a foundation: assessments, PDF certificate delivery and the remaining curriculum content are not present. Current skill analytics inherit skills from each lesson's module; future mixed-skill lessons may need exercise-level skill tags.
+The engine is a foundation: prerequisite scheduling, resumable drafts, detailed analytics, assessments, PDF certificate delivery and the remaining curriculum content are not present.
 
 ## Payment flow
 
