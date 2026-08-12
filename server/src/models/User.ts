@@ -9,6 +9,7 @@ const userSchema = new Schema(
     role: { type: String, enum: ["learner", "admin"], default: "learner", required: true },
     status: { type: String, enum: ["active", "suspended"], default: "active", required: true },
     lastLoginAt: { type: Date },
+    timezone: { type: String, required: true, default: "UTC", trim: true },
   },
   { timestamps: true }
 );
