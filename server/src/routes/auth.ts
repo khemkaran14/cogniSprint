@@ -6,6 +6,7 @@ import { createOpaqueToken, hashPassword, hashToken, verifyPassword } from "../l
 import { sendEmail } from "../lib/email.js";
 import { emailSchema, loginSchema, registerSchema, resetPasswordSchema, tokenSchema } from "../lib/validation.js";
 import { currentUser, requireAuth, SESSION_COOKIE } from "../middleware/auth.js";
+import { sessionCookieAttributes } from "../lib/security.js";
 
 export const authRouter = Router();
 const SESSION_DAYS = 30;
@@ -15,8 +16,7 @@ function publicUser(user: { _id: unknown; name: string; email: string; role: str
 }
 
 function setSessionCookie(res: Response, token: string) {
-  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
-  res.setHeader("Set-Cookie", `${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}${secure}`);
+  res.setHeader("Set-Cookie", `${SESSION_COOKIE}=${encodeURIComponent(token)}; ${sessionCookieAttributes()}; Max-Age=${SESSION_DAYS * 86400}`);
 }
 
 async function createSession(res: Response, userId: unknown) {
@@ -61,7 +61,7 @@ authRouter.post("/logout", async (req, res, next) => {
   try {
     const raw = req.headers.cookie?.match(new RegExp(`${SESSION_COOKIE}=([^;]+)`))?.[1];
     if (raw) await Session.deleteOne({ tokenHash: hashToken(decodeURIComponent(raw)) });
-    res.setHeader("Set-Cookie", `${SESSION_COOKIE}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0`);
+    res.setHeader("Set-Cookie", `${SESSION_COOKIE}=; ${sessionCookieAttributes()}; Max-Age=0`);
     res.status(204).end();
   } catch (error) { next(error); }
 });
