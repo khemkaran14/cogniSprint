@@ -4,6 +4,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
+import { LinkButton } from "@/components/ui/LinkButton";
 import { Container } from "@/components/ui/Container";
 import { LoadingState } from "@/components/shared/QueryStates";
 import { Seo } from "@/components/shared/Seo";
@@ -67,10 +68,11 @@ export default function AccountPage() {
               {entitlements.data?.entitlements.map((entitlement) => (
                 <article key={entitlement.id} className="flex gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] p-4">
                   <BookOpenCheck className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-success)]" aria-hidden />
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="font-semibold">{entitlement.product.name}</p>
                     <p className="text-sm capitalize text-[var(--color-ink-muted)]">{entitlement.status} access</p>
                   </div>
+                  {entitlement.status === "active" ? <LinkButton to="/learn" size="sm">Start learning</LinkButton> : null}
                 </article>
               ))}
             </div>
