@@ -16,11 +16,15 @@
 
 ## What remains before Live Mode
 
-- User accounts and product entitlements exist, and paid/refunded events grant or revoke access, but protected lesson content is not built yet.
-- Unique provider order/payment IDs and idempotent entitlement upserts prevent common duplicate updates, but there is no webhook-event ledger keyed by Razorpay event ID for defense in depth.
-- Refund webhooks revoke entitlements, but initiating refunds and tracking partial-refund amounts still require operational work.
+- Refund initiation, provider refund records and partial-refund amount tracking
+- A documented decision for how partial refunds affect an entitlement
+- Scheduled reconciliation for pending or inconsistent orders
+- Customer order history, receipt/invoice delivery and payment/refund emails
+- Dispute/chargeback event handling, alerting and a human support process
+- Real-database tests covering callback/webhook races, redelivery, refund and entitlement state
+- Owner-controlled Razorpay KYC, Live credentials, production webhook registration and a real payment/refund smoke test
 
-**The payment verification, persistence and entitlement layers are real foundations.** Protected lessons and production-grade payment reconciliation are the next milestones.
+**The payment verification, persistence and entitlement layers are real foundations.** They are not a substitute for completing and testing the operational items above.
 
 ## Test mode setup
 
@@ -62,7 +66,9 @@ Before switching to live `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`:
 
 - [x] `User`/`Entitlement` models exist and a paid order grants product access
 - [ ] Refund initiation and partial-refund tracking match the published Refund & Cancellation Policy
-- [ ] A webhook-event ledger deduplicates deliveries by Razorpay event ID
+- [x] A webhook-event ledger deduplicates deliveries by Razorpay event ID
+- [ ] Pending-order reconciliation and payment/entitlement mismatch alerting are operating
+- [ ] Payment, refund and receipt emails are delivered and monitored
 - [ ] Live webhook URL registered with its own secret set in the production environment
 - [ ] A real low-value Live payment and full refund have passed end to end
 - [ ] A support process exists for failed/disputed payments before launch

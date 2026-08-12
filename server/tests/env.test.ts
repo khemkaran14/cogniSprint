@@ -29,4 +29,13 @@ describe("validateEnvironment", () => {
   it("requires both Razorpay credentials", () => {
     expect(() => validateEnvironment({ ...validEnv, RAZORPAY_KEY_ID: "rzp_test_example" })).toThrow(/both be set/);
   });
+
+  it("requires a webhook secret with production Razorpay credentials", () => {
+    expect(() => validateEnvironment({
+      ...validEnv,
+      NODE_ENV: "production",
+      RAZORPAY_KEY_ID: "rzp_live_example",
+      RAZORPAY_KEY_SECRET: "secret",
+    })).toThrow(/WEBHOOK_SECRET/);
+  });
 });

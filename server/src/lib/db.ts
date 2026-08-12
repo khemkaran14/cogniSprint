@@ -11,7 +11,7 @@ export async function connectDB(): Promise<void> {
   }
 
   try {
-    await mongoose.connect(uri);
+    await mongoose.connect(uri, { autoIndex: process.env.NODE_ENV !== "production" });
   } catch (error) {
     const cause = error as NodeJS.ErrnoException;
     if (cause.syscall === "querySrv" || cause.code === "ECONNREFUSED") {
