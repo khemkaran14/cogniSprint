@@ -9,6 +9,12 @@ const lessonProgressSchema = new Schema(
     attempts: { type: Number, min: 0, default: 0, required: true },
     startedAt: { type: Date, default: Date.now, required: true },
     completedAt: { type: Date },
+    draftAnswers: { type: [Number], default: [] },
+    draftUpdatedAt: { type: Date },
+    lastSubmissionId: { type: String },
+    lastSubmissionHash: { type: String },
+    lastScore: { type: Number, min: 0, max: 100 },
+    appliedSubmissionIds: { type: [String], default: [], select: false },
   },
   { timestamps: true }
 );
