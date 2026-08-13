@@ -18,7 +18,6 @@ Browser
         │   /api/checkout/coupon/:code, /api/checkout/order/:id          → MongoDB + Razorpay
         ├── /api/auth/*, /api/entitlements                              → MongoDB accounts + access
         ├── /api/learning/*, /api/assessments/*, /api/certificates/*     → MongoDB learning records
-        ├── /api/admin/*                                                  → role-gated operations + audit records
         └── /api/webhooks/razorpay                                      → signed, deduplicated provider events
 ```
 
@@ -29,8 +28,8 @@ There is no server-side rendering. Every page is a client-rendered React compone
 ```
 server/
   src/
-    models/       Catalogue, accounts, orders, entitlements, learning records, certificates, audit/webhook events
-    routes/       Public APIs plus auth, checkout, learning and role-gated administration
+    models/       Catalogue, accounts, orders, entitlements, lessons/progress, certificates, webhook events
+    routes/       Public catalogue/forms plus auth, checkout, entitlements, learning, assessments and certificates
     lib/          Database, auth/security, Razorpay, email, pricing, validation and gamification helpers
     middleware/   Authentication, entitlement, rate-limit and request-context middleware
     seed/         data.ts (source content) + run.ts (upserts everything into MongoDB)

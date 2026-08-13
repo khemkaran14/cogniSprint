@@ -42,12 +42,6 @@ describe("server application", () => {
     await expect(response.json()).resolves.toEqual({ error: "Please sign in to continue." });
   });
 
-  it("protects administrator routes", async () => {
-    const response = await get("/api/admin/dashboard");
-    expect(response.status).toBe(401);
-    await expect(response.json()).resolves.toEqual({ error: "Please sign in to continue." });
-  });
-
   it("protects the learning dashboard", async () => {
     const response = await get("/api/learning/dashboard");
     expect(response.status).toBe(401);
