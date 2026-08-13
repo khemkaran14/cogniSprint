@@ -11,6 +11,24 @@ import { grantPaidOrderEntitlement } from "../lib/entitlements.js";
 
 export const checkoutRouter = Router();
 
+checkoutRouter.get("/orders", requireAuth, async (_req, res, next) => {
+  try {
+    const orders = await Order.find({ userId: res.locals.user._id })
+      .populate("productId", "name slug").select("productId amount currency status providerOrderId providerPaymentId paidAt refundedAt createdAt")
+      .sort({ createdAt: -1 }).lean();
+    res.json({ orders: orders.map((order) => ({ id: String(order._id), product: order.productId, amount: order.amount, currency: order.currency, status: order.status, providerOrderId: order.providerOrderId, providerPaymentId: order.providerPaymentId, paidAt: order.paidAt, refundedAt: order.refundedAt, createdAt: order.createdAt, receiptAvailable: order.status === "paid" || order.status === "refunded" })) });
+  } catch (error) { next(error); }
+});
+
+checkoutRouter.get("/orders/:id/receipt", requireAuth, async (req, res, next) => {
+  try {
+    if (!/^[a-f\d]{24}$/i.test(req.params.id)) return res.status(404).json({ error: "Order not found." });
+    const order = await Order.findOne({ _id: req.params.id, userId: res.locals.user._id, status: { $in: ["paid", "refunded"] } }).populate("productId", "name slug").lean();
+    if (!order) return res.status(404).json({ error: "Receipt not found." });
+    res.json({ receipt: { number: `CS-${String(order._id).slice(-10).toUpperCase()}`, orderId: String(order._id), providerOrderId: order.providerOrderId, providerPaymentId: order.providerPaymentId, customerName: order.customerName, customerEmail: order.customerEmail, product: order.productId, amount: order.amount, currency: order.currency, status: order.status, purchasedAt: order.paidAt ?? order.updatedAt, refundedAt: order.refundedAt } });
+  } catch (error) { next(error); }
+});
+
 checkoutRouter.get("/coupon/:code", async (req, res) => {
   const coupon = await Coupon.findOne({ code: req.params.code.toUpperCase(), active: true }).lean();
   if (!coupon) return res.status(404).json({ error: "Invalid or expired coupon code." });
@@ -133,7 +151,7 @@ checkoutRouter.post("/verify", requireAuth, async (req, res) => {
 
   const order = await Order.findOneAndUpdate(
     { providerOrderId: razorpay_order_id, userId: res.locals.user._id },
-    { status: "paid", providerPaymentId: razorpay_payment_id },
+    [{ $set: { status: "paid", providerPaymentId: razorpay_payment_id, paidAt: { $ifNull: ["$paidAt", "$$NOW"] } } }],
     { new: true }
   );
 

@@ -27,6 +27,16 @@ const ForgotPasswordPage = lazy(() => import("@/pages/auth/ForgotPasswordPage"))
 const ResetPasswordPage = lazy(() => import("@/pages/auth/ResetPasswordPage"));
 const VerifyEmailPage = lazy(() => import("@/pages/auth/VerifyEmailPage"));
 const AccountPage = lazy(() => import("@/pages/AccountPage"));
+const LearningDashboardPage = lazy(() => import("@/pages/LearningDashboardPage"));
+const LessonPage = lazy(() => import("@/pages/LessonPage"));
+const LearningAnalyticsPage = lazy(() => import("@/pages/LearningAnalyticsPage"));
+const AssessmentsPage = lazy(() => import("@/pages/AssessmentsPage"));
+const AssessmentPage = lazy(() => import("@/pages/AssessmentPage"));
+const CertificatePage = lazy(() => import("@/pages/CertificatePage"));
+const CertificateVerificationPage = lazy(() => import("@/pages/CertificateVerificationPage"));
+const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboardPage"));
+const AdminCertificatesPage = lazy(() => import("@/pages/admin/AdminCertificatesPage"));
+const OrderReceiptPage = lazy(() => import("@/pages/OrderReceiptPage"));
 
 export default function App() {
   return (
@@ -52,6 +62,16 @@ export default function App() {
             <Route path="/blog" element={<BlogIndexPage />} />
             <Route path="/blog/:slug" element={<BlogArticlePage />} />
             <Route path="/account" element={<AccountPage />} />
+            <Route path="/account/orders/:id" element={<OrderReceiptPage />} />
+            <Route path="/learn" element={<LearningDashboardPage />} />
+            <Route path="/learn/lessons/:slug" element={<LessonPage />} />
+            <Route path="/learn/progress" element={<LearningAnalyticsPage />} />
+            <Route path="/learn/assessments" element={<AssessmentsPage />} />
+            <Route path="/learn/assessments/:slug" element={<AssessmentPage />} />
+            <Route path="/learn/certificate" element={<CertificatePage />} />
+            <Route path="/certificates/verify/:code" element={<CertificateVerificationPage />} />
+            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/certificates" element={<AdminCertificatesPage />} />
             <Route path="/legal/terms" element={<TermsPage />} />
             <Route path="/legal/privacy" element={<PrivacyPage />} />
             <Route path="/legal/refund-policy" element={<RefundPolicyPage />} />
