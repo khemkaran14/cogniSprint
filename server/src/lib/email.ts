@@ -2,12 +2,12 @@
  * Thin Resend wrapper. Falls back to logging when RESEND_API_KEY isn't set,
  * so the app degrades to an honest dev experience instead of throwing.
  */
-export async function sendEmail(options: { to: string; subject: string; text: string }): Promise<void> {
+export async function sendEmail(options: { to: string; subject: string; text: string }): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
     console.info("[email] not sent (no RESEND_API_KEY configured):", options);
-    return;
+    return false;
   }
 
   const response = await fetch("https://api.resend.com/emails", {
@@ -26,5 +26,7 @@ export async function sendEmail(options: { to: string; subject: string; text: st
 
   if (!response.ok) {
     console.error("[email] Resend request failed:", response.status, await response.text());
+    return false;
   }
+  return true;
 }
