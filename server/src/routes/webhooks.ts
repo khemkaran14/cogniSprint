@@ -67,7 +67,7 @@ webhooksRouter.post("/razorpay", async (req, res) => {
       // Idempotent: re-delivering the same event just re-applies the same state.
       const order = await Order.findOneAndUpdate(
         { providerOrderId: orderId },
-        [{ $set: { status: "paid", providerPaymentId: paymentId, paidAt: { $ifNull: ["$paidAt", "$$NOW"] } } }],
+        { status: "paid", providerPaymentId: paymentId },
         { new: true }
       );
       await grantPaidOrderEntitlement(order);
@@ -76,7 +76,7 @@ webhooksRouter.post("/razorpay", async (req, res) => {
     } else if (event.event === "payment.refunded" && orderId) {
       const order = await Order.findOneAndUpdate(
         { providerOrderId: orderId },
-        { status: "refunded", refundedAt: new Date() },
+        { status: "refunded" },
         { new: true }
       );
       await revokeOrderEntitlement(order);

@@ -116,13 +116,12 @@ CogniSprint now includes secure account registration, sign-in/out, opaque databa
 | --- | --- | --- |
 | Marketing, curriculum catalogue, blog, legal and free challenge | Implemented | Public pages and API-backed catalogue content exist. |
 | Accounts and sessions | Foundation implemented | Registration, login/logout, verification, reset, profile preferences and secure owner-scoped device/session revocation exist; data-rights export/deletion workflows remain. |
-| Checkout and entitlements | Foundation implemented | Server-priced Razorpay orders, signed callback/webhook verification, persisted orders, grant/revoke behavior, owner history and printable payment receipts exist; refund initiation, partial refunds, reconciliation and tax invoices remain. |
+| Checkout and entitlements | Foundation implemented | Server-priced Razorpay orders, signed callback/webhook verification, persisted orders and grant/revoke behavior exist; refund initiation, partial refunds, reconciliation and customer order history remain. |
 | Protected learning | Foundation implemented | Active entitlements gate `/learn`; sequential prerequisites, daily unlocks, resumable drafts, idempotent submissions and module/course completion are implemented for three Getting Started lessons. The remaining 362 sessions are not present. |
 | Progress and gamification | Partial | Overall, per-skill, per-module and daily activity analytics, CSV export, completion, attempts, recorded duration, best score, computed XP, timezone-aware streak and four badge rules exist. Persistent achievement history does not. |
 | Certificates | Foundation | Eligibility/status, claim, print/save-PDF UI, tracked email delivery and public verification exist. Eligibility deliberately requires at least 365 published and completed lessons; provider retries and audited admin revocation remain. |
 | Monthly assessments | Not implemented | Curriculum marketing metadata mentions them, but there is no assessment engine or reviewed question bank. |
-| Admin/support | Foundation | Admin-only operational metrics, certificate revocation and mutation audit history exist. User/order/refund/content operations and granular permissions remain. |
-| Community and referrals | Not implemented | No routes, models or UI exist for these product areas. |
+| Admin, community and referrals | Not implemented | No routes, models or UI exist for these product areas. |
 | Deployment operations | Partial | CI, Dockerfiles, Nginx SPA fallback, liveness/readiness endpoints and graceful shutdown exist. Provider manifests, migrations, monitoring and real full-stack tests remain. |
 
 ## Learning foundation
@@ -131,23 +130,12 @@ Paid learners have a protected `/learn` dashboard backed by active product entit
 
 Only three initial Getting Started lessons are seeded. They prove the workflow; they do **not** constitute the complete 365-day product. Content claims must remain limited to reviewed, published material until all remaining lessons and assessments are delivered.
 
-## Administrator access
-
-There is no shared default administrator password. Register and verify the owner account normally, then promote that exact account from a trusted server shell:
-
-```bash
-cd server
-npm run admin:promote -- owner@example.com
-```
-
-Sign in through the normal `/login` page with that account and open `/admin` (the header also displays an **Admin** link). Never expose the promotion command through a public HTTP route. Admin APIs re-check the server-side role; the client redirect is convenience, not authorization.
-
 ## What remains
 
 - Author and independently review the remaining 362 daily sessions, associated media and twelve assessments.
-- Complete the qualified assessment bank and certificate delivery retry operations. Audited certificate revocation, progression, daily scheduling, resumable drafts, detailed analytics and learner-facing certificate delivery now exist.
-- Complete refund/partial-refund operations, reconciliation, legally reviewed tax invoices and reliable transactional email; owner order history and printable payment receipts now exist.
-- Expand the admin foundation with user/order/refund/content operations and granular permissions; add privacy export/deletion, referrals and—only with moderation operations—community functionality.
+- Complete the qualified assessment bank, certificate delivery retry operations and audited admin revocation. Progression, daily scheduling, resumable drafts, detailed analytics and learner-facing certificate delivery now exist for published lessons.
+- Complete refund/partial-refund operations, reconciliation, order history and reliable transactional email.
+- Add admin/audit, privacy/export/deletion, referral and—only with moderation operations—community functionality.
 - Add provider-specific deployment, centralized monitoring, backup/restore validation and real database/full-stack tests. A versioned, locked migration runner is available via `npm run migrate`.
 - Complete the owner-controlled launch gates in `PRODUCTION_READINESS.md`: secret rotation, Razorpay KYC/live setup, Atlas/DNS/email setup, legal/security/accessibility review and educational approval.
 

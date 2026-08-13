@@ -19,7 +19,7 @@
 - Refund initiation, provider refund records and partial-refund amount tracking
 - A documented decision for how partial refunds affect an entitlement
 - Scheduled reconciliation for pending or inconsistent orders
-- Tax invoices and reliable queued payment/refund emails (owner order history and printable payment receipts are implemented)
+- Customer order history, receipt/invoice delivery and payment/refund emails
 - Dispute/chargeback event handling, alerting and a human support process
 - Real-database tests covering callback/webhook races, redelivery, refund and entitlement state
 - Owner-controlled Razorpay KYC, Live credentials, production webhook registration and a real payment/refund smoke test

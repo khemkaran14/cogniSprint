@@ -14,12 +14,12 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 | --- | --- | --- |
 | Public marketing/catalogue/challenge | Implemented | Public React routes, catalogue APIs and mocked browser flows exist. |
 | Accounts and opaque sessions | Foundation | Register/login/logout, verification, reset, profile preferences and owner-scoped device/session revocation exist; privacy export/deletion workflows remain. |
-| Razorpay checkout and entitlements | Foundation | Server-priced orders, signed verification, event dedupe, entitlement grant/revoke, owner history and printable payment receipts exist; operational refunds, tax invoices and reconciliation remain. |
+| Razorpay checkout and entitlements | Foundation | Server-priced persisted orders, signed verification, event dedupe and entitlement grant/revoke exist; operational refunds, reconciliation and customer history remain. |
 | Protected lessons and progress | Foundation | Entitlement gating, progression, resumable drafts, retry-safe scoring, overall/module/skill/activity analytics and CSV export exist for three lessons; the remaining 362 sessions remain. |
 | XP, streak and badges | Foundation | Derived UTC streak, XP and four badge rules exist; persistent achievement events, timezone preference and reminders remain. |
-| Certificates | Foundation | Eligibility, claim, printable UI, public verification, tracked email delivery and audited admin revocation exist; provider retry operations remain. |
+| Certificates | Foundation | Eligibility, claim, printable accessible certificate UI, public verification and tracked email delivery exist; provider retry operations and admin revocation remain. |
 | Assessments | Foundation | Entitlement-protected catalogue, attempt UI, retry-safe server scoring, per-skill results and one technical baseline exist; eleven assessments and qualified content review remain. |
-| Admin/support tooling | Foundation | Admin-only operational dashboard, certificate revocation and immutable mutation audit records exist; user/order/refund/content operations and granular permissions remain. |
+| Admin/support tooling | Not implemented | No admin console, scoped permissions or audit ledger. |
 | Community/referrals | Not implemented | No product implementation or moderation operation. |
 | Runtime/deployment foundation | Foundation | CI, containers, SPA fallback, request IDs, readiness and graceful shutdown exist; provider deployment, migrations, monitoring and real full-stack tests remain. |
 
@@ -39,7 +39,7 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 - [ ] Implement refund records, provider refund IDs and partial-refund amount/state handling.
 - [ ] Define and implement entitlement behavior for partial refunds and disputes.
 - [ ] Add scheduled reconciliation for pending and inconsistent orders.
-- [x] Add owner-scoped order history and printable payment receipts. Tax invoices remain subject to finalized legal/GST requirements.
+- [ ] Add owner-scoped order history and receipt/invoice delivery.
 - [ ] Add reliable queued purchase, failure and refund email delivery with provider status tracking.
 - [ ] Alert on payment failures, stale pending orders, failed webhook events and entitlement mismatches.
 - [ ] Pass real-database tests for callback/webhook races, duplicate delivery and refund revocation.
@@ -52,7 +52,7 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 - [x] Add prerequisites, timezone-aware daily scheduling, resumable drafts, idempotent attempts and module/course completion rules.
 - [x] Add owner-scoped overall, per-skill, per-module and daily progress analytics with an accessible UI and CSV export.
 - [ ] Expand the retry-safe assessment foundation into twelve monthly assessments with qualified, reviewed question banks (one technical baseline is seeded).
-- [ ] Add provider-backed certificate email retry operations; learner claim, print/save-PDF UI, delivery status, public verification and audited admin revocation are implemented.
+- [ ] Add provider-backed certificate email retry operations and audited admin revocation; learner claim, print/save-PDF UI, delivery status and public verification are implemented.
 - [ ] Deliver the advertised workbook and worksheets through entitlement-protected downloads.
 - [ ] Add content draft/review/approval/publish states and an auditable release process.
 

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MailCheck, UserRound, BookOpenCheck, MonitorSmartphone } from "lucide-react";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -17,7 +17,6 @@ type Entitlement = {
   product: { name: string; slug: string; description?: string };
 };
 type Session = { id: string; userAgent: string; ipAddress: string; lastSeenAt: string; createdAt: string; expiresAt: string; current: boolean };
-type Order = { id: string; product: { name: string }; amount: number; currency: string; status: "pending" | "paid" | "failed" | "refunded"; createdAt: string; receiptAvailable: boolean };
 
 export default function AccountPage() {
   const { user, loading, logout, setUser } = useAuth();
@@ -28,7 +27,6 @@ export default function AccountPage() {
     enabled: Boolean(user),
   });
   const sessions = useQuery({ queryKey: ["sessions", user?.id], queryFn: () => apiGet<{ sessions: Session[] }>("/auth/sessions"), enabled: Boolean(user) });
-  const orders = useQuery({ queryKey: ["orders", user?.id], queryFn: () => apiGet<{ orders: Order[] }>("/checkout/orders"), enabled: Boolean(user) });
   const profile = useMutation({ mutationFn: (values: { name: string; timezone: string }) => apiPatch<{ user: typeof user }>("/auth/profile", values), onSuccess: ({ user: nextUser }) => { if (nextUser) setUser(nextUser); } });
   const revoke = useMutation({ mutationFn: (id: string) => apiDelete<void>(`/auth/sessions/${id}`), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sessions", user?.id] }) });
   const revokeOthers = useMutation({ mutationFn: () => apiDelete<void>("/auth/sessions"), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sessions", user?.id] }) });
