@@ -38,7 +38,7 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 
 - [x] Implement audited refund records, provider refund IDs and partial-refund amount/state handling.
 - [ ] Complete dispute handling. Full refunds revoke access; partial refunds retain access.
-- [ ] Add scheduled reconciliation for pending and inconsistent orders.
+- [x] Add dry-run/apply reconciliation for stale pending orders and paid-order entitlement mismatches, with an hourly serialized workflow and retained findings.
 - [x] Add owner-scoped order history and printable payment receipts. Tax invoices remain subject to finalized legal/GST requirements.
 - [ ] Add reliable queued purchase, failure and refund email delivery with provider status tracking.
 - [ ] Alert on payment failures, stale pending orders, failed webhook events and entitlement mismatches.

@@ -10,6 +10,7 @@ import { WebhookEvent } from "../models/WebhookEvent.js";
 import { Refund } from "../models/Refund.js";
 import { createRazorpayRefund } from "../lib/razorpay.js";
 import { revokeOrderEntitlement } from "../lib/entitlements.js";
+import { ReconciliationRun } from "../models/ReconciliationRun.js";
 
 export const adminRouter = Router();
 adminRouter.use(requireAdmin);
@@ -39,6 +40,9 @@ adminRouter.get("/orders", async (_req, res, next) => {
     const refunds = await Refund.find({ orderId: { $in: orders.map((order) => order._id) } }).sort({ createdAt: -1 }).lean();
     res.json({ orders: orders.map((order) => ({ ...order, refunds: refunds.filter((refund) => String(refund.orderId) === String(order._id)) })) });
   } catch (error) { next(error); }
+});
+adminRouter.get("/reconciliation", async (_req, res, next) => {
+  try { res.json({ runs: await ReconciliationRun.find().sort({ createdAt: -1 }).limit(20).lean() }); } catch (error) { next(error); }
 });
 
 const refundSchema = z.object({ amount: z.number().int().positive(), reason: z.string().trim().min(10).max(500) });

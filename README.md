@@ -78,6 +78,7 @@ Nothing beyond MongoDB is required to see the full marketing site, curriculum, b
 | `server/` | `npm run migrate` | Apply pending production database migrations under a distributed lock |
 | `server/` | `npm run migrate:status` | Report pending migrations without changing the database |
 | `server/` | `npm run migrate:prod` | Apply migrations from a compiled production/container artifact |
+| `server/` | `npm run reconcile` / `npm run reconcile:apply` | Inspect or repair stale payment/order and entitlement mismatches |
 | `server/` | `npm test` | Server unit and HTTP application tests (no live database required) |
 | `client/` | `npm run dev` | Vite dev server |
 | `client/` | `npm run build` | Typecheck + production build |

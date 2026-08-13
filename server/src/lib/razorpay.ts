@@ -6,6 +6,8 @@ export type RazorpayOrder = {
   currency: string;
   receipt: string;
   status: string;
+  amount_paid?: number;
+  amount_due?: number;
 };
 
 export function isRazorpayConfigured(): boolean {

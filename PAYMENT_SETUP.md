@@ -79,3 +79,7 @@ Before switching to live `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`:
 - **Signature verification fails for a real payment** — confirm the key secret matches the mode (test vs. live) of the key ID used to create the order.
 - **Webhook returns 400** — `RAZORPAY_WEBHOOK_SECRET` doesn't match the webhook's configured secret in the dashboard (regenerating the webhook rotates it).
 - **`MONGODB_URI` not set** — `create-order` will throw before ever reaching Razorpay; check `server/.env`.
+
+## Scheduled reconciliation
+
+An hourly serialized GitHub Actions workflow runs `npm run reconcile:apply` using repository secrets. Run `npm run reconcile` for a non-mutating report before applying manually. Each run and its bounded findings are retained in MongoDB for operational review. Configure the workflow secrets before enabling it.
