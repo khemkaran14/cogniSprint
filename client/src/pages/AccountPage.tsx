@@ -49,6 +49,12 @@ export default function AccountPage() {
             </div>
           </div>
 
+          <section className="mt-8 border-t border-[var(--color-border)] pt-8">
+            <h2 className="text-lg font-semibold">Order history</h2><p className="text-sm text-[var(--color-ink-muted)]">Payments and printable receipts owned by this account.</p>
+            {orders.isLoading ? <LoadingState label="Loading orders…" /> : null}{orders.isError ? <Alert className="mt-4" variant="error">Order history could not be loaded.</Alert> : null}
+            <div className="mt-4 space-y-3">{orders.data?.orders.map((order) => <article className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] p-4" key={order.id}><div><p className="font-semibold">{order.product.name}</p><p className="text-sm text-[var(--color-ink-muted)]">{new Date(order.createdAt).toLocaleDateString()} · <span className="capitalize">{order.status}</span> · {order.currency} {(order.amount / 100).toFixed(2)}</p></div>{order.receiptAvailable ? <Link className="text-sm font-semibold text-[var(--color-brand-blue)]" to={`/account/orders/${order.id}`}>View receipt →</Link> : null}</article>)}{orders.data?.orders.length === 0 ? <p className="text-sm text-[var(--color-ink-muted)]">No orders yet.</p> : null}</div>
+          </section>
+
           {!user.emailVerified ? (
             <Alert className="mt-6" variant="warning" title="Verify your email">
               Check your inbox for your verification link before beginning the learning program.

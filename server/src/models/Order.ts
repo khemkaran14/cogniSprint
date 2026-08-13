@@ -14,9 +14,13 @@ const orderSchema = new Schema(
     paymentProvider: { type: String, required: true, default: "razorpay" },
     providerOrderId: { type: String, unique: true, sparse: true, index: true },
     providerPaymentId: { type: String, unique: true, sparse: true },
+    paidAt: { type: Date },
+    refundedAt: { type: Date },
   },
   { timestamps: true }
 );
+
+orderSchema.index({ userId: 1, createdAt: -1 });
 
 export type OrderDoc = InferSchemaType<typeof orderSchema>;
 export const Order = model("Order", orderSchema);
