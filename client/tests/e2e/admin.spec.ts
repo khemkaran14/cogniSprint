@@ -24,3 +24,12 @@ test("learner cannot open the administrator client route", async ({ page }) => {
   await expect(page).toHaveURL(/\/account$/);
   await expect(page.getByRole("heading", { name: "Site Owner" })).toBeVisible();
 });
+
+test("administrator can review refundable balances", async ({ page }) => {
+  await page.route("**/api/auth/me", (route) => route.fulfill({ json: { user: admin } }));
+  await page.route("**/api/admin/orders", (route) => route.fulfill({ json: { orders: [{ _id: "66bb88cc00dd11ee22ff3344", customerName: "Asha Rao", customerEmail: "asha@example.com", productId: { name: "CogniSprint Complete" }, amount: 99900, refundedAmount: 10000, currency: "INR", status: "partially_refunded", createdAt: "2026-08-13T06:00:00Z", refunds: [{ _id: "refund_1", amount: 10000, status: "processed", reason: "Customer requested adjustment" }] }] } }));
+  await page.goto("/admin/orders");
+  await expect(page.getByRole("heading", { name: "Orders and refunds" })).toBeVisible();
+  await expect(page.getByText("Remaining 899.00")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Issue refund" })).toBeVisible();
+});

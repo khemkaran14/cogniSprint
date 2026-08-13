@@ -36,8 +36,20 @@ describe("server application", () => {
     await expect(response.json()).resolves.toEqual({ error: "Please sign in to continue." });
   });
 
+  it("protects owner order history", async () => {
+    const response = await get("/api/checkout/orders");
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({ error: "Please sign in to continue." });
+  });
+
   it("protects session management", async () => {
     const response = await get("/api/auth/sessions");
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({ error: "Please sign in to continue." });
+  });
+
+  it("protects administrator routes", async () => {
+    const response = await get("/api/admin/dashboard");
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({ error: "Please sign in to continue." });
   });

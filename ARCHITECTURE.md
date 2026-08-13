@@ -18,6 +18,7 @@ Browser
         │   /api/checkout/coupon/:code, /api/checkout/order/:id          → MongoDB + Razorpay
         ├── /api/auth/*, /api/entitlements                              → MongoDB accounts + access
         ├── /api/learning/*, /api/assessments/*, /api/certificates/*     → MongoDB learning records
+        ├── /api/admin/*                                                  → role-gated operations + audit records
         └── /api/webhooks/razorpay                                      → signed, deduplicated provider events
 ```
 
@@ -28,8 +29,8 @@ There is no server-side rendering. Every page is a client-rendered React compone
 ```
 server/
   src/
-    models/       Catalogue, accounts, orders, entitlements, lessons/progress, certificates, webhook events
-    routes/       Public catalogue/forms plus auth, checkout, entitlements, learning, assessments and certificates
+    models/       Catalogue, accounts, orders, entitlements, learning records, certificates, audit/webhook events
+    routes/       Public APIs plus auth, checkout, learning and role-gated administration
     lib/          Database, auth/security, Razorpay, email, pricing, validation and gamification helpers
     middleware/   Authentication, entitlement, rate-limit and request-context middleware
     seed/         data.ts (source content) + run.ts (upserts everything into MongoDB)
@@ -63,6 +64,7 @@ client/
 Deliberate split, not an oversight:
 
 - **In MongoDB** (`server/src/models/`): catalogue content, users, hashed sessions/account tokens with device activity metadata, orders, entitlements, lessons, lesson progress, certificates and retained webhook-event state.
+- Owner-scoped checkout APIs expose newest-first order history and paid/refunded payment receipts; raw provider credentials and other customers' records are never included.
 - **Static in client config** (`client/src/config/`, `client/src/content/`): brand copy, navigation structure, the free challenge's question bank. These are presentation/identity concerns, not data an admin needs to edit without a deploy, and keeping them in version control makes brand-copy review a normal PR rather than a database migration.
 
 ## Data flow: the free challenge

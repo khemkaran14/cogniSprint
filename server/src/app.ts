@@ -12,6 +12,7 @@ import { entitlementsRouter } from "./routes/entitlements.js";
 import { learningRouter } from "./routes/learning.js";
 import { certificatesRouter } from "./routes/certificates.js";
 import { assessmentsRouter } from "./routes/assessments.js";
+import { adminRouter } from "./routes/admin.js";
 import { publicFormLimiter, checkoutLimiter, authLimiter } from "./middleware/rateLimit.js";
 import { requestContext } from "./middleware/requestContext.js";
 import { isDBConnected } from "./lib/db.js";
@@ -60,6 +61,7 @@ export function createApp() {
   app.use("/api/learning", learningRouter);
   app.use("/api/certificates", certificatesRouter);
   app.use("/api/assessments", assessmentsRouter);
+  app.use("/api/admin", adminRouter);
 
   app.use((req, res) => {
     res.status(404).json({ error: `No route for ${req.method} ${req.path}` });

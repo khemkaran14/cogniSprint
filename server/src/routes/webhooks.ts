@@ -13,8 +13,11 @@ type RazorpayWebhookEvent = {
       entity?: {
         order_id?: string;
         id?: string;
+        amount?: number;
+        amount_refunded?: number;
       };
     };
+    refund?: { entity?: { id?: string; payment_id?: string; amount?: number } };
   };
 };
 
@@ -67,19 +70,20 @@ webhooksRouter.post("/razorpay", async (req, res) => {
       // Idempotent: re-delivering the same event just re-applies the same state.
       const order = await Order.findOneAndUpdate(
         { providerOrderId: orderId },
-        { status: "paid", providerPaymentId: paymentId },
+        [{ $set: { status: "paid", providerPaymentId: paymentId, paidAt: { $ifNull: ["$paidAt", "$$NOW"] } } }],
         { new: true }
       );
       await grantPaidOrderEntitlement(order);
     } else if (event.event === "payment.failed" && orderId) {
       await Order.updateOne({ providerOrderId: orderId, status: { $ne: "paid" } }, { status: "failed" });
     } else if (event.event === "payment.refunded" && orderId) {
+      const refundedAmount = event.payload?.payment?.entity?.amount_refunded ?? event.payload?.payment?.entity?.amount;
       const order = await Order.findOneAndUpdate(
         { providerOrderId: orderId },
-        { status: "refunded" },
+        [{ $set: { refundedAmount: refundedAmount ?? "$amount", status: { $cond: [{ $gte: [refundedAmount ?? "$amount", "$amount"] }, "refunded", "partially_refunded"] }, refundedAt: { $cond: [{ $gte: [refundedAmount ?? "$amount", "$amount"] }, "$$NOW", "$refundedAt"] } } }],
         { new: true }
       );
-      await revokeOrderEntitlement(order);
+      if (order?.status === "refunded") await revokeOrderEntitlement(order);
     }
 
     await WebhookEvent.updateOne({ provider: "razorpay", eventId }, { status: "processed", processedAt: new Date() });

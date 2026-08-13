@@ -16,6 +16,7 @@
     "migrate": "tsx src/migrations/cli.ts",
     "migrate:status": "tsx src/migrations/cli.ts status",
     "migrate:prod": "node dist/migrations/cli.js",
+    "admin:promote": "tsx src/admin/promote.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint ."
