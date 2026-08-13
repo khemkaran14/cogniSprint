@@ -67,6 +67,19 @@ export async function fetchRazorpayOrder(orderId: string): Promise<RazorpayOrder
   return (await response.json()) as RazorpayOrder;
 }
 
+export async function createRazorpayRefund(paymentId: string, amount: number, notes: Record<string, string>) {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!keyId || !keySecret) throw new Error("Razorpay is not configured");
+  const response = await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(paymentId)}/refund`, {
+    method: "POST",
+    headers: { Authorization: `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString("base64")}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ amount, notes }),
+  });
+  if (!response.ok) throw new Error(`Razorpay refund creation failed: ${response.status} ${(await response.text()).slice(0, 300)}`);
+  return await response.json() as { id: string; amount: number; status: string };
+}
+
 /**
  * Verifies the signature Razorpay Checkout returns to the client after a
  * successful payment: hmac_sha256(order_id + "|" + payment_id, key_secret).

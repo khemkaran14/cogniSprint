@@ -2,6 +2,7 @@ import { Router } from "express";
 import { verifyWebhookSignature } from "../lib/razorpay.js";
 import { Order } from "../models/Order.js";
 import { grantPaidOrderEntitlement, revokeOrderEntitlement } from "../lib/entitlements.js";
+import { WebhookEvent } from "../models/WebhookEvent.js";
 
 export const webhooksRouter = Router();
 
@@ -12,8 +13,11 @@ type RazorpayWebhookEvent = {
       entity?: {
         order_id?: string;
         id?: string;
+        amount?: number;
+        amount_refunded?: number;
       };
     };
+    refund?: { entity?: { id?: string; payment_id?: string; amount?: number } };
   };
 };
 
@@ -41,26 +45,54 @@ webhooksRouter.post("/razorpay", async (req, res) => {
 
   console.info("[razorpay-webhook] verified event:", event.event);
 
+  const eventId = req.header("x-razorpay-event-id");
+  if (!eventId || !event.event) return res.status(400).json({ error: "Webhook event ID and type are required." });
+  try {
+    await WebhookEvent.create({ provider: "razorpay", eventId, eventType: event.event, status: "processing" });
+  } catch (error) {
+    if ((error as { code?: number }).code !== 11000) throw error;
+    const existing = await WebhookEvent.findOne({ provider: "razorpay", eventId });
+    const stale = existing?.status === "processing" && existing.updatedAt < new Date(Date.now() - 5 * 60_000);
+    if (existing?.status === "processed" || (existing?.status === "processing" && !stale)) {
+      return res.json({ received: true, duplicate: true });
+    }
+    await WebhookEvent.updateOne(
+      { provider: "razorpay", eventId },
+      { status: "processing", failureReason: null }
+    );
+  }
+
   const orderId = event.payload?.payment?.entity?.order_id;
   const paymentId = event.payload?.payment?.entity?.id;
 
-  if (event.event === "payment.captured" && orderId) {
-    // Idempotent: re-delivering the same event just re-applies the same state.
-    const order = await Order.findOneAndUpdate(
-      { providerOrderId: orderId },
-      { status: "paid", providerPaymentId: paymentId },
-      { new: true }
+  try {
+    if (event.event === "payment.captured" && orderId) {
+      // Idempotent: re-delivering the same event just re-applies the same state.
+      const order = await Order.findOneAndUpdate(
+        { providerOrderId: orderId },
+        [{ $set: { status: "paid", providerPaymentId: paymentId, paidAt: { $ifNull: ["$paidAt", "$$NOW"] } } }],
+        { new: true }
+      );
+      await grantPaidOrderEntitlement(order);
+    } else if (event.event === "payment.failed" && orderId) {
+      await Order.updateOne({ providerOrderId: orderId, status: { $ne: "paid" } }, { status: "failed" });
+    } else if (event.event === "payment.refunded" && orderId) {
+      const refundedAmount = event.payload?.payment?.entity?.amount_refunded ?? event.payload?.payment?.entity?.amount;
+      const order = await Order.findOneAndUpdate(
+        { providerOrderId: orderId },
+        [{ $set: { refundedAmount: refundedAmount ?? "$amount", status: { $cond: [{ $gte: [refundedAmount ?? "$amount", "$amount"] }, "refunded", "partially_refunded"] }, refundedAt: { $cond: [{ $gte: [refundedAmount ?? "$amount", "$amount"] }, "$$NOW", "$refundedAt"] } } }],
+        { new: true }
+      );
+      if (order?.status === "refunded") await revokeOrderEntitlement(order);
+    }
+
+    await WebhookEvent.updateOne({ provider: "razorpay", eventId }, { status: "processed", processedAt: new Date() });
+  } catch (error) {
+    await WebhookEvent.updateOne(
+      { provider: "razorpay", eventId },
+      { status: "failed", failureReason: error instanceof Error ? error.message.slice(0, 500) : "Unknown error" }
     );
-    await grantPaidOrderEntitlement(order);
-  } else if (event.event === "payment.failed" && orderId) {
-    await Order.updateOne({ providerOrderId: orderId, status: { $ne: "paid" } }, { status: "failed" });
-  } else if (event.event === "payment.refunded" && orderId) {
-    const order = await Order.findOneAndUpdate(
-      { providerOrderId: orderId },
-      { status: "refunded" },
-      { new: true }
-    );
-    await revokeOrderEntitlement(order);
+    throw error;
   }
 
   res.json({ received: true });
