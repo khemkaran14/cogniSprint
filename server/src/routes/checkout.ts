@@ -8,6 +8,7 @@ import { applyCoupon } from "../lib/pricing.js";
 import { createRazorpayOrder, isRazorpayConfigured, verifyPaymentSignature } from "../lib/razorpay.js";
 import { requireAuth } from "../middleware/auth.js";
 import { grantPaidOrderEntitlement } from "../lib/entitlements.js";
+import { enqueueEmail } from "../lib/emailQueue.js";
 
 export const checkoutRouter = Router();
 
@@ -157,6 +158,7 @@ checkoutRouter.post("/verify", requireAuth, async (req, res) => {
 
   if (!order) return res.status(404).json({ verified: false, error: "Order not found." });
   await grantPaidOrderEntitlement(order);
+  await enqueueEmail({ idempotencyKey: `purchase:${order._id}`, category: "purchase", userId: order.userId, to: order.customerEmail, subject: "Your CogniSprint purchase is confirmed", text: `Hello ${order.customerName},\n\nYour payment of ${order.currency} ${(order.amount / 100).toFixed(2)} was confirmed. Open ${process.env.CLIENT_URL ?? "http://localhost:5173"}/learn to begin.\n\nOrder reference: ${order.providerOrderId}` });
 
   res.json({ verified: true, orderId: order._id, accessGranted: true });
 });

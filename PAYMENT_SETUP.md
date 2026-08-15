@@ -83,3 +83,7 @@ Before switching to live `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`:
 ## Scheduled reconciliation
 
 An hourly serialized GitHub Actions workflow runs `npm run reconcile:apply` using repository secrets. Run `npm run reconcile` for a non-mutating report before applying manually. Each run and its bounded findings are retained in MongoDB for operational review. Configure the workflow secrets before enabling it.
+
+## Transactional email queue
+
+Purchase confirmations, payment failures and refunds use idempotent outbox records rather than depending on a single request-time provider call. The scheduled `email-delivery.yml` worker processes 100 messages per run, stores Resend message IDs, retries failures with bounded exponential backoff and supports audited administrator retries. Configure `MONGODB_URI`, `RESEND_API_KEY` and `EMAIL_FROM` as repository secrets.
