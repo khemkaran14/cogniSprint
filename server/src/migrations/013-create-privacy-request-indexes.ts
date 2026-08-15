@@ -1,0 +1,2 @@
+import type { Migration } from "./types.js";
+export const createPrivacyRequestIndexes: Migration = { id: "202608150013-create-privacy-request-indexes", checksum: "sha256:89e546963ef4265d71b9aeb238aec77c4fa5d67c299ac9a01263c59f3e657be3", async up({ connection, log }) { await connection.collection("privacyrequests").createIndex({ userId: 1, type: 1, status: 1 }, { name: "privacy_user_request_status" }); await connection.collection("privacyrequests").createIndex({ status: 1, createdAt: 1 }, { name: "privacy_operations_queue" }); log("privacy request indexes ready"); } };

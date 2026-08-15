@@ -14,6 +14,7 @@ import { ReconciliationRun } from "../models/ReconciliationRun.js";
 import { EmailDelivery } from "../models/EmailDelivery.js";
 import { enqueueEmail } from "../lib/emailQueue.js";
 import { OperationalAlert } from "../models/OperationalAlert.js";
+import { PrivacyRequest } from "../models/PrivacyRequest.js";
 
 export const adminRouter = Router();
 adminRouter.use(requireAdmin);
@@ -70,6 +71,22 @@ adminRouter.post("/alerts/:id/:action", async (req, res, next) => {
     if (!alert) return res.status(404).json({ error: "Alert not found." });
     await AuditEvent.create({ actorUserId: res.locals.user._id, action: `alert.${req.params.action}`, targetType: "OperationalAlert", targetId: String(alert._id), requestId: res.locals.requestId, ipAddress: req.ip || "Unknown", metadata: { fingerprint: alert.fingerprint, category: alert.category } });
     res.json({ alert });
+  } catch (error) { next(error); }
+});
+adminRouter.get("/privacy-requests", async (_req, res, next) => {
+  try { res.json({ requests: await PrivacyRequest.find().populate("userId", "name email status").populate("resolvedBy", "name email").sort({ status: 1, createdAt: 1 }).limit(200).lean() }); } catch (error) { next(error); }
+});
+const privacyResolutionSchema = z.object({ status: z.enum(["in_review", "completed", "rejected"]), note: z.string().trim().min(5).max(2000) });
+adminRouter.patch("/privacy-requests/:id", async (req, res, next) => {
+  try {
+    if (!z.string().regex(/^[a-f\d]{24}$/i).safeParse(req.params.id).success) return res.status(404).json({ error: "Privacy request not found." });
+    const parsed = privacyResolutionSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(422).json({ error: "Choose a valid status and provide an operational note." });
+    const terminal = ["completed", "rejected"].includes(parsed.data.status);
+    const privacyRequest = await PrivacyRequest.findOneAndUpdate({ _id: req.params.id, status: { $in: ["pending", "in_review"] } }, { status: parsed.data.status, resolutionNote: parsed.data.note, resolvedBy: res.locals.user._id, resolvedAt: terminal ? new Date() : null }, { new: true });
+    if (!privacyRequest) return res.status(404).json({ error: "An actionable privacy request was not found." });
+    await AuditEvent.create({ actorUserId: res.locals.user._id, action: `privacy.${parsed.data.status}`, targetType: "PrivacyRequest", targetId: String(privacyRequest._id), requestId: res.locals.requestId, ipAddress: req.ip || "Unknown", metadata: { note: parsed.data.note, userId: String(privacyRequest.userId) } });
+    res.json({ request: privacyRequest });
   } catch (error) { next(error); }
 });
 

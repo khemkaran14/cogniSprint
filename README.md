@@ -145,6 +145,8 @@ npm run admin:promote -- owner@example.com
 
 Sign in through the normal `/login` page with that account and open `/admin` (the header also displays an **Admin** link). Never expose the promotion command through a public HTTP route. Admin APIs re-check the server-side role; the client redirect is convenience, not authorization.
 
+Learners can download their account, commerce and learning data or open/cancel a deletion request from `/account`. Administrators process those requests at `/admin/privacy-requests`; every status change requires a note and is written to the audit ledger. Completing a request records the reviewed operational outcome—it does not automatically erase transaction records that may be subject to legal retention requirements.
+
 ## What remains
 
 - Author and independently review the remaining 362 daily sessions, associated media and twelve assessments.

@@ -10,6 +10,7 @@ import { createRefundIndexes } from "./009-create-refund-indexes.js";
 import { createReconciliationIndexes } from "./010-create-reconciliation-indexes.js";
 import { createEmailDeliveryIndexes } from "./011-create-email-delivery-indexes.js";
 import { createOperationalAlertIndexes } from "./012-create-operational-alert-indexes.js";
+import { createPrivacyRequestIndexes } from "./013-create-privacy-request-indexes.js";
 import type { Migration } from "./types.js";
 
-export const migrations: Migration[] = [createApplicationIndexes, createLearningProgressionIndexes, createAnalyticsIndexes, createAssessmentIndexes, createCertificateDeliveryIndexes, createSessionManagementIndexes, createAdminAuditIndexes, createOrderHistoryIndexes, createRefundIndexes, createReconciliationIndexes, createEmailDeliveryIndexes, createOperationalAlertIndexes];
+export const migrations: Migration[] = [createApplicationIndexes, createLearningProgressionIndexes, createAnalyticsIndexes, createAssessmentIndexes, createCertificateDeliveryIndexes, createSessionManagementIndexes, createAdminAuditIndexes, createOrderHistoryIndexes, createRefundIndexes, createReconciliationIndexes, createEmailDeliveryIndexes, createOperationalAlertIndexes, createPrivacyRequestIndexes];

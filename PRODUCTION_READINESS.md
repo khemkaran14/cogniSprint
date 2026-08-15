@@ -13,7 +13,7 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 | Capability | Status | Evidence and remaining boundary |
 | --- | --- | --- |
 | Public marketing/catalogue/challenge | Implemented | Public React routes, catalogue APIs and mocked browser flows exist. |
-| Accounts and opaque sessions | Foundation | Register/login/logout, verification, reset, profile preferences and owner-scoped device/session revocation exist; privacy export/deletion workflows remain. |
+| Accounts and opaque sessions | Foundation | Register/login/logout, verification, reset, profile preferences, owner-scoped device/session revocation, portable data export and audited deletion-request intake exist; approved deletion/anonymization remains dependent on the legal retention policy. |
 | Razorpay checkout and entitlements | Foundation | Server-priced orders, signed verification, event dedupe, entitlement grant/revoke, owner history and printable payment receipts exist; operational refunds, tax invoices and reconciliation remain. |
 | Protected lessons and progress | Foundation | Entitlement gating, progression, resumable drafts, retry-safe scoring, overall/module/skill/activity analytics and CSV export exist for three lessons; the remaining 362 sessions remain. |
 | XP, streak and badges | Foundation | Derived UTC streak, XP and four badge rules exist; persistent achievement events, timezone preference and reminders remain. |
