@@ -80,6 +80,7 @@ Nothing beyond MongoDB is required to see the full marketing site, curriculum, b
 | `server/` | `npm run migrate:prod` | Apply migrations from a compiled production/container artifact |
 | `server/` | `npm run reconcile` / `npm run reconcile:apply` | Inspect or repair stale payment/order and entitlement mismatches |
 | `server/` | `npm run email:process` | Process up to 100 queued transactional emails with bounded retries |
+| `server/` | `npm run alerts:scan` | Detect and deduplicate operational payment, webhook, email and entitlement alerts |
 | `server/` | `npm test` | Server unit and HTTP application tests (no live database required) |
 | `client/` | `npm run dev` | Vite dev server |
 | `client/` | `npm run build` | Typecheck + production build |
@@ -143,6 +144,8 @@ npm run admin:promote -- owner@example.com
 ```
 
 Sign in through the normal `/login` page with that account and open `/admin` (the header also displays an **Admin** link). Never expose the promotion command through a public HTTP route. Admin APIs re-check the server-side role; the client redirect is convenience, not authorization.
+
+Learners can download their account, commerce and learning data or open/cancel a deletion request from `/account`. Administrators process those requests at `/admin/privacy-requests`; every status change requires a note and is written to the audit ledger. Completing a request records the reviewed operational outcome—it does not automatically erase transaction records that may be subject to legal retention requirements.
 
 ## What remains
 

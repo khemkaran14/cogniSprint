@@ -87,3 +87,7 @@ An hourly serialized GitHub Actions workflow runs `npm run reconcile:apply` usin
 ## Transactional email queue
 
 Purchase confirmations, payment failures and refunds use idempotent outbox records rather than depending on a single request-time provider call. The scheduled `email-delivery.yml` worker processes 100 messages per run, stores Resend message IDs, retries failures with bounded exponential backoff and supports audited administrator retries. Configure `MONGODB_URI`, `RESEND_API_KEY` and `EMAIL_FROM` as repository secrets.
+
+## Operational alerts
+
+`operational-alerts.yml` scans every ten minutes for payment failures, stale pending orders, failed webhook processing, exhausted email retries, reconciliation findings and paid orders missing active access. Findings are deduplicated by fingerprint, can notify `SUPPORT_EMAIL`, and must be acknowledged or resolved from `/admin/alerts`. Persistent conditions reopen on the next scan.

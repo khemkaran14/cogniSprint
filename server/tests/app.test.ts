@@ -48,6 +48,12 @@ describe("server application", () => {
     await expect(response.json()).resolves.toEqual({ error: "Please sign in to continue." });
   });
 
+  it("protects personal data exports", async () => {
+    const response = await get("/api/privacy/export");
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({ error: "Please sign in to continue." });
+  });
+
   it("protects administrator routes", async () => {
     const response = await get("/api/admin/dashboard");
     expect(response.status).toBe(401);

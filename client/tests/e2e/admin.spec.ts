@@ -42,3 +42,22 @@ test("administrator can review and retry failed transactional email", async ({ p
   await expect(page.getByText("Resend 503")).toBeVisible();
   await expect(page.getByRole("button", { name: "Retry" })).toBeVisible();
 });
+
+test("administrator can review operational alerts", async ({ page }) => {
+  await page.route("**/api/auth/me", (route) => route.fulfill({ json: { user: admin } }));
+  await page.route("**/api/admin/alerts", (route) => route.fulfill({ json: { alerts: [{ _id: "alert_1", category: "entitlement_mismatch", severity: "critical", status: "open", title: "Paid order has no active entitlement", details: { orderId: "order_1" }, occurrences: 2, firstSeenAt: "2026-08-15T10:00:00Z", lastSeenAt: "2026-08-15T11:00:00Z" }] } }));
+  await page.goto("/admin/alerts");
+  await expect(page.getByRole("heading", { name: "Operational alerts" })).toBeVisible();
+  await expect(page.getByText("Paid order has no active entitlement")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Acknowledge" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Resolve" })).toBeVisible();
+});
+
+test("administrator can review privacy deletion requests", async ({ page }) => {
+  await page.route("**/api/auth/me", (route) => route.fulfill({ json: { user: admin } }));
+  await page.route("**/api/admin/privacy-requests", (route) => route.fulfill({ json: { requests: [{ _id: "privacy_1", type: "deletion", status: "pending", reason: "I no longer use the program.", createdAt: "2026-08-15T11:00:00Z", userId: { name: "Asha Rao", email: "asha@example.com", status: "active" } }] } }));
+  await page.goto("/admin/privacy-requests");
+  await expect(page.getByRole("heading", { name: "Privacy requests" })).toBeVisible();
+  await expect(page.getByText("asha@example.com", { exact: false })).toBeVisible();
+  await expect(page.getByPlaceholder("Required operational note")).toBeVisible();
+});

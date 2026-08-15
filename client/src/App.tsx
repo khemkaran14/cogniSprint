@@ -39,6 +39,8 @@ const AdminCertificatesPage = lazy(() => import("@/pages/admin/AdminCertificates
 const OrderReceiptPage = lazy(() => import("@/pages/OrderReceiptPage"));
 const AdminOrdersPage = lazy(() => import("@/pages/admin/AdminOrdersPage"));
 const AdminEmailDeliveriesPage = lazy(() => import("@/pages/admin/AdminEmailDeliveriesPage"));
+const AdminAlertsPage = lazy(() => import("@/pages/admin/AdminAlertsPage"));
+const AdminPrivacyRequestsPage = lazy(() => import("@/pages/admin/AdminPrivacyRequestsPage"));
 
 export default function App() {
   return (
@@ -76,6 +78,8 @@ export default function App() {
             <Route path="/admin/certificates" element={<AdminCertificatesPage />} />
             <Route path="/admin/orders" element={<AdminOrdersPage />} />
             <Route path="/admin/email-deliveries" element={<AdminEmailDeliveriesPage />} />
+            <Route path="/admin/alerts" element={<AdminAlertsPage />} />
+            <Route path="/admin/privacy-requests" element={<AdminPrivacyRequestsPage />} />
             <Route path="/legal/terms" element={<TermsPage />} />
             <Route path="/legal/privacy" element={<PrivacyPage />} />
             <Route path="/legal/refund-policy" element={<RefundPolicyPage />} />

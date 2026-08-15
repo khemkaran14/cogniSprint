@@ -8,7 +8,7 @@ import { LinkButton } from "@/components/ui/LinkButton";
 import { Container } from "@/components/ui/Container";
 import { LoadingState } from "@/components/shared/QueryStates";
 import { Seo } from "@/components/shared/Seo";
-import { apiDelete, apiGet, apiPatch } from "@/lib/api";
+import { apiDelete, apiGet, apiPatch, apiPost, apiUrl } from "@/lib/api";
 
 type Entitlement = {
   id: string;
@@ -17,6 +17,7 @@ type Entitlement = {
   product: { name: string; slug: string; description?: string };
 };
 type Session = { id: string; userAgent: string; ipAddress: string; lastSeenAt: string; createdAt: string; expiresAt: string; current: boolean };
+type PrivacyRequest = { _id: string; status: "pending" | "in_review" | "completed" | "rejected" | "cancelled"; reason?: string; resolutionNote?: string; createdAt: string };
 type Order = { id: string; product: { name: string }; amount: number; currency: string; status: "pending" | "paid" | "failed" | "refunded"; createdAt: string; receiptAvailable: boolean };
 
 export default function AccountPage() {
@@ -28,9 +29,12 @@ export default function AccountPage() {
     enabled: Boolean(user),
   });
   const sessions = useQuery({ queryKey: ["sessions", user?.id], queryFn: () => apiGet<{ sessions: Session[] }>("/auth/sessions"), enabled: Boolean(user) });
+  const privacyRequests = useQuery({ queryKey: ["privacy-requests", user?.id], queryFn: () => apiGet<{ requests: PrivacyRequest[] }>("/privacy/requests"), enabled: Boolean(user) });
   const orders = useQuery({ queryKey: ["orders", user?.id], queryFn: () => apiGet<{ orders: Order[] }>("/checkout/orders"), enabled: Boolean(user) });
   const profile = useMutation({ mutationFn: (values: { name: string; timezone: string }) => apiPatch<{ user: typeof user }>("/auth/profile", values), onSuccess: ({ user: nextUser }) => { if (nextUser) setUser(nextUser); } });
   const revoke = useMutation({ mutationFn: (id: string) => apiDelete<void>(`/auth/sessions/${id}`), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sessions", user?.id] }) });
+  const requestDeletion = useMutation({ mutationFn: (reason: string) => apiPost("/privacy/deletion-requests", { reason }), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["privacy-requests", user?.id] }) });
+  const cancelDeletion = useMutation({ mutationFn: (id: string) => apiDelete(`/privacy/deletion-requests/${id}`), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["privacy-requests", user?.id] }) });
   const revokeOthers = useMutation({ mutationFn: () => apiDelete<void>("/auth/sessions"), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sessions", user?.id] }) });
 
   if (loading) return <LoadingState label="Loading account…" />;
@@ -104,6 +108,14 @@ export default function AccountPage() {
             <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-semibold">Signed-in devices</h2><p className="text-sm text-[var(--color-ink-muted)]">Review and revoke active sessions you do not recognize.</p></div><Button size="sm" variant="secondary" onClick={() => revokeOthers.mutate()} disabled={revokeOthers.isPending}>Sign out other devices</Button></div>
             {sessions.isLoading ? <LoadingState label="Loading devices…" /> : null}
             <div className="mt-4 space-y-3">{sessions.data?.sessions.map((session) => <article key={session.id} className="flex gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] p-4"><MonitorSmartphone className="h-5 w-5 shrink-0 text-[var(--color-brand-blue)]" aria-hidden /><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{session.userAgent}</p><p className="text-xs text-[var(--color-ink-muted)]">{session.ipAddress} · Last active {new Date(session.lastSeenAt).toLocaleString()}</p>{session.current ? <span className="text-xs font-semibold text-[var(--color-success)]">Current session</span> : null}</div>{!session.current ? <Button size="sm" variant="secondary" onClick={() => revoke.mutate(session.id)}>Revoke</Button> : null}</article>)}</div>
+          </section>
+
+          <section className="mt-8 border-t border-[var(--color-border)] pt-8">
+            <h2 className="text-lg font-semibold">Privacy and your data</h2><p className="mt-1 text-sm text-[var(--color-ink-muted)]">Download a machine-readable copy of your account, purchases and learning activity, or submit a reviewed deletion request.</p>
+            <div className="mt-4 flex flex-wrap gap-3"><Button variant="secondary" onClick={() => window.location.assign(apiUrl("/privacy/export"))}>Download my data</Button></div>
+            <form className="mt-5" onSubmit={(event) => { event.preventDefault(); const data = new FormData(event.currentTarget); requestDeletion.mutate(String(data.get("reason") ?? "")); }}><label className="text-sm font-semibold">Optional deletion-request context<textarea className="mt-2 block min-h-20 w-full rounded-[var(--radius-md)] border border-[var(--color-border-strong)] p-3 font-normal" maxLength={1000} name="reason" /></label><Button className="mt-3" variant="secondary" type="submit" disabled={requestDeletion.isPending}>Request account deletion</Button></form>
+            {requestDeletion.isSuccess ? <Alert className="mt-4" variant="success">Your request was recorded for review.</Alert> : null}{requestDeletion.isError ? <Alert className="mt-4" variant="error">The request could not be submitted.</Alert> : null}
+            <div className="mt-4 space-y-2">{privacyRequests.data?.requests.map((item) => <article className="rounded-[var(--radius-md)] border p-3 text-sm" key={item._id}><strong className="capitalize">Deletion request: {item.status.replace("_", " ")}</strong><p className="text-[var(--color-ink-muted)]">Submitted {new Date(item.createdAt).toLocaleString()}</p>{item.resolutionNote ? <p className="mt-1">Response: {item.resolutionNote}</p> : null}{item.status === "pending" ? <Button className="mt-2" size="sm" variant="secondary" onClick={() => cancelDeletion.mutate(item._id)}>Cancel request</Button> : null}</article>)}</div>
           </section>
 
           <Button className="mt-8" variant="secondary" onClick={() => void logout()}>Sign out</Button>
