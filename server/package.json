@@ -19,6 +19,7 @@
     "admin:promote": "tsx src/admin/promote.ts",
     "reconcile": "tsx src/ops/reconcile.ts",
     "reconcile:apply": "tsx src/ops/reconcile.ts --apply",
+    "email:process": "tsx src/ops/processEmailQueue.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint ."

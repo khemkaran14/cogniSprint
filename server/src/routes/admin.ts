@@ -11,6 +11,8 @@ import { Refund } from "../models/Refund.js";
 import { createRazorpayRefund } from "../lib/razorpay.js";
 import { revokeOrderEntitlement } from "../lib/entitlements.js";
 import { ReconciliationRun } from "../models/ReconciliationRun.js";
+import { EmailDelivery } from "../models/EmailDelivery.js";
+import { enqueueEmail } from "../lib/emailQueue.js";
 
 export const adminRouter = Router();
 adminRouter.use(requireAdmin);
@@ -44,6 +46,18 @@ adminRouter.get("/orders", async (_req, res, next) => {
 adminRouter.get("/reconciliation", async (_req, res, next) => {
   try { res.json({ runs: await ReconciliationRun.find().sort({ createdAt: -1 }).limit(20).lean() }); } catch (error) { next(error); }
 });
+adminRouter.get("/email-deliveries", async (_req, res, next) => {
+  try { res.json({ deliveries: await EmailDelivery.find().sort({ createdAt: -1 }).limit(100).lean() }); } catch (error) { next(error); }
+});
+adminRouter.post("/email-deliveries/:id/retry", async (req, res, next) => {
+  try {
+    if (!z.string().regex(/^[a-f\d]{24}$/i).safeParse(req.params.id).success) return res.status(404).json({ error: "Email delivery not found." });
+    const delivery = await EmailDelivery.findOneAndUpdate({ _id: req.params.id, status: "failed" }, { status: "queued", attempts: 0, nextAttemptAt: new Date(), lastError: null }, { new: true });
+    if (!delivery) return res.status(404).json({ error: "Failed email delivery not found." });
+    await AuditEvent.create({ actorUserId: res.locals.user._id, action: "email.retry", targetType: "EmailDelivery", targetId: String(delivery._id), requestId: res.locals.requestId, ipAddress: req.ip || "Unknown", metadata: { category: delivery.category, to: delivery.to } });
+    res.json({ delivery });
+  } catch (error) { next(error); }
+});
 
 const refundSchema = z.object({ amount: z.number().int().positive(), reason: z.string().trim().min(10).max(500) });
 adminRouter.post("/orders/:id/refunds", async (req, res, next) => {
@@ -69,6 +83,7 @@ adminRouter.post("/orders/:id/refunds", async (req, res, next) => {
       if (full) { reserved.refundedAt = new Date(); await revokeOrderEntitlement(reserved); }
       await reserved.save();
       await AuditEvent.create({ actorUserId: res.locals.user._id, action: "order.refund", targetType: "Order", targetId: String(reserved._id), requestId: res.locals.requestId, ipAddress: req.ip || "Unknown", metadata: { amount: refund.amount, reason: refund.reason, providerRefundId: refund.providerRefundId, full } });
+      await enqueueEmail({ idempotencyKey: `refund:${refund._id}`, category: "refund", userId: order.userId, to: order.customerEmail, subject: "Your CogniSprint refund was processed", text: `Hello ${order.customerName},\n\nA ${order.currency} ${(refund.amount / 100).toFixed(2)} refund was processed. ${full ? "Your course access has been revoked because this completes a full refund." : "Your course access remains active after this partial refund."}\n\nProvider refund reference: ${refund.providerRefundId}` });
       res.status(201).json({ refund, order: { status: reserved.status, refundedAmount: reserved.refundedAmount }, entitlementRevoked: full });
     } catch (error) {
       refund.status = "failed"; refund.failureReason = error instanceof Error ? error.message.slice(0, 500) : "Unknown provider error"; await refund.save();

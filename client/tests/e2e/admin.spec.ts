@@ -33,3 +33,12 @@ test("administrator can review refundable balances", async ({ page }) => {
   await expect(page.getByText("Remaining 899.00")).toBeVisible();
   await expect(page.getByRole("button", { name: "Issue refund" })).toBeVisible();
 });
+
+test("administrator can review and retry failed transactional email", async ({ page }) => {
+  await page.route("**/api/auth/me", (route) => route.fulfill({ json: { user: admin } }));
+  await page.route("**/api/admin/email-deliveries", (route) => route.fulfill({ json: { deliveries: [{ _id: "delivery_1", category: "refund", to: "asha@example.com", subject: "Your refund was processed", status: "failed", attempts: 8, lastError: "Resend 503" }] } }));
+  await page.goto("/admin/email-deliveries");
+  await expect(page.getByRole("heading", { name: "Transactional email" })).toBeVisible();
+  await expect(page.getByText("Resend 503")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Retry" })).toBeVisible();
+});

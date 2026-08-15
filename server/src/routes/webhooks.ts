@@ -3,6 +3,7 @@ import { verifyWebhookSignature } from "../lib/razorpay.js";
 import { Order } from "../models/Order.js";
 import { grantPaidOrderEntitlement, revokeOrderEntitlement } from "../lib/entitlements.js";
 import { WebhookEvent } from "../models/WebhookEvent.js";
+import { enqueueEmail } from "../lib/emailQueue.js";
 
 export const webhooksRouter = Router();
 
@@ -74,8 +75,10 @@ webhooksRouter.post("/razorpay", async (req, res) => {
         { new: true }
       );
       await grantPaidOrderEntitlement(order);
+      if (order) await enqueueEmail({ idempotencyKey: `purchase:${order._id}`, category: "purchase", userId: order.userId, to: order.customerEmail, subject: "Your CogniSprint purchase is confirmed", text: `Hello ${order.customerName},\n\nYour payment of ${order.currency} ${(order.amount / 100).toFixed(2)} was confirmed. Open ${process.env.CLIENT_URL ?? "http://localhost:5173"}/learn to begin.\n\nOrder reference: ${order.providerOrderId}` });
     } else if (event.event === "payment.failed" && orderId) {
-      await Order.updateOne({ providerOrderId: orderId, status: { $ne: "paid" } }, { status: "failed" });
+      const order = await Order.findOneAndUpdate({ providerOrderId: orderId, status: { $ne: "paid" } }, { status: "failed" }, { new: true });
+      if (order) await enqueueEmail({ idempotencyKey: `payment-failed:${order._id}`, category: "payment_failed", userId: order.userId, to: order.customerEmail, subject: "Your CogniSprint payment was not completed", text: `Hello ${order.customerName},\n\nYour payment was not completed and no course access was granted. You can safely retry from ${process.env.CLIENT_URL ?? "http://localhost:5173"}/checkout.\n\nOrder reference: ${order.providerOrderId}` });
     } else if (event.event === "payment.refunded" && orderId) {
       const refundedAmount = event.payload?.payment?.entity?.amount_refunded ?? event.payload?.payment?.entity?.amount;
       const order = await Order.findOneAndUpdate(
@@ -84,6 +87,7 @@ webhooksRouter.post("/razorpay", async (req, res) => {
         { new: true }
       );
       if (order?.status === "refunded") await revokeOrderEntitlement(order);
+      if (order) await enqueueEmail({ idempotencyKey: `refund-state:${order._id}:${order.refundedAmount}`, category: "refund", userId: order.userId, to: order.customerEmail, subject: "Your CogniSprint refund was updated", text: `Hello ${order.customerName},\n\nA refund total of ${order.currency} ${(order.refundedAmount / 100).toFixed(2)} is recorded for your order. Current status: ${order.status.replaceAll("_", " ")}.\n\nOrder reference: ${order.providerOrderId}` });
     }
 
     await WebhookEvent.updateOne({ provider: "razorpay", eventId }, { status: "processed", processedAt: new Date() });
