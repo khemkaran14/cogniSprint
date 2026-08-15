@@ -1,5 +1,9 @@
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
+export function apiUrl(path: string): string {
+  return `${API_BASE}/api${path}`;
+}
+
 export class ApiError extends Error {
   status: number;
   issues?: Record<string, string[] | undefined>;
@@ -12,7 +16,7 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}/api${path}`, {
+  const res = await fetch(apiUrl(path), {
     credentials: "include",
     headers: { "Content-Type": "application/json" },
     ...init,
@@ -33,4 +37,12 @@ export function apiGet<T>(path: string): Promise<T> {
 
 export function apiPost<T>(path: string, body: unknown): Promise<T> {
   return request<T>(path, { method: "POST", body: JSON.stringify(body) });
+}
+
+export function apiPatch<T>(path: string, body: unknown): Promise<T> {
+  return request<T>(path, { method: "PATCH", body: JSON.stringify(body) });
+}
+
+export function apiDelete<T>(path: string): Promise<T> {
+  return request<T>(path, { method: "DELETE" });
 }

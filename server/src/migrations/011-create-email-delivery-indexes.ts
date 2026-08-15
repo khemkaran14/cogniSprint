@@ -1,0 +1,2 @@
+import type { Migration } from "./types.js";
+export const createEmailDeliveryIndexes: Migration = { id: "202608150011-create-email-delivery-indexes", checksum: "sha256:c71c58909cdf85104254517071a26e868b9f0ce5f805f78b5cb227dcdbaf0958", async up({ connection, log }) { await connection.collection("emaildeliveries").createIndex({ idempotencyKey: 1 }, { unique: true, name: "email_idempotency" }); await connection.collection("emaildeliveries").createIndex({ status: 1, nextAttemptAt: 1 }, { name: "email_delivery_queue" }); log("email delivery indexes ready"); } };

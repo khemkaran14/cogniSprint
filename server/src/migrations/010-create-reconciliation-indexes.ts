@@ -1,0 +1,2 @@
+import type { Migration } from "./types.js";
+export const createReconciliationIndexes: Migration = { id: "202608130010-create-reconciliation-indexes", checksum: "sha256:c2a9c89dd02c105526905d307d895ad70ad2290c22c84badd23f178db1a9e6be", async up({ connection, log }) { await connection.collection("reconciliationruns").createIndex({ createdAt: -1 }, { name: "reconciliation_history" }); await connection.collection("orders").createIndex({ status: 1, createdAt: 1 }, { name: "stale_order_scan" }); log("reconciliation indexes ready"); } };
