@@ -168,5 +168,6 @@ Learners can download their account, commerce and learning data or open/cancel a
 - Production container definitions are provided for the API and SPA. `/api/health` is the liveness probe and
   `/api/ready` is the readiness probe; the latter returns `503` until MongoDB is connected.
 - Pull requests build both production images after linting their Dockerfiles. Trivy scans OS packages, application dependencies, secrets and image misconfiguration; unresolved HIGH or CRITICAL findings fail the container-security workflow.
+- Configure the `STAGING_API_URL` and `STAGING_APP_URL` repository variables to run `staging-smoke.yml` after a successful `staging` deployment or on demand. The same checks are available locally with `API_URL=https://api.example.com APP_URL=https://app.example.com npm run smoke:deployment` from `server/`.
 - Because this is a client-rendered SPA, true search-engine SEO is weaker than a server-rendered app (see `ARCHITECTURE.md` for the specific trade-off and what `react-helmet-async` does and doesn't cover).
 - Deployment artifacts are a foundation, not evidence of a live production environment. Use the acceptance gates in `PRODUCTION_READINESS.md`.
