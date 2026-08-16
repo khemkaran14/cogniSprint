@@ -41,6 +41,7 @@ export function SiteHeader() {
         <div className="hidden items-center gap-2 lg:flex">
           <ThemeToggle />
           <LinkButton to={user ? "/account" : "/login"} size="sm" variant="secondary">{user ? "My account" : "Sign in"}</LinkButton>
+          {user?.role === "admin" ? <LinkButton to="/admin" size="sm" variant="secondary">Admin</LinkButton> : null}
           <LinkButton to="/pricing" size="sm">
             {brand.primaryCta}
           </LinkButton>
@@ -72,6 +73,7 @@ export function SiteHeader() {
             ))}
             <div className="mt-2 px-3">
               <LinkButton to={user ? "/account" : "/login"} variant="secondary" className="mb-2 w-full" onClick={() => setOpen(false)}>{user ? "My account" : "Sign in"}</LinkButton>
+              {user?.role === "admin" ? <LinkButton to="/admin" variant="secondary" className="mb-2 w-full" onClick={() => setOpen(false)}>Admin dashboard</LinkButton> : null}
               <LinkButton to="/pricing" className="w-full" onClick={() => setOpen(false)}>
                 {brand.primaryCta}
               </LinkButton>
