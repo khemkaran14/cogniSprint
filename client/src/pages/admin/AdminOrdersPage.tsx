@@ -1,0 +1,21 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, Navigate } from "react-router-dom";
+import { useAuth } from "@/auth/AuthContext";
+import { Alert } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
+import { Container } from "@/components/ui/Container";
+import { LoadingState } from "@/components/shared/QueryStates";
+import { Seo } from "@/components/shared/Seo";
+import { apiGet, apiPost } from "@/lib/api";
+
+type Refund = { _id: string; amount: number; status: string; reason: string };
+type Order = { _id: string; customerName: string; customerEmail: string; productId: { name: string }; amount: number; refundedAmount: number; currency: string; status: string; createdAt: string; refunds: Refund[] };
+export default function AdminOrdersPage() {
+  const { user, loading } = useAuth(); const queryClient = useQueryClient();
+  const query = useQuery({ queryKey: ["admin-orders"], queryFn: () => apiGet<{ orders: Order[] }>("/admin/orders"), enabled: user?.role === "admin", retry: false });
+  const refund = useMutation({ mutationFn: (input: { id: string; amount: number; reason: string }) => apiPost(`/admin/orders/${input.id}/refunds`, { amount: input.amount, reason: input.reason }), onSuccess: () => { void queryClient.invalidateQueries({ queryKey: ["admin-orders"] }); void queryClient.invalidateQueries({ queryKey: ["admin-dashboard"] }); } });
+  if (loading) return <LoadingState label="Loading order operations…" />;
+  if (!user) return <Navigate to="/login" state={{ from: "/admin/orders" }} replace />;
+  if (user.role !== "admin") return <Navigate to="/account" replace />;
+  return <section className="py-12"><Seo title="Order administration" description="Review payments and issue audited refunds." path="/admin/orders" /><Container className="max-w-6xl"><Link className="font-semibold text-[var(--color-brand-blue)]" to="/admin">← Administrator dashboard</Link><h1 className="mt-5 text-3xl font-semibold">Orders and refunds</h1><p className="mt-2 text-[var(--color-ink-muted)]">Full refunds revoke course access; partial refunds retain access.</p>{query.isLoading ? <LoadingState label="Loading orders…" /> : null}{refund.isError ? <Alert className="mt-5" variant="error">Refund creation failed. Review the amount, provider configuration, and order state.</Alert> : null}<div className="mt-8 space-y-5">{query.data?.orders.map((order) => { const remaining = order.amount - order.refundedAmount; return <article className="surface-card p-5" key={order._id}><div className="flex flex-wrap justify-between gap-4"><div><h2 className="font-semibold">{order.customerName} · {order.productId.name}</h2><p className="text-sm text-[var(--color-ink-muted)]">{order.customerEmail} · {order.currency} {(order.amount / 100).toFixed(2)} · <span className="capitalize">{order.status.replaceAll("_", " ")}</span></p><p className="text-xs text-[var(--color-ink-faint)]">Refunded {(order.refundedAmount / 100).toFixed(2)} · Remaining {(remaining / 100).toFixed(2)}</p></div>{remaining > 0 && ["paid", "partially_refunded"].includes(order.status) ? <form className="flex flex-wrap items-end gap-2" onSubmit={(event) => { event.preventDefault(); const data = new FormData(event.currentTarget); const amount = Math.round(Number(data.get("amount")) * 100); const reason = String(data.get("reason") ?? ""); if (window.confirm(`Issue a ${order.currency} ${(amount / 100).toFixed(2)} refund?`)) refund.mutate({ id: order._id, amount, reason }); }}><label className="text-xs font-semibold">Refund amount<input name="amount" type="number" required min="0.01" max={(remaining / 100).toFixed(2)} step="0.01" className="mt-1 block w-32 rounded-[var(--radius-md)] border px-3 py-2 font-normal" /></label><label className="text-xs font-semibold">Reason<input name="reason" required minLength={10} className="mt-1 block rounded-[var(--radius-md)] border px-3 py-2 font-normal" /></label><Button size="sm" variant="secondary" type="submit">Issue refund</Button></form> : null}</div>{order.refunds.length ? <div className="mt-4 border-t pt-3 text-sm">{order.refunds.map((item) => <p key={item._id}>{order.currency} {(item.amount / 100).toFixed(2)} · <span className="capitalize">{item.status}</span> · {item.reason}</p>)}</div> : null}</article>; })}</div></Container></section>;
+}
