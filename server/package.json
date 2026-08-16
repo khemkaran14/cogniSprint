@@ -23,6 +23,7 @@
     "alerts:scan": "tsx src/ops/scanAlerts.ts",
     "smoke:deployment": "tsx src/ops/smoke.ts",
     "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:watch": "vitest",
     "lint": "eslint ."
   },

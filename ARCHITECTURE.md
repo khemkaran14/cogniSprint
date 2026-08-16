@@ -37,7 +37,8 @@ server/
     migrations/   Immutable ordered migrations, distributed lease lock and CLI runner
     app.ts        Testable Express construction, middleware ordering and route mounting
     index.ts      Environment validation, database startup, listening and graceful shutdown
-  tests/          Vitest — pure logic + signature verification, no DB required
+  tests/          Vitest — pure logic, schemas and HTTP guards; no DB required
+  integration/    Vitest — real MongoDB-backed account, entitlement, learning and webhook replay checks
 
 client/
   src/
@@ -132,7 +133,7 @@ If SEO is a hard requirement for a specific page (most likely the homepage, cour
 - **Rate limiting is in-memory** (`express-rate-limit`'s default store) — fine for a single server instance, needs a shared store (Redis) before scaling horizontally.
 - **No SSR/prerendering** — see the SEO section above.
 - **Challenge questions are a fixed set**, not randomized or DB-backed — acceptable for a lead-generation tool; a determined visitor could look up answers, which doesn't matter for an honest practice snapshot that explicitly isn't a secure assessment.
-- **E2E tests mock the API layer** rather than running against a live MongoDB, because this environment couldn't reach MongoDB's download servers (network policy, not a shortcut) — see the client's `tests/e2e/mockApi.ts`. Wire up a MongoDB instance (the included `docker-compose.yml`) to additionally run these against the real backend.
+- **Browser E2E tests mock the API layer** for deterministic UI coverage. A separate server integration suite runs against a real MongoDB 7 service in CI and covers persisted authentication, entitlement-gated learning and webhook replay; it does not replace a future browser-through-API system test against a deployed environment.
 - **Only three lessons and one technical assessment baseline are seeded** — the workflow is implemented, but the complete 365-day library and twelve qualified, reviewed assessments require human authoring and approval.
 - **Gamification is derived, not event-sourced** — XP, UTC streak and four badges are computed from lesson progress; persistent achievement history, learner timezone rules and notification preferences remain future work.
 - **Certificate delivery is API-only** — eligibility, claiming and public verification exist; learner UI, PDF/email delivery and admin revocation tooling do not.

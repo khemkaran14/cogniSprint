@@ -82,6 +82,7 @@ Nothing beyond MongoDB is required to see the full marketing site, curriculum, b
 | `server/` | `npm run email:process` | Process up to 100 queued transactional emails with bounded retries |
 | `server/` | `npm run alerts:scan` | Detect and deduplicate operational payment, webhook, email and entitlement alerts |
 | `server/` | `npm test` | Server unit and HTTP application tests (no live database required) |
+| `server/` | `INTEGRATION_MONGODB_URI=mongodb://127.0.0.1:27017/cognisprint_integration npm run test:integration` | Destructive integration checks against a disposable MongoDB database |
 | `client/` | `npm run dev` | Vite dev server |
 | `client/` | `npm run build` | Typecheck + production build |
 | `client/` | `npm test` | Unit tests (challenge scoring logic) |
@@ -169,5 +170,6 @@ Learners can download their account, commerce and learning data or open/cancel a
   `/api/ready` is the readiness probe; the latter returns `503` until MongoDB is connected.
 - Pull requests build both production images after linting their Dockerfiles. Trivy scans OS packages, application dependencies, secrets and image misconfiguration; unresolved HIGH or CRITICAL findings fail the container-security workflow.
 - Configure the `STAGING_API_URL` and `STAGING_APP_URL` repository variables to run `staging-smoke.yml` after a successful `staging` deployment or on demand. The same checks are available locally with `API_URL=https://api.example.com APP_URL=https://app.example.com npm run smoke:deployment` from `server/`.
+- CI starts a real MongoDB 7 service and runs `npm run test:integration` to exercise persisted sessions, entitlement-protected learning, payment capture, and duplicate webhook delivery. Locally, point `INTEGRATION_MONGODB_URI` at a disposable database; the suite deletes all records in that database.
 - Because this is a client-rendered SPA, true search-engine SEO is weaker than a server-rendered app (see `ARCHITECTURE.md` for the specific trade-off and what `react-helmet-async` does and doesn't cover).
 - Deployment artifacts are a foundation, not evidence of a live production environment. Use the acceptance gates in `PRODUCTION_READINESS.md`.
