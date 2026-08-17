@@ -25,6 +25,8 @@ The blueprint deliberately declares secrets with `sync: false`. Enter them in th
 | `RESEND_API_KEY`, `EMAIL_FROM`, `SUPPORT_EMAIL` | Staging transactional-email configuration |
 | `LOG_DRAIN_URL`, `LOG_DRAIN_TOKEN` | Optional HTTPS collector and credential |
 
+The Blueprint fixes `ENROLLMENT_OPEN=false`. Do not override it during staging setup. Opening enrollment is a separate launch decision after every applicable gate in `PRODUCTION_READINESS.md` has evidence and owner approval.
+
 Leave `COOKIE_DOMAIN` unset for Render hostnames. `COOKIE_SAME_SITE=none` and `NODE_ENV=production` produce a `Secure; SameSite=None` session cookie for the separately hosted SPA and API.
 
 ### Web service

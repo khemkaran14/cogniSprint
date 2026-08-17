@@ -9,6 +9,7 @@ describe("Render staging blueprint", () => {
     expect(blueprint).toContain("preDeployCommand: npm run migrate:prod");
     expect(blueprint).toContain("healthCheckPath: /api/health");
     expect(blueprint).toContain("destination: /index.html");
+    expect(blueprint).toContain("key: ENROLLMENT_OPEN\n        value: false");
   });
   it("keeps credentials dashboard-managed", () => {
     for (const key of ["MONGODB_URI", "RAZORPAY_KEY_SECRET", "RAZORPAY_WEBHOOK_SECRET", "RESEND_API_KEY", "LOG_DRAIN_TOKEN"]) expect(blueprint).toMatch(new RegExp(`key: ${key}\\n\\s+sync: false`));

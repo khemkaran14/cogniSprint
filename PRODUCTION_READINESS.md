@@ -32,7 +32,7 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 - [x] Add centralized error reporting and structured-log collection through redacted JSON events and an optional authenticated HTTPS log drain; the owner must configure and retain the external collector.
 - [x] Add post-deployment smoke tests for `/api/health`, `/api/ready`, auth, protected learning and the SPA fallback; staging URLs must be configured before the workflow can execute.
 - [ ] Verify production cookie/CORS/trusted-origin behavior on the actual staging origins.
-- [ ] Update sales copy so it promises only reviewed and published content available at launch.
+- [x] Replace incomplete-program sales claims with explicit published-versus-planned availability, remove unavailable download promotion, hide active products by default and fail checkout closed unless `ENROLLMENT_OPEN=true` is deliberately configured after launch approval.
 
 ## Repository gates before accepting Live payments
 

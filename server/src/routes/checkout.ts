@@ -9,6 +9,7 @@ import { createRazorpayOrder, isRazorpayConfigured, verifyPaymentSignature } fro
 import { requireAuth } from "../middleware/auth.js";
 import { grantPaidOrderEntitlement } from "../lib/entitlements.js";
 import { enqueueEmail } from "../lib/emailQueue.js";
+import { isEnrollmentOpen } from "../lib/availability.js";
 
 export const checkoutRouter = Router();
 
@@ -58,6 +59,7 @@ checkoutRouter.get("/order/:providerOrderId", requireAuth, async (req, res) => {
 });
 
 checkoutRouter.post("/create-order", requireAuth, async (req, res) => {
+  if (!isEnrollmentOpen()) return res.status(503).json({ error: "Enrollment is currently closed while launch content is reviewed." });
   const parsed = createOrderSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(422).json({ error: "Invalid input.", issues: parsed.error.flatten().fieldErrors });

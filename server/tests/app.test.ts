@@ -30,6 +30,15 @@ describe("server application", () => {
     await expect(response.json()).resolves.toEqual({ status: "not_ready", database: "disconnected" });
   });
 
+  it("fails closed when no product enrollment has been approved", async () => {
+    const previous = process.env.ENROLLMENT_OPEN; process.env.ENROLLMENT_OPEN = "false";
+    try {
+      const response = await get("/api/products");
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toEqual([]);
+    } finally { if (previous === undefined) delete process.env.ENROLLMENT_OPEN; else process.env.ENROLLMENT_OPEN = previous; }
+  });
+
   it("mounts entitlements as an authenticated endpoint", async () => {
     const response = await get("/api/entitlements");
     expect(response.status).toBe(401);
