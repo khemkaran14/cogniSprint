@@ -34,6 +34,8 @@ export function validateEnvironment(env: NodeJS.ProcessEnv = process.env): void 
   if (env.CLIENT_URL) {
     for (const value of env.CLIENT_URL.split(",").map((item) => item.trim())) requireHttpUrl("CLIENT_URL", value);
   }
+  if (env.LOG_DRAIN_URL) requireHttpUrl("LOG_DRAIN_URL", env.LOG_DRAIN_URL);
+  if (env.NODE_ENV === "production" && env.LOG_DRAIN_URL?.startsWith("http://")) throw new Error("LOG_DRAIN_URL must use https:// in production.");
 
   if (env.COOKIE_SAME_SITE && !["lax", "none"].includes(env.COOKIE_SAME_SITE.toLowerCase())) {
     throw new Error("COOKIE_SAME_SITE must be lax or none.");

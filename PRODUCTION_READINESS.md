@@ -29,7 +29,7 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 - [ ] Add provider-specific staging deployment configuration for both client and API.
 - [x] Build and scan both container images in CI; Dockerfiles are linted and HIGH/CRITICAL fixed vulnerabilities fail the workflow.
 - [x] Add a real MongoDB-backed integration suite for auth, entitlements, learning and webhook replay, executed against a MongoDB service in CI.
-- [ ] Add centralized error reporting and structured-log collection.
+- [x] Add centralized error reporting and structured-log collection through redacted JSON events and an optional authenticated HTTPS log drain; the owner must configure and retain the external collector.
 - [x] Add post-deployment smoke tests for `/api/health`, `/api/ready`, auth, protected learning and the SPA fallback; staging URLs must be configured before the workflow can execute.
 - [ ] Verify production cookie/CORS/trusted-origin behavior on the actual staging origins.
 - [ ] Update sales copy so it promises only reviewed and published content available at launch.
