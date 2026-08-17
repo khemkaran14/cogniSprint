@@ -18,6 +18,7 @@ import { publicFormLimiter, checkoutLimiter, authLimiter } from "./middleware/ra
 import { requestContext } from "./middleware/requestContext.js";
 import { isDBConnected } from "./lib/db.js";
 import { allowedOrigins, requireTrustedOrigin } from "./lib/security.js";
+import { logger } from "./lib/logger.js";
 
 export function createApp() {
   const app = express();
@@ -69,8 +70,8 @@ export function createApp() {
     res.status(404).json({ error: `No route for ${req.method} ${req.path}` });
   });
 
-  app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-    console.error(JSON.stringify({ type: "request_error", requestId: res.locals.requestId, message: err.message }));
+  app.use((err: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    logger.error("request_error", { requestId: res.locals.requestId, method: req.method, path: req.path, error: err });
     res.status(500).json({ error: "Internal server error.", requestId: res.locals.requestId });
   });
 

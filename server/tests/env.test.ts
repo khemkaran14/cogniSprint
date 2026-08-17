@@ -38,4 +38,12 @@ describe("validateEnvironment", () => {
       RAZORPAY_KEY_SECRET: "secret",
     })).toThrow(/WEBHOOK_SECRET/);
   });
+
+  it("requires an absolute log-drain URL", () => {
+    expect(() => validateEnvironment({ ...validEnv, LOG_DRAIN_URL: "logs.example.com" })).toThrow(/plain URL/);
+  });
+
+  it("requires an encrypted production log drain", () => {
+    expect(() => validateEnvironment({ ...validEnv, NODE_ENV: "production", LOG_DRAIN_URL: "http://logs.example.com" })).toThrow(/https/);
+  });
 });
