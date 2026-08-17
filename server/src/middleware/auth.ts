@@ -14,6 +14,8 @@ export async function currentUser(req: Request) {
   if (!token) return null;
   const session = await Session.findOne({ tokenHash: hashToken(decodeURIComponent(token)), expiresAt: { $gt: new Date() } });
   if (!session) return null;
+  if (!session.lastSeenAt || Date.now() - session.lastSeenAt.getTime() > 5 * 60_000) void session.updateOne({ lastSeenAt: new Date() });
+  (req as Request & { sessionId?: string }).sessionId = String(session._id);
   return User.findOne({ _id: session.userId, status: "active" });
 }
 

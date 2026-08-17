@@ -1,0 +1,59 @@
+services:
+  - type: web
+    name: cognisprint-staging-api
+    runtime: docker
+    branch: master
+    plan: starter
+    region: singapore
+    dockerContext: ./server
+    dockerfilePath: ./server/Dockerfile
+    preDeployCommand: npm run migrate:prod
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOG_SERVICE
+        value: cognisprint-api
+      - key: LOG_ENVIRONMENT
+        value: staging
+      - key: COOKIE_SAME_SITE
+        value: none
+      - key: MONGODB_URI
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: SUPPORT_EMAIL
+        sync: false
+      - key: LOG_DRAIN_URL
+        sync: false
+      - key: LOG_DRAIN_TOKEN
+        sync: false
+
+  - type: web
+    name: cognisprint-staging-web
+    runtime: static
+    branch: master
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    rootDir: client
+    autoDeploy: false
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_APP_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
