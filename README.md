@@ -159,6 +159,8 @@ Learners can download their account, commerce and learning data or open/cancel a
 
 ## Deployment notes
 
+The repository includes a Render staging blueprint and ordered operator procedure in `DEPLOYMENT.md`. The blueprint keeps automatic deploys disabled, executes database migrations before API promotion, and references dashboard-managed values rather than embedding credentials.
+
 - `server/` and `client/` deploy independently (e.g. server on Render/Railway/Fly, client static build on Vercel/Netlify/S3+CloudFront). Set `CLIENT_URL` on the server for CORS and `VITE_API_URL` on the client to the deployed API origin.
 - MongoDB: Atlas or any managed MongoDB-compatible host works; just set `MONGODB_URI`.
 - Keep `.env` values as plain text (for example, `CLIENT_URL=http://localhost:5173`, not a Markdown link). An Atlas

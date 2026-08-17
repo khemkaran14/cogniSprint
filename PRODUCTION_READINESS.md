@@ -26,7 +26,7 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 ## Repository gates before a staging deployment
 
 - [x] Add a versioned MongoDB migration runner and migration lock; seed execution remains separate from production schema migration.
-- [ ] Add provider-specific staging deployment configuration for both client and API.
+- [x] Add a Render staging blueprint for the API and web client, including pre-deploy migrations, health checks, secret placeholders and an operator runbook; owner-managed services and values must still be provisioned.
 - [x] Build and scan both container images in CI; Dockerfiles are linted and HIGH/CRITICAL fixed vulnerabilities fail the workflow.
 - [x] Add a real MongoDB-backed integration suite for auth, entitlements, learning and webhook replay, executed against a MongoDB service in CI.
 - [x] Add centralized error reporting and structured-log collection through redacted JSON events and an optional authenticated HTTPS log drain; the owner must configure and retain the external collector.
