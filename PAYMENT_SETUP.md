@@ -20,7 +20,7 @@
 - A documented decision for how partial refunds affect an entitlement
 - Scheduled reconciliation for pending or inconsistent orders
 - Dispute handling, reconciliation, tax invoices and reliable queued payment/refund emails (owner order history and printable payment receipts are implemented)
-- Dispute/chargeback event handling, alerting and a human support process
+- A human-owned process for submitting dispute evidence and communicating with affected customers
 - Real-database tests covering callback/webhook races, redelivery, refund and entitlement state
 - Owner-controlled Razorpay KYC, Live credentials, production webhook registration and a real payment/refund smoke test
 
@@ -91,3 +91,7 @@ Purchase confirmations, payment failures and refunds use idempotent outbox recor
 ## Operational alerts
 
 `operational-alerts.yml` scans every ten minutes for payment failures, stale pending orders, failed webhook processing, exhausted email retries, reconciliation findings and paid orders missing active access. Findings are deduplicated by fingerprint, can notify `SUPPORT_EMAIL`, and must be acknowledged or resolved from `/admin/alerts`. Persistent conditions reopen on the next scan.
+
+## Payment disputes and chargebacks
+
+Enable Razorpay dispute lifecycle webhooks (`payment.dispute.created`, `payment.dispute.won`, `payment.dispute.lost` and `payment.dispute.closed`) on the same signed endpoint. Open disputes create critical operational alerts and appear at `/admin/disputes`; submit evidence and communicate with the provider from an authorized Razorpay account. A won dispute restores the paid order/access state, while a lost dispute records a chargeback and revokes the order entitlement. Webhook state is authoritative and duplicate deliveries remain protected by the event ledger.

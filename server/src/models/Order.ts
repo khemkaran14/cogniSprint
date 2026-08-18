@@ -10,7 +10,7 @@ const orderSchema = new Schema(
     couponId: { type: Types.ObjectId, ref: "Coupon" },
     amount: { type: Number, required: true },
     currency: { type: String, required: true, default: "INR" },
-    status: { type: String, required: true, enum: ["pending", "paid", "failed", "partially_refunded", "refunded"], default: "pending" },
+    status: { type: String, required: true, enum: ["pending", "paid", "failed", "disputed", "chargeback", "partially_refunded", "refunded"], default: "pending" },
     paymentProvider: { type: String, required: true, default: "razorpay" },
     providerOrderId: { type: String, unique: true, sparse: true, index: true },
     providerPaymentId: { type: String, unique: true, sparse: true },

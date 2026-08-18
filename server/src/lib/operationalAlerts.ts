@@ -1,7 +1,7 @@
 import { OperationalAlert } from "../models/OperationalAlert.js";
 import { enqueueEmail } from "./emailQueue.js";
 
-export type AlertFinding = { fingerprint: string; category: "payment_failure" | "stale_order" | "webhook_failure" | "entitlement_mismatch" | "email_failure" | "reconciliation_review"; severity: "warning" | "critical"; title: string; details?: Record<string, unknown> };
+export type AlertFinding = { fingerprint: string; category: "payment_failure" | "payment_dispute" | "stale_order" | "webhook_failure" | "entitlement_mismatch" | "email_failure" | "reconciliation_review"; severity: "warning" | "critical"; title: string; details?: Record<string, unknown> };
 
 export async function recordAlert(finding: AlertFinding, now = new Date()) {
   const alert = await OperationalAlert.findOneAndUpdate(

@@ -18,7 +18,7 @@ type Entitlement = {
 };
 type Session = { id: string; userAgent: string; ipAddress: string; lastSeenAt: string; createdAt: string; expiresAt: string; current: boolean };
 type PrivacyRequest = { _id: string; status: "pending" | "in_review" | "completed" | "rejected" | "cancelled"; reason?: string; resolutionNote?: string; createdAt: string };
-type Order = { id: string; product: { name: string }; amount: number; currency: string; status: "pending" | "paid" | "failed" | "refunded"; createdAt: string; receiptAvailable: boolean };
+type Order = { id: string; product: { name: string }; amount: number; currency: string; status: "pending" | "paid" | "failed" | "disputed" | "chargeback" | "partially_refunded" | "refunded"; createdAt: string; receiptAvailable: boolean };
 
 export default function AccountPage() {
   const { user, loading, logout, setUser } = useAuth();

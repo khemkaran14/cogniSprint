@@ -4,6 +4,9 @@ import { Order } from "../models/Order.js";
 import { grantPaidOrderEntitlement, revokeOrderEntitlement } from "../lib/entitlements.js";
 import { WebhookEvent } from "../models/WebhookEvent.js";
 import { enqueueEmail } from "../lib/emailQueue.js";
+import { Dispute } from "../models/Dispute.js";
+import { recordAlert } from "../lib/operationalAlerts.js";
+import { disputeStatusForEvent } from "../lib/disputes.js";
 
 export const webhooksRouter = Router();
 
@@ -19,6 +22,7 @@ type RazorpayWebhookEvent = {
       };
     };
     refund?: { entity?: { id?: string; payment_id?: string; amount?: number } };
+    dispute?: { entity?: { id?: string; payment_id?: string; amount?: number; currency?: string; reason?: string; phase?: string; status?: string; created_at?: number; respond_by?: number } };
   };
 };
 
@@ -88,6 +92,22 @@ webhooksRouter.post("/razorpay", async (req, res) => {
       );
       if (order?.status === "refunded") await revokeOrderEntitlement(order);
       if (order) await enqueueEmail({ idempotencyKey: `refund-state:${order._id}:${order.refundedAmount}`, category: "refund", userId: order.userId, to: order.customerEmail, subject: "Your CogniSprint refund was updated", text: `Hello ${order.customerName},\n\nA refund total of ${order.currency} ${(order.refundedAmount / 100).toFixed(2)} is recorded for your order. Current status: ${order.status.replaceAll("_", " ")}.\n\nOrder reference: ${order.providerOrderId}` });
+    } else if (disputeStatusForEvent(event.event)) {
+      const entity = event.payload?.dispute?.entity;
+      if (!entity?.id || !entity.payment_id) throw new Error("Dispute webhook is missing its dispute or payment ID.");
+      const order = await Order.findOne({ providerPaymentId: entity.payment_id });
+      if (!order) throw new Error(`No CogniSprint order matches disputed payment ${entity.payment_id}.`);
+      const status = disputeStatusForEvent(event.event)!;
+      await Dispute.findOneAndUpdate({ providerDisputeId: entity.id }, { provider: "razorpay", providerDisputeId: entity.id, providerPaymentId: entity.payment_id, orderId: order._id, userId: order.userId, amount: entity.amount ?? order.amount, currency: entity.currency ?? order.currency, status, reason: entity.reason, phase: entity.phase, evidenceDueAt: entity.respond_by ? new Date(entity.respond_by * 1000) : null, providerCreatedAt: entity.created_at ? new Date(entity.created_at * 1000) : null, lastEventId: eventId }, { upsert: true, new: true });
+      if (status === "open") {
+        order.status = "disputed"; await order.save();
+        await recordAlert({ fingerprint: `payment-dispute:${entity.id}`, category: "payment_dispute", severity: "critical", title: "Razorpay payment dispute requires review", details: { disputeId: entity.id, orderId: String(order._id), amount: entity.amount ?? order.amount, currency: entity.currency ?? order.currency, reason: entity.reason, evidenceDueAt: entity.respond_by ? new Date(entity.respond_by * 1000).toISOString() : null } });
+      } else if (status === "won") {
+        order.status = "paid"; await order.save(); await grantPaidOrderEntitlement(order);
+      } else if (status === "lost") {
+        order.status = "chargeback"; await order.save(); await revokeOrderEntitlement(order);
+      }
+      await enqueueEmail({ idempotencyKey: `dispute:${entity.id}:${status}`, category: "dispute", userId: order.userId, to: order.customerEmail, subject: `Your CogniSprint payment dispute is ${status}`, text: `Hello ${order.customerName},\n\nRazorpay reported your payment dispute as ${status}. Course access may change according to the final provider outcome. Contact support and reference dispute ${entity.id} if you need help.\n\nOrder reference: ${order.providerOrderId}` });
     }
 
     await WebhookEvent.updateOne({ provider: "razorpay", eventId }, { status: "processed", processedAt: new Date() });

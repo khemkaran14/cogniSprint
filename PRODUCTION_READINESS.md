@@ -37,7 +37,7 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 ## Repository gates before accepting Live payments
 
 - [x] Implement audited refund records, provider refund IDs and partial-refund amount/state handling.
-- [ ] Complete dispute handling. Full refunds revoke access; partial refunds retain access.
+- [x] Record Razorpay dispute lifecycle webhooks, flag open disputes for operations, notify affected learners, restore access after a win and revoke access after a lost chargeback; evidence must still be submitted by an authorized owner in Razorpay.
 - [x] Add dry-run/apply reconciliation for stale pending orders and paid-order entitlement mismatches, with an hourly serialized workflow and retained findings.
 - [x] Add owner-scoped order history and printable payment receipts. Tax invoices remain subject to finalized legal/GST requirements.
 - [x] Add idempotent queued purchase, failure and refund email delivery with provider acceptance IDs, bounded retries, scheduled processing and audited admin retry; delivery/bounce webhooks remain.

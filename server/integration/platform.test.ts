@@ -12,6 +12,8 @@ import { Order } from "../src/models/Order.js";
 import { Product } from "../src/models/Product.js";
 import { User } from "../src/models/User.js";
 import { WebhookEvent } from "../src/models/WebhookEvent.js";
+import { Dispute } from "../src/models/Dispute.js";
+import { OperationalAlert } from "../src/models/OperationalAlert.js";
 
 let server: Server; let baseUrl: string;
 
@@ -37,7 +39,7 @@ beforeAll(async () => {
   process.env.CLIENT_URL = "http://localhost:5173";
   process.env.RAZORPAY_WEBHOOK_SECRET = "integration-webhook-secret";
   await mongoose.connect(uri, { autoIndex: true });
-  await Promise.all([User.syncIndexes(), Product.syncIndexes(), CurriculumModule.syncIndexes(), Lesson.syncIndexes(), Order.syncIndexes(), Entitlement.syncIndexes(), WebhookEvent.syncIndexes(), EmailDelivery.syncIndexes()]);
+  await Promise.all([User.syncIndexes(), Product.syncIndexes(), CurriculumModule.syncIndexes(), Lesson.syncIndexes(), Order.syncIndexes(), Entitlement.syncIndexes(), WebhookEvent.syncIndexes(), EmailDelivery.syncIndexes(), Dispute.syncIndexes(), OperationalAlert.syncIndexes()]);
   server = createApp().listen(0); await new Promise<void>((resolve) => server.once("listening", resolve));
   baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
 });
@@ -66,5 +68,19 @@ describe("MongoDB-backed platform", () => {
     expect(await Order.findOne({ providerOrderId: "order_webhook" }).lean()).toMatchObject({ status: "paid", providerPaymentId: "pay_webhook" });
     expect(await Entitlement.countDocuments({ userId: user._id, productId: product._id, status: "active" })).toBe(1);
     expect(await WebhookEvent.countDocuments({ eventId: "event_replayed", status: "processed" })).toBe(1);
+  });
+
+  it("records a dispute and revokes access after a lost chargeback", async () => {
+    const { user } = await register("disputed@example.com"); const product = await catalogue();
+    const order = await Order.create({ customerName: user.name, customerEmail: user.email, customerPhone: "9999999999", userId: user._id, productId: product._id, amount: 99900, currency: "INR", status: "paid", providerOrderId: "order_disputed", providerPaymentId: "pay_disputed" });
+    await Entitlement.create({ userId: user._id, productId: product._id, sourceOrderId: order._id, status: "active" });
+    const send = async (event: string, eventId: string) => { const raw = JSON.stringify({ event, payload: { dispute: { entity: { id: "disp_1", payment_id: "pay_disputed", amount: 99900, currency: "INR", reason: "fraudulent", phase: "evidence", respond_by: 1787227200 } } } }); const signature = crypto.createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET!).update(raw).digest("hex"); return request("/api/webhooks/razorpay", { method: "POST", headers: { "content-type": "application/json", "x-razorpay-signature": signature, "x-razorpay-event-id": eventId }, body: raw }); };
+    expect((await send("payment.dispute.created", "event_dispute_open")).status).toBe(200);
+    expect(await Order.findById(order._id).lean()).toMatchObject({ status: "disputed" });
+    expect(await OperationalAlert.countDocuments({ category: "payment_dispute", status: "open" })).toBe(1);
+    expect((await send("payment.dispute.lost", "event_dispute_lost")).status).toBe(200);
+    expect(await Order.findById(order._id).lean()).toMatchObject({ status: "chargeback" });
+    expect(await Entitlement.findOne({ sourceOrderId: order._id }).lean()).toMatchObject({ status: "revoked" });
+    expect(await Dispute.findOne({ providerDisputeId: "disp_1" }).lean()).toMatchObject({ status: "lost", lastEventId: "event_dispute_lost" });
   });
 });

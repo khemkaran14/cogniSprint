@@ -5,7 +5,7 @@ const admin = { id: "admin_1", name: "Site Owner", email: "owner@example.com", r
 test("administrator sees operational summaries and audit history", async ({ page }) => {
   await page.route("**/api/auth/me", (route) => route.fulfill({ json: { user: admin } }));
   await page.route("**/api/admin/dashboard", (route) => route.fulfill({ json: {
-    summary: { users: 42, activeEntitlements: 12, pendingOrders: 2, failedWebhooks: 1, failedCertificateEmails: 0 },
+    summary: { users: 42, activeEntitlements: 12, pendingOrders: 2, failedWebhooks: 1, openDisputes: 1, failedCertificateEmails: 0 },
     recentOrders: [{ _id: "order_1", customerName: "Asha Rao", customerEmail: "asha@example.com", amount: 99900, currency: "INR", status: "paid", createdAt: "2026-08-12T12:00:00Z" }],
     recentAudits: [{ _id: "audit_1", action: "certificate.revoke", targetType: "Certificate", targetId: "cert_1", createdAt: "2026-08-12T12:00:00Z", actorUserId: admin }],
   } }));
@@ -60,4 +60,13 @@ test("administrator can review privacy deletion requests", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Privacy requests" })).toBeVisible();
   await expect(page.getByText("asha@example.com", { exact: false })).toBeVisible();
   await expect(page.getByPlaceholder("Required operational note")).toBeVisible();
+});
+
+test("administrator can review an open payment dispute and evidence deadline", async ({ page }) => {
+  await page.route("**/api/auth/me", (route) => route.fulfill({ json: { user: admin } }));
+  await page.route("**/api/admin/disputes", (route) => route.fulfill({ json: { disputes: [{ _id: "dispute_1", providerDisputeId: "disp_razorpay_1", providerPaymentId: "pay_1", amount: 99900, currency: "INR", status: "open", reason: "fraudulent", phase: "evidence", evidenceDueAt: "2026-08-20T12:00:00Z", updatedAt: "2026-08-17T12:00:00Z", orderId: { customerName: "Asha Rao", customerEmail: "asha@example.com", providerOrderId: "order_1", status: "disputed" } }] } }));
+  await page.goto("/admin/disputes");
+  await expect(page.getByRole("heading", { name: "Payment disputes" })).toBeVisible();
+  await expect(page.getByText("disp_razorpay_1")).toBeVisible();
+  await expect(page.getByText(/evidence due/i)).toBeVisible();
 });

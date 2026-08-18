@@ -120,7 +120,7 @@ CogniSprint now includes secure account registration, sign-in/out, opaque databa
 | --- | --- | --- |
 | Marketing, curriculum catalogue, blog, legal and free challenge | Implemented | Public pages and API-backed catalogue content exist. |
 | Accounts and sessions | Foundation implemented | Registration, login/logout, verification, reset, profile preferences and secure owner-scoped device/session revocation exist; data-rights export/deletion workflows remain. |
-| Checkout and entitlements | Foundation implemented | Server-priced Razorpay orders, signed callback/webhook verification, persisted orders, grant/revoke behavior, owner history and printable payment receipts exist; audited full/partial refund initiation now exists; disputes, reconciliation and tax invoices remain. |
+| Checkout and entitlements | Foundation implemented | Server-priced Razorpay orders, signed callback/webhook verification, persisted orders, grant/revoke behavior, owner history, printable receipts, audited refunds, and dispute/chargeback handling exist; production reconciliation and legally reviewed tax invoices remain. |
 | Protected learning | Foundation implemented | Active entitlements gate `/learn`; sequential prerequisites, daily unlocks, resumable drafts, idempotent submissions and module/course completion are implemented for three Getting Started lessons. The remaining 362 sessions are not present. |
 | Progress and gamification | Partial | Overall, per-skill, per-module and daily activity analytics, CSV export, completion, attempts, recorded duration, best score, computed XP, timezone-aware streak and four badge rules exist. Persistent achievement history does not. |
 | Certificates | Foundation | Eligibility/status, claim, print/save-PDF UI, tracked email delivery and public verification exist. Eligibility deliberately requires at least 365 published and completed lessons; provider retries and audited admin revocation remain. |
@@ -152,7 +152,7 @@ Learners can download their account, commerce and learning data or open/cancel a
 
 - Author and independently review the remaining 362 daily sessions, associated media and twelve assessments.
 - Complete the qualified assessment bank and certificate delivery retry operations. Audited certificate revocation, progression, daily scheduling, resumable drafts, detailed analytics and learner-facing certificate delivery now exist.
-- Complete dispute operations, reconciliation, legally reviewed tax invoices and reliable transactional email; owner order history and printable payment receipts now exist.
+- Validate dispute operations with the production Razorpay account, complete production reconciliation, obtain legally reviewed tax invoices, and validate reliable transactional email delivery.
 - Expand the admin foundation with user/order/refund/content operations and granular permissions; add privacy export/deletion, referrals and—only with moderation operations—community functionality.
 - Add provider-specific deployment, centralized monitoring, backup/restore validation and real database/full-stack tests. A versioned, locked migration runner is available via `npm run migrate`.
 - Complete the owner-controlled launch gates in `PRODUCTION_READINESS.md`: secret rotation, Razorpay KYC/live setup, Atlas/DNS/email setup, legal/security/accessibility review and educational approval.

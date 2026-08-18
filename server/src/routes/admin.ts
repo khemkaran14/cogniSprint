@@ -15,19 +15,20 @@ import { EmailDelivery } from "../models/EmailDelivery.js";
 import { enqueueEmail } from "../lib/emailQueue.js";
 import { OperationalAlert } from "../models/OperationalAlert.js";
 import { PrivacyRequest } from "../models/PrivacyRequest.js";
+import { Dispute } from "../models/Dispute.js";
 
 export const adminRouter = Router();
 adminRouter.use(requireAdmin);
 
 adminRouter.get("/dashboard", async (_req, res, next) => {
   try {
-    const [users, activeEntitlements, pendingOrders, failedWebhooks, failedCertificateEmails, recentOrders, recentAudits] = await Promise.all([
+    const [users, activeEntitlements, pendingOrders, failedWebhooks, openDisputes, failedCertificateEmails, recentOrders, recentAudits] = await Promise.all([
       User.countDocuments(), Entitlement.countDocuments({ status: "active" }), Order.countDocuments({ status: "pending" }),
-      WebhookEvent.countDocuments({ status: "failed" }), Certificate.countDocuments({ emailDeliveryStatus: "failed", revokedAt: null }),
+      WebhookEvent.countDocuments({ status: "failed" }), Dispute.countDocuments({ status: "open" }), Certificate.countDocuments({ emailDeliveryStatus: "failed", revokedAt: null }),
       Order.find().select("customerName customerEmail amount currency status createdAt").sort({ createdAt: -1 }).limit(10).lean(),
       AuditEvent.find().populate("actorUserId", "name email").sort({ createdAt: -1 }).limit(10).lean(),
     ]);
-    res.json({ summary: { users, activeEntitlements, pendingOrders, failedWebhooks, failedCertificateEmails }, recentOrders, recentAudits });
+    res.json({ summary: { users, activeEntitlements, pendingOrders, failedWebhooks, openDisputes, failedCertificateEmails }, recentOrders, recentAudits });
   } catch (error) { next(error); }
 });
 
@@ -44,6 +45,9 @@ adminRouter.get("/orders", async (_req, res, next) => {
     const refunds = await Refund.find({ orderId: { $in: orders.map((order) => order._id) } }).sort({ createdAt: -1 }).lean();
     res.json({ orders: orders.map((order) => ({ ...order, refunds: refunds.filter((refund) => String(refund.orderId) === String(order._id)) })) });
   } catch (error) { next(error); }
+});
+adminRouter.get("/disputes", async (_req, res, next) => {
+  try { res.json({ disputes: await Dispute.find().populate("orderId", "customerName customerEmail providerOrderId status").populate("userId", "name email").sort({ status: 1, updatedAt: -1 }).limit(200).lean() }); } catch (error) { next(error); }
 });
 adminRouter.get("/reconciliation", async (_req, res, next) => {
   try { res.json({ runs: await ReconciliationRun.find().sort({ createdAt: -1 }).limit(20).lean() }); } catch (error) { next(error); }
