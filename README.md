@@ -124,10 +124,10 @@ CogniSprint now includes secure account registration, sign-in/out, opaque databa
 | Protected learning | Foundation implemented | Active entitlements gate `/learn`; sequential prerequisites, daily unlocks, resumable drafts, idempotent submissions and module/course completion are implemented for three Getting Started lessons. The remaining 362 sessions are not present. |
 | Progress and gamification | Partial | Overall, per-skill, per-module and daily activity analytics, CSV export, completion, attempts, recorded duration, best score, computed XP, timezone-aware streak and four badge rules exist. Persistent achievement history does not. |
 | Certificates | Foundation | Eligibility/status, claim, print/save-PDF UI, queued email delivery, signed provider outcome tracking, public verification and audited admin revocation exist. Eligibility deliberately requires at least 365 published and completed lessons. |
-| Monthly assessments | Not implemented | Curriculum marketing metadata mentions them, but there is no assessment engine or reviewed question bank. |
-| Admin/support | Foundation | Admin-only operational metrics, certificate revocation and mutation audit history exist. User/order/refund/content operations and granular permissions remain. |
+| Monthly assessments | Foundation | Entitlement-gated attempts, server scoring, skill results and one technical baseline exist; eleven qualified and reviewed assessment banks remain. |
+| Admin/support | Foundation | Operational metrics, orders/refunds/disputes, email/privacy handling, certificate revocation and auditable content release operations exist. User management, content authoring and granular permissions remain. |
 | Community and referrals | Not implemented | No routes, models or UI exist for these product areas. |
-| Deployment operations | Partial | CI, Dockerfiles, Nginx SPA fallback, liveness/readiness endpoints and graceful shutdown exist. Provider manifests, migrations, monitoring and real full-stack tests remain. |
+| Deployment operations | Foundation | CI, containers, Render staging blueprint, migrations, workers, smoke checks and MongoDB integration tests exist. Owner-provisioned staging, monitoring and recovery validation remain. |
 
 ## Learning foundation
 
@@ -151,9 +151,9 @@ Learners can download their account, commerce and learning data or open/cancel a
 ## What remains
 
 - Author and independently review the remaining 362 daily sessions, associated media and twelve assessments.
-- Complete the qualified assessment bank and certificate delivery retry operations. Audited certificate revocation, progression, daily scheduling, resumable drafts, detailed analytics and learner-facing certificate delivery now exist.
+- Complete the qualified assessment bank and production-validate certificate delivery. Audited retry/revocation, progression, daily scheduling, resumable drafts, detailed analytics and learner-facing certificate delivery now exist.
 - Validate dispute operations with the production Razorpay account, complete production reconciliation, obtain legally reviewed tax invoices, and validate reliable transactional email delivery.
-- Expand the admin foundation with user/order/refund/content operations and granular permissions; add privacy export/deletion, referrals and—only with moderation operations—community functionality.
+- Expand the admin foundation with user management, content authoring and granular permissions; operational content release, orders/refunds, privacy export/request handling and audit history now exist. Add referrals and—only with moderation operations—community functionality.
 - Add provider-specific deployment, centralized monitoring, backup/restore validation and real database/full-stack tests. A versioned, locked migration runner is available via `npm run migrate`.
 - Complete the owner-controlled launch gates in `PRODUCTION_READINESS.md`: secret rotation, Razorpay KYC/live setup, Atlas/DNS/email setup, legal/security/accessibility review and educational approval.
 

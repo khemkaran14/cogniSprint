@@ -16,12 +16,10 @@
 
 ## What remains before Live Mode
 
-- Refund initiation, provider refund records and partial-refund amount tracking
 - A documented decision for how partial refunds affect an entitlement
-- Scheduled reconciliation for pending or inconsistent orders
 - Production validation of dispute handling, reconciliation, tax invoices and reliable queued payment/refund email delivery
 - A human-owned process for submitting dispute evidence and communicating with affected customers
-- Real-database tests covering callback/webhook races, redelivery, refund and entitlement state
+- Staging and Live provider tests covering callback loss, redelivery, refunds and entitlement state (MongoDB-backed CI race/refund coverage exists)
 - Owner-controlled Razorpay KYC, Live credentials, production webhook registration and a real payment/refund smoke test
 
 **The payment verification, persistence and entitlement layers are real foundations.** They are not a substitute for completing and testing the operational items above.

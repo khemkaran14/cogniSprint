@@ -16,6 +16,9 @@ import { enqueueEmail } from "../lib/emailQueue.js";
 import { OperationalAlert } from "../models/OperationalAlert.js";
 import { PrivacyRequest } from "../models/PrivacyRequest.js";
 import { Dispute } from "../models/Dispute.js";
+import { Lesson } from "../models/Lesson.js";
+import { Assessment } from "../models/Assessment.js";
+import { canTransitionContent, contentStatuses, contentTransitionDates, type ContentStatus } from "../lib/contentWorkflow.js";
 
 export const adminRouter = Router();
 adminRouter.use(requireAdmin);
@@ -48,6 +51,29 @@ adminRouter.get("/orders", async (_req, res, next) => {
 });
 adminRouter.get("/disputes", async (_req, res, next) => {
   try { res.json({ disputes: await Dispute.find().populate("orderId", "customerName customerEmail providerOrderId status").populate("userId", "name email").sort({ status: 1, updatedAt: -1 }).limit(200).lean() }); } catch (error) { next(error); }
+});
+adminRouter.get("/content", async (_req, res, next) => {
+  try {
+    const [lessons, assessments] = await Promise.all([
+      Lesson.find().populate("moduleId", "title slug").populate("reviewedBy", "name email").sort({ status: 1, sequenceNumber: 1 }).lean(),
+      Assessment.find().populate("reviewedBy", "name email").sort({ status: 1, month: 1 }).lean(),
+    ]);
+    res.json({ lessons, assessments });
+  } catch (error) { next(error); }
+});
+const contentTransitionSchema = z.object({ status: z.enum(contentStatuses), note: z.string().trim().min(5).max(2000) });
+adminRouter.patch("/content/:type/:id/status", async (req, res, next) => {
+  try {
+    if (!z.string().regex(/^[a-f\d]{24}$/i).safeParse(req.params.id).success || !["lessons", "assessments"].includes(req.params.type)) return res.status(404).json({ error: "Content not found." });
+    const parsed = contentTransitionSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(422).json({ error: "Choose a valid content state and provide an operational note." });
+    const content = req.params.type === "lessons" ? await Lesson.findById(req.params.id) : await Assessment.findById(req.params.id);
+    if (!content) return res.status(404).json({ error: "Content not found." });
+    if (!canTransitionContent(content.status as ContentStatus, parsed.data.status)) return res.status(409).json({ error: `Content cannot move from ${content.status} to ${parsed.data.status}.` });
+    const previousStatus = content.status; const now = new Date(); content.set({ status: parsed.data.status, reviewNote: parsed.data.note, reviewedBy: res.locals.user._id, ...contentTransitionDates(parsed.data.status, now) }); await content.save();
+    await AuditEvent.create({ actorUserId: res.locals.user._id, action: `content.${parsed.data.status}`, targetType: req.params.type === "lessons" ? "Lesson" : "Assessment", targetId: String(content._id), requestId: res.locals.requestId, ipAddress: req.ip || "Unknown", metadata: { previousStatus, status: parsed.data.status, note: parsed.data.note } });
+    res.json({ content });
+  } catch (error) { next(error); }
 });
 adminRouter.get("/reconciliation", async (_req, res, next) => {
   try { res.json({ runs: await ReconciliationRun.find().sort({ createdAt: -1 }).limit(20).lean() }); } catch (error) { next(error); }

@@ -22,7 +22,7 @@ The blueprint deliberately declares secrets with `sync: false`. Enter them in th
 | `CLIENT_URL` | Exact HTTPS origin of `cognisprint-staging-web`; comma-separate preview origins if required |
 | `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Matching Razorpay Test pair |
 | `RAZORPAY_WEBHOOK_SECRET` | Unique staging webhook secret |
-| `RESEND_API_KEY`, `EMAIL_FROM`, `SUPPORT_EMAIL` | Staging transactional-email configuration |
+| `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `EMAIL_FROM`, `SUPPORT_EMAIL` | Staging transactional-email and signed delivery-event configuration |
 | `LOG_DRAIN_URL`, `LOG_DRAIN_TOKEN` | Optional HTTPS collector and credential |
 
 The Blueprint fixes `ENROLLMENT_OPEN=false`. Do not override it during staging setup. Opening enrollment is a separate launch decision after every applicable gate in `PRODUCTION_READINESS.md` has evidence and owner approval.
@@ -43,7 +43,7 @@ Vite values are compiled into the static bundle. Rebuild the web service after c
 1. Deploy the API. Render runs `npm run migrate:prod` as the pre-deploy command and refuses promotion if a migration fails.
 2. Confirm `GET /api/health` returns `200` and `GET /api/ready` reports a connected database.
 3. Enter the resulting API origin as `VITE_API_URL`, enter the web origin as API `CLIENT_URL`, and deploy the web service.
-4. Register the API webhook URL `/api/webhooks/razorpay` in Razorpay Test mode using the same staging webhook secret.
+4. Register `/api/webhooks/razorpay` in Razorpay Test mode and `/api/webhooks/resend` in Resend using their separate staging signing secrets.
 5. Add repository variables `STAGING_API_URL` and `STAGING_APP_URL`, then manually run **Staging deployment smoke tests**.
 6. Promote an owner account from the API shell with `npm run admin:promote -- owner@example.com`; do not create a shared administrator login.
 

@@ -80,3 +80,15 @@ test("administrator can review an open payment dispute and evidence deadline", a
   await expect(page.getByText("disp_razorpay_1")).toBeVisible();
   await expect(page.getByText(/evidence due/i)).toBeVisible();
 });
+
+test("administrator can review and approve queued learning content", async ({ page }) => {
+  await page.route("**/api/auth/me", (route) => route.fulfill({ json: { user: admin } }));
+  await page.route("**/api/admin/content", (route) => route.fulfill({ json: { lessons: [{ _id: "lesson_review", title: "Focus foundations", status: "in_review", sequenceNumber: 4, updatedAt: "2026-08-18T12:00:00Z", reviewNote: "Ready for independent review" }], assessments: [{ _id: "assessment_draft", title: "Month two review", status: "draft", month: 2, updatedAt: "2026-08-18T12:00:00Z" }] } }));
+  await page.route("**/api/admin/content/lessons/lesson_review/status", (route) => route.fulfill({ json: { content: { _id: "lesson_review", status: "approved" } } }));
+  await page.goto("/admin/content");
+  await expect(page.getByRole("heading", { name: "Content review and publishing" })).toBeVisible();
+  await expect(page.getByText("Day 4 · Focus foundations")).toBeVisible();
+  await page.locator("#note-lesson_review").fill("Reviewed for correctness and progression");
+  await expect(page.getByRole("button", { name: "approved" })).toBeEnabled();
+  await page.getByRole("button", { name: "approved" }).click();
+});

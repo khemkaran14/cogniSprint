@@ -38,6 +38,8 @@ beforeAll(async () => {
   if (!uri) throw new Error("INTEGRATION_MONGODB_URI is required for database integration tests.");
   process.env.CLIENT_URL = "http://localhost:5173";
   process.env.RAZORPAY_WEBHOOK_SECRET = "integration-webhook-secret";
+  process.env.RAZORPAY_KEY_ID = "rzp_test_integration";
+  process.env.RAZORPAY_KEY_SECRET = "integration-payment-secret";
   process.env.RESEND_WEBHOOK_SECRET = `whsec_${Buffer.from("integration-resend-secret").toString("base64")}`;
   await mongoose.connect(uri, { autoIndex: true });
   await Promise.all([User.syncIndexes(), Product.syncIndexes(), CurriculumModule.syncIndexes(), Lesson.syncIndexes(), Order.syncIndexes(), Entitlement.syncIndexes(), WebhookEvent.syncIndexes(), EmailDelivery.syncIndexes(), Dispute.syncIndexes(), OperationalAlert.syncIndexes()]);
@@ -69,6 +71,23 @@ describe("MongoDB-backed platform", () => {
     expect(await Order.findOne({ providerOrderId: "order_webhook" }).lean()).toMatchObject({ status: "paid", providerPaymentId: "pay_webhook" });
     expect(await Entitlement.countDocuments({ userId: user._id, productId: product._id, status: "active" })).toBe(1);
     expect(await WebhookEvent.countDocuments({ eventId: "event_replayed", status: "processed" })).toBe(1);
+  });
+
+  it("converges callback/webhook races and revokes access only after a full refund", async () => {
+    const { cookie, user } = await register("race@example.com"); const product = await catalogue();
+    const order = await Order.create({ customerName: user.name, customerEmail: user.email, customerPhone: "9999999999", userId: user._id, productId: product._id, amount: 99900, currency: "INR", status: "pending", providerOrderId: "order_race" });
+    const paymentId = "pay_race"; const callbackSignature = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!).update(`order_race|${paymentId}`).digest("hex");
+    const captured = JSON.stringify({ event: "payment.captured", payload: { payment: { entity: { order_id: "order_race", id: paymentId, amount: 99900 } } } });
+    const webhookSignature = crypto.createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET!).update(captured).digest("hex");
+    const [callback, webhook] = await Promise.all([
+      request("/api/checkout/verify", { method: "POST", headers: { "content-type": "application/json", cookie }, body: JSON.stringify({ razorpay_order_id: "order_race", razorpay_payment_id: paymentId, razorpay_signature: callbackSignature }) }),
+      request("/api/webhooks/razorpay", { method: "POST", headers: { "content-type": "application/json", "x-razorpay-signature": webhookSignature, "x-razorpay-event-id": "event_race_capture" }, body: captured }),
+    ]);
+    expect(callback.status).toBe(200); expect(webhook.status).toBe(200); expect(await Entitlement.countDocuments({ sourceOrderId: order._id, status: "active" })).toBe(1);
+    const refund = async (amount: number, eventId: string) => { const raw = JSON.stringify({ event: "payment.refunded", payload: { payment: { entity: { order_id: "order_race", id: paymentId, amount_refunded: amount } } } }); const signature = crypto.createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET!).update(raw).digest("hex"); return request("/api/webhooks/razorpay", { method: "POST", headers: { "content-type": "application/json", "x-razorpay-signature": signature, "x-razorpay-event-id": eventId }, body: raw }); };
+    expect((await refund(40000, "event_race_partial")).status).toBe(200); expect(await Order.findById(order._id).lean()).toMatchObject({ status: "partially_refunded", refundedAmount: 40000 }); expect(await Entitlement.countDocuments({ sourceOrderId: order._id, status: "active" })).toBe(1);
+    expect((await refund(99900, "event_race_full")).status).toBe(200); expect(await Order.findById(order._id).lean()).toMatchObject({ status: "refunded", refundedAmount: 99900 }); expect(await Entitlement.countDocuments({ sourceOrderId: order._id, status: "revoked" })).toBe(1);
+    expect((await refund(99900, "event_race_full")).status).toBe(200); expect(await WebhookEvent.countDocuments({ eventId: "event_race_full" })).toBe(1);
   });
 
   it("records a dispute and revokes access after a lost chargeback", async () => {

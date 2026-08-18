@@ -24,12 +24,20 @@ const lessonSchema = new Schema(
     passingScore: { type: Number, required: true, min: 0, max: 100, default: 60 },
     content: { type: [String], required: true },
     exercises: { type: [exerciseSchema], required: true },
-    status: { type: String, enum: ["draft", "published"], default: "draft", required: true },
+    status: { type: String, enum: ["draft", "in_review", "changes_requested", "approved", "published", "archived"], default: "draft", required: true, index: true },
+    reviewNote: { type: String, maxlength: 2000 },
+    reviewedBy: { type: Types.ObjectId, ref: "User" },
+    submittedAt: { type: Date },
+    reviewedAt: { type: Date },
+    approvedAt: { type: Date },
+    publishedAt: { type: Date },
+    archivedAt: { type: Date },
   },
   { timestamps: true }
 );
 
 lessonSchema.index({ moduleId: 1, position: 1 }, { unique: true });
+lessonSchema.index({ status: 1, updatedAt: -1 });
 
 export type LessonDoc = InferSchemaType<typeof lessonSchema>;
 export const Lesson = model("Lesson", lessonSchema);

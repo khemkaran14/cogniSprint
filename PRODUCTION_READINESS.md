@@ -14,12 +14,12 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 | --- | --- | --- |
 | Public marketing/catalogue/challenge | Implemented | Public React routes, catalogue APIs and mocked browser flows exist. |
 | Accounts and opaque sessions | Foundation | Register/login/logout, verification, reset, profile preferences, owner-scoped device/session revocation, portable data export and audited deletion-request intake exist; approved deletion/anonymization remains dependent on the legal retention policy. |
-| Razorpay checkout and entitlements | Foundation | Server-priced orders, signed verification, event dedupe, entitlement grant/revoke, owner history and printable payment receipts exist; operational refunds, tax invoices and reconciliation remain. |
+| Razorpay checkout and entitlements | Foundation | Server-priced orders, signed verification, event dedupe, audited refunds/disputes, reconciliation, entitlement grant/revoke, owner history and printable payment receipts exist; production validation and legally reviewed tax invoices remain. |
 | Protected lessons and progress | Foundation | Entitlement gating, progression, resumable drafts, retry-safe scoring, overall/module/skill/activity analytics and CSV export exist for three lessons; the remaining 362 sessions remain. |
 | XP, streak and badges | Foundation | Derived UTC streak, XP and four badge rules exist; persistent achievement events, timezone preference and reminders remain. |
-| Certificates | Foundation | Eligibility, claim, printable UI, public verification, tracked email delivery and audited admin revocation exist; provider retry operations remain. |
+| Certificates | Foundation | Eligibility, claim, printable UI, public verification, queued/provider-tracked email delivery with audited retry, and audited admin revocation exist; production provider validation remains. |
 | Assessments | Foundation | Entitlement-protected catalogue, attempt UI, retry-safe server scoring, per-skill results and one technical baseline exist; eleven assessments and qualified content review remain. |
-| Admin/support tooling | Foundation | Admin-only operational dashboard, certificate revocation and immutable mutation audit records exist; user/order/refund/content operations and granular permissions remain. |
+| Admin/support tooling | Foundation | Operational dashboards, refund/dispute/email/privacy operations, certificate revocation, auditable content review/publishing and immutable mutation records exist; user management, content authoring and granular permissions remain. |
 | Community/referrals | Not implemented | No product implementation or moderation operation. |
 | Runtime/deployment foundation | Foundation | CI, containers, SPA fallback, request IDs, readiness and graceful shutdown exist; provider deployment, migrations, monitoring and real full-stack tests remain. |
 
@@ -42,7 +42,7 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 - [x] Add owner-scoped order history and printable payment receipts. Tax invoices remain subject to finalized legal/GST requirements.
 - [x] Add idempotent queued purchase, failure and refund email delivery with provider acceptance IDs, bounded retries, scheduled processing, audited admin retry, and signed Resend delivery/bounce/complaint webhook tracking.
 - [x] Detect, deduplicate and notify on payment failures, stale orders, failed webhooks, exhausted email retries, reconciliation review and entitlement mismatches, with audited acknowledge/resolve operations.
-- [ ] Pass real-database tests for callback/webhook races, duplicate delivery and refund revocation.
+- [x] Pass real-database tests for callback/webhook races, duplicate delivery, partial-refund access retention and full-refund revocation.
 - [ ] Complete the applicable security, privacy, accessibility and legal gates below.
 
 ## Repository gates before selling the complete 365-day product
@@ -52,9 +52,9 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 - [x] Add prerequisites, timezone-aware daily scheduling, resumable drafts, idempotent attempts and module/course completion rules.
 - [x] Add owner-scoped overall, per-skill, per-module and daily progress analytics with an accessible UI and CSV export.
 - [ ] Expand the retry-safe assessment foundation into twelve monthly assessments with qualified, reviewed question banks (one technical baseline is seeded).
-- [ ] Add provider-backed certificate email retry operations; learner claim, print/save-PDF UI, delivery status, public verification and audited admin revocation are implemented.
+- [x] Add provider-backed certificate email retry operations; learner claim, print/save-PDF UI, provider delivery status, public verification and audited admin revocation are implemented.
 - [ ] Deliver the advertised workbook and worksheets through entitlement-protected downloads.
-- [ ] Add content draft/review/approval/publish states and an auditable release process.
+- [x] Add content draft/review/changes-requested/approval/publish/archive states and an auditable administrator release process for lessons and assessments.
 
 ## External owner gates
 
