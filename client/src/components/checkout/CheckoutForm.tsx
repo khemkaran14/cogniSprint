@@ -114,7 +114,7 @@ export function CheckoutForm({ product }: { product: Product }) {
       razorpay.open();
       setOrderState({ phase: "form" });
     } catch (error) {
-      if (error instanceof ApiError && error.status === 501) {
+      if (error instanceof ApiError && (error.status === 501 || error.status === 503)) {
         setOrderState({ phase: "unavailable", message: error.message });
         return;
       }

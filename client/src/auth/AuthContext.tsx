@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { apiGet, apiPost } from "@/lib/api";
 
-export type AuthUser = { id: string; name: string; email: string; role: "learner" | "admin"; emailVerified: boolean };
+export type AuthUser = { id: string; name: string; email: string; role: "learner" | "admin"; timezone: string; emailVerified: boolean };
 
 type AuthContextValue = {
   user: AuthUser | null;
@@ -24,6 +24,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+// Hook and provider intentionally share the private context.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const value = useContext(AuthContext);
   if (!value) throw new Error("useAuth must be used within AuthProvider");

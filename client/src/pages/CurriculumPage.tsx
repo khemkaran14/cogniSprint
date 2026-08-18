@@ -10,16 +10,16 @@ export default function CurriculumPage() {
   return (
     <>
       <Seo
-        title="Curriculum — Browse Every Brain Training Module"
-        description="Search and filter the complete CogniSprint curriculum by skill: mental math, memory, logic, focus, observation and critical thinking."
+        title="Curriculum Roadmap — Published and Planned Modules"
+        description="Review CogniSprint's curriculum roadmap. Only three foundation lessons are currently published; other module counts are plans, not delivered content."
         path="/curriculum"
       />
       <section className="py-16 sm:py-24">
         <Container>
           <SectionHeading
-            eyebrow="Curriculum"
-            title="Every module, searchable and filterable by skill"
-            description="Filter by mental math, memory, logic, focus, observation or critical thinking to see exactly what each module covers before you enrol."
+            eyebrow="Curriculum roadmap"
+            title="Explore the proposed module structure"
+            description="Only three Getting Started lessons and one assessment baseline are currently published. All other module, lesson, exercise and duration figures below are roadmap targets—not available purchase content. Enrollment is closed."
             align="left"
           />
           <div className="mt-12">

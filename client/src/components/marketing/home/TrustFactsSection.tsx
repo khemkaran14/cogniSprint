@@ -1,15 +1,11 @@
 import { Container } from "@/components/ui/Container";
-import { useCurriculum } from "@/lib/queries";
 
 export function TrustFactsSection() {
-  const { data: modules } = useCurriculum();
-  const exerciseCount = modules?.reduce((sum, m) => sum + m.exerciseCount, 0) ?? 0;
-
   const facts = [
-    { value: "365", label: "Daily training sessions" },
-    { value: "15 min", label: "Target daily practice time" },
-    { value: `${modules?.length ?? 20}`, label: "Structured learning modules" },
-    { value: exerciseCount ? `${exerciseCount.toLocaleString("en-IN")}+` : "10,000+", label: "Practice exercises" },
+    { value: "3", label: "Published foundation lessons" },
+    { value: "1", label: "Technical assessment baseline" },
+    { value: "6", label: "Skills in the free challenge" },
+    { value: "Closed", label: "Paid enrollment status" },
   ];
 
   return (
