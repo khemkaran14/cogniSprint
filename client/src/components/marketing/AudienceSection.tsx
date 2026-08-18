@@ -7,7 +7,7 @@ const audiences = [
   { icon: Landmark, title: "Competitive-exam aspirants", description: "Structured practice for aptitude, reasoning and calculation-heavy tests." },
   { icon: Briefcase, title: "Working professionals", description: "Quicker calculation, stronger focus and structured problem-solving for daily work." },
   { icon: Users, title: "Parents", description: "A productive, screen-free-friendly activity to do alongside their children." },
-  { icon: School, title: "Teachers & trainers", description: "Ready-made exercises and worksheets for classroom or training use." },
+  { icon: School, title: "Teachers & trainers", description: "A preview of structured exercise formats; classroom worksheets are not currently published." },
   { icon: UserRound, title: "Adults & senior learners", description: "A consistent, structured routine of calculation, memory and puzzle practice." },
 ];
 

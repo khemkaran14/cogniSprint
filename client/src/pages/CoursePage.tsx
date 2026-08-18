@@ -7,7 +7,7 @@ import { Reveal } from "@/components/shared/Reveal";
 import { CurriculumAccordion } from "@/components/course/CurriculumAccordion";
 import { FaqSection } from "@/components/marketing/FaqSection";
 import { LoadingState, ErrorState } from "@/components/shared/QueryStates";
-import { useCurriculum, useProducts } from "@/lib/queries";
+import { useContentAvailability, useCurriculum } from "@/lib/queries";
 
 const phaseGroups = [
   { phase: "guided_learning" as const, title: "Guided learning (months 1–3)" },
@@ -17,23 +17,20 @@ const phaseGroups = [
 
 export default function CoursePage() {
   const { data: modules, isLoading, isError, refetch } = useCurriculum();
-  const { data: products } = useProducts();
-  const product = products?.[0];
+  const availability = useContentAvailability(); const lessonCount = availability.data?.published.lessons; const assessmentCount = availability.data?.published.assessments;
 
-  const lessonCount = modules?.reduce((s, m) => s + m.lessonCount, 0) ?? 0;
-
-  const facts = [
-    { icon: Calendar, label: "12 months", detail: "3 guided + 9 structured practice" },
-    { icon: Clock, label: "15 minutes/day", detail: "Target daily commitment" },
-    { icon: Layers, label: `${modules?.length ?? 20} modules`, detail: `${lessonCount || "300+"} lessons` },
-    { icon: Award, label: "12 assessments", detail: "One per month, plus a certificate" },
+    const facts = [
+    { icon: Calendar, label: `${lessonCount ?? "—"} lessons`, detail: "Published foundation content" },
+    { icon: Clock, label: "~15 minutes", detail: "Proposed session target" },
+    { icon: Layers, label: `${modules?.length ?? 20} modules`, detail: "Roadmap structure, mostly unpublished" },
+    { icon: Award, label: `${assessmentCount ?? "—"} assessments`, detail: "Published checks, not yet a monthly bank" },
   ];
 
   return (
     <>
       <Seo
-        title="Brain Training Course — Mental Math, Memory & Reasoning Program"
-        description="A structured 365-day brain-training course covering mental math, memory technique, focus, logic, observation and critical thinking in 15-minute daily sessions."
+        title="CogniSprint Course Roadmap and Published Preview"
+        description={`Review ${lessonCount ?? "the currently"} published CogniSprint foundation lessons and the proposed curriculum roadmap. Paid enrollment is currently closed.`}
         path="/brain-training-course"
       />
 
@@ -41,9 +38,9 @@ export default function CoursePage() {
         <Container>
           <Reveal>
             <SectionHeading
-              eyebrow="The complete program"
-              title="One structured course, twelve months, six skill areas"
-              description="CogniSprint combines mental mathematics, memory technique, focus, logical reasoning, observation and critical thinking into a single daily routine — building from guided lessons to independent practice over a full year."
+              eyebrow="Published preview and roadmap"
+              title={`${lessonCount ?? "Published"} lessons available; the complete curriculum is still in development`}
+              description={`CogniSprint currently demonstrates protected learning, exercises, scoring and progress with ${lessonCount ?? "its reviewed"} published lessons. The wider module structure is a roadmap, not delivered purchase content.`}
             />
           </Reveal>
 
@@ -64,7 +61,7 @@ export default function CoursePage() {
       <section className="bg-[var(--color-surface-sunken)] py-16 sm:py-24">
         <Container>
           <Reveal>
-            <SectionHeading eyebrow="Complete curriculum" title="Every module, from foundations to the full challenge" align="left" />
+            <SectionHeading eyebrow="Curriculum roadmap" title="Published foundations and planned modules" description={`Counts on planned module cards are design targets. The live inventory currently reports ${lessonCount ?? "the verified set of"} published lessons.`} align="left" />
           </Reveal>
 
           {isLoading ? <LoadingState label="Loading curriculum…" /> : null}
@@ -83,7 +80,7 @@ export default function CoursePage() {
 
           <p className="mt-6 text-center">
             <Link to="/curriculum" className="text-sm font-semibold text-[var(--color-brand-blue)] hover:underline">
-              Browse the full searchable curriculum →
+              Browse the searchable roadmap →
             </Link>
           </p>
         </Container>
@@ -95,9 +92,8 @@ export default function CoursePage() {
             <div className="surface-card h-full p-8">
               <h3 className="text-xl font-semibold">Learning format</h3>
               <p className="mt-3 text-sm text-[var(--color-ink-muted)]">
-                Each lesson combines a short explanation, worked examples and interactive exercises with immediate
-                feedback. Assessments run monthly and summarise progress across every skill category. Everything is
-                available digitally, with printable worksheets and a downloadable workbook for offline practice.
+                The {lessonCount ?? "currently"} published lessons combine short explanations and interactive exercises with immediate feedback.
+                The {assessmentCount ?? "currently"} published assessments demonstrate secure scoring. Complete monthly assessment coverage and reviewed downloadable resources are not currently available.
               </p>
             </div>
           </Reveal>
@@ -105,12 +101,12 @@ export default function CoursePage() {
             <div className="surface-card h-full p-8">
               <h3 className="text-xl font-semibold">Course access</h3>
               <p className="mt-3 text-sm text-[var(--color-ink-muted)]">
-                Purchasing the program grants lifetime access to the current 365-day curriculum, all worksheets and
-                the downloadable workbook, along with future content updates. A completion certificate becomes
-                available once the full one-year practice calendar is finished.
+                Paid enrollment is closed. The current preview does not include a complete 365-day curriculum,
+                worksheets or a downloadable workbook. Pricing and access terms will be published only after the
+                reviewed launch package is available.
               </p>
               <LinkButton to="/pricing" className="mt-5">
-                See pricing <ArrowRight className="h-4 w-4" />
+                See availability <ArrowRight className="h-4 w-4" />
               </LinkButton>
             </div>
           </Reveal>
@@ -122,12 +118,10 @@ export default function CoursePage() {
       <section className="pb-24">
         <Container>
           <div className="surface-card flex flex-col items-center gap-4 p-10 text-center">
-            <h3 className="text-2xl font-semibold">Ready to start Module 1?</h3>
-            {product ? (
-              <LinkButton to={`/checkout?product=${product.slug}`} size="lg">
-                Enrol in {product.shortName} <ArrowRight className="h-4 w-4" />
-              </LinkButton>
-            ) : null}
+            <h3 className="text-2xl font-semibold">Review current content availability</h3>
+            <LinkButton to="/sample-challenge" size="lg">
+              Try the free challenge <ArrowRight className="h-4 w-4" />
+            </LinkButton>
           </div>
         </Container>
       </section>

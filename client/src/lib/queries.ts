@@ -2,6 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "./api";
 import type { CurriculumModule, FaqItem, BlogArticle, Product } from "@/types/content";
 
+export type ContentAvailability = { published: { lessons: number; exercises: number; assessments: number; assessmentQuestions: number; workbooks: number; worksheets: number }; targets: { lessons: number; assessments: number; workbooks: number }; launchContentComplete: boolean; enrollmentOpen: boolean };
+
+export function useContentAvailability() {
+  return useQuery({ queryKey: ["content-availability"], queryFn: () => apiGet<ContentAvailability>("/content-availability"), staleTime: 60_000 });
+}
+
 export function useProducts() {
   return useQuery({ queryKey: ["products"], queryFn: () => apiGet<Product[]>("/products") });
 }

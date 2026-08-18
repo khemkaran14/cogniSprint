@@ -18,13 +18,13 @@ export function ProblemSolutionSection() {
           <Reveal delay={0.1}>
             <p className="text-base text-[var(--color-ink-muted)] sm:text-lg">
               A quick scroll between tasks. A few extra minutes on a feed before bed. None of it feels
-              significant in the moment — but across a year, those small blocks of time add up to
+              significant in the moment — but over time, those small blocks of time add up to
               something substantial, spent on nothing in particular.
             </p>
             <p className="mt-4 text-base text-[var(--color-ink-muted)] sm:text-lg">
               CogniSprint doesn&apos;t ask for hours you don&apos;t have. It asks for one of those
               15-minute blocks, redirected toward structured practice in mental math, memory, focus,
-              reasoning and problem-solving — every day, for a year.
+              reasoning and problem-solving. The available preview demonstrates this format without promising an unfinished year-long library.
             </p>
           </Reveal>
         </Container>
@@ -35,7 +35,7 @@ export function ProblemSolutionSection() {
           <Reveal>
             <SectionHeading
               eyebrow="Introducing CogniSprint"
-              title="A structured 365-day system, not another app to check occasionally"
+              title="A published foundation for structured practice"
               description={brand.positioningStatement}
             />
           </Reveal>
