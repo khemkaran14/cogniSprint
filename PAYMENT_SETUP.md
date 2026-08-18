@@ -9,15 +9,22 @@
 - Client-side Razorpay Checkout modal (`client/src/lib/loadRazorpayScript.ts`, `components/checkout/CheckoutForm.tsx`)
 - Server-side HMAC-SHA256 signature verification of the client callback (`verifyPaymentSignature`), using `crypto.timingSafeEqual`
 - Server-side webhook signature verification (`verifyWebhookSignature`) at `POST /api/webhooks/razorpay`, which also updates the `Order` on `payment.captured`/`payment.failed`
+- Webhook delivery deduplication keyed by `X-Razorpay-Event-Id`, with retained processing/processed/failed records
+- Idempotent product-entitlement grant on capture and entitlement revocation on full refund events
+- Signed-in checkout ownership and owner-scoped order status lookup
 - An honest "payment isn't connected yet" UI state when Razorpay env vars aren't set — checkout never fakes a success
 
-## What's NOT implemented yet
+## What remains before Live Mode
 
-- There's no `User` or `Entitlement` model, so a `paid` order doesn't unlock any course access — nothing to grant access *to* yet
-- No idempotency guard beyond "update by `providerOrderId`" — safe for repeated webhook deliveries of the same event, but there's no dedupe table keyed on `providerPaymentId` for defense in depth
-- Refunds are not implemented (process manually via the Razorpay dashboard for now)
+- Refund initiation, provider refund records and partial-refund amount tracking
+- A documented decision for how partial refunds affect an entitlement
+- Scheduled reconciliation for pending or inconsistent orders
+- Dispute handling, reconciliation, tax invoices and reliable queued payment/refund emails (owner order history and printable payment receipts are implemented)
+- A human-owned process for submitting dispute evidence and communicating with affected customers
+- Real-database tests covering callback/webhook races, redelivery, refund and entitlement state
+- Owner-controlled Razorpay KYC, Live credentials, production webhook registration and a real payment/refund smoke test
 
-**The payment verification and persistence layers are real and safe to build on.** The "grant course access" step after a paid order is the explicit next milestone.
+**The payment verification, persistence and entitlement layers are real foundations.** They are not a substitute for completing and testing the operational items above.
 
 ## Test mode setup
 
@@ -36,12 +43,12 @@
 
 1. Razorpay dashboard → Settings → Webhooks → Add New Webhook.
 2. URL: `https://<your-deployed-api-domain>/api/webhooks/razorpay`
-3. Select at least `payment.captured` and `payment.failed`.
+3. Select at least `payment.captured`, `payment.failed` and `payment.refunded`; add applicable dispute events before Live Mode.
 4. Copy the generated webhook secret into `RAZORPAY_WEBHOOK_SECRET`.
 5. For local testing, tunnel the server (ngrok or similar) and trigger a test event from the dashboard.
 6. Check server logs for `[razorpay-webhook] verified event: ...` — an invalid or missing signature returns `400`/`501` and is logged as a warning, never silently accepted.
 
-Note: the webhook route is mounted with `express.raw({ type: "application/json" })` in `server/src/index.ts`, mounted *before* the global `express.json()` parser — this is required because the signature is computed over the exact raw request bytes, and a body-parser that re-serializes JSON would break verification.
+Note: the webhook route is mounted with `express.raw({ type: "application/json" })` in `server/src/app.ts`, before the global `express.json()` parser. Signature verification requires the exact raw request bytes; parsing and re-serializing JSON first would invalidate the signature.
 
 ## Signature verification reference
 
@@ -57,10 +64,13 @@ Compared with a timing-safe comparison. Unit-tested in `server/tests/razorpay-si
 
 Before switching to live `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`:
 
-- [ ] `User`/`Entitlement` models exist and a paid order actually grants access (see README "What's not built yet")
-- [ ] Refund handling implemented via the Razorpay Refunds API, matching the published Refund & Cancellation Policy
-- [ ] An idempotency key or dedupe check on `providerPaymentId` before granting access, in case the webhook and the client callback both fire
+- [x] `User`/`Entitlement` models exist and a paid order grants product access
+- [ ] Refund initiation and partial-refund tracking match the published Refund & Cancellation Policy
+- [x] A webhook-event ledger deduplicates deliveries by Razorpay event ID
+- [ ] Pending-order reconciliation and payment/entitlement mismatch alerting are operating
+- [ ] Payment, refund and receipt emails are delivered and monitored
 - [ ] Live webhook URL registered with its own secret set in the production environment
+- [ ] A real low-value Live payment and full refund have passed end to end
 - [ ] A support process exists for failed/disputed payments before launch
 
 ## Troubleshooting
@@ -69,3 +79,19 @@ Before switching to live `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`:
 - **Signature verification fails for a real payment** — confirm the key secret matches the mode (test vs. live) of the key ID used to create the order.
 - **Webhook returns 400** — `RAZORPAY_WEBHOOK_SECRET` doesn't match the webhook's configured secret in the dashboard (regenerating the webhook rotates it).
 - **`MONGODB_URI` not set** — `create-order` will throw before ever reaching Razorpay; check `server/.env`.
+
+## Scheduled reconciliation
+
+An hourly serialized GitHub Actions workflow runs `npm run reconcile:apply` using repository secrets. Run `npm run reconcile` for a non-mutating report before applying manually. Each run and its bounded findings are retained in MongoDB for operational review. Configure the workflow secrets before enabling it.
+
+## Transactional email queue
+
+Purchase confirmations, payment failures and refunds use idempotent outbox records rather than depending on a single request-time provider call. The scheduled `email-delivery.yml` worker processes 100 messages per run, stores Resend message IDs, retries failures with bounded exponential backoff and supports audited administrator retries. Configure `MONGODB_URI`, `RESEND_API_KEY` and `EMAIL_FROM` as repository secrets.
+
+## Operational alerts
+
+`operational-alerts.yml` scans every ten minutes for payment failures, stale pending orders, failed webhook processing, exhausted email retries, reconciliation findings and paid orders missing active access. Findings are deduplicated by fingerprint, can notify `SUPPORT_EMAIL`, and must be acknowledged or resolved from `/admin/alerts`. Persistent conditions reopen on the next scan.
+
+## Payment disputes and chargebacks
+
+Enable Razorpay dispute lifecycle webhooks (`payment.dispute.created`, `payment.dispute.won`, `payment.dispute.lost` and `payment.dispute.closed`) on the same signed endpoint. Open disputes create critical operational alerts and appear at `/admin/disputes`; submit evidence and communicate with the provider from an authorized Razorpay account. A won dispute restores the paid order/access state, while a lost dispute records a chargeback and revokes the order entitlement. Webhook state is authoritative and duplicate deliveries remain protected by the event ledger.
