@@ -14,6 +14,7 @@ import { certificatesRouter } from "./routes/certificates.js";
 import { assessmentsRouter } from "./routes/assessments.js";
 import { adminRouter } from "./routes/admin.js";
 import { privacyRouter } from "./routes/privacy.js";
+import { resourcesRouter } from "./routes/resources.js";
 import { publicFormLimiter, checkoutLimiter, authLimiter } from "./middleware/rateLimit.js";
 import { requestContext } from "./middleware/requestContext.js";
 import { isDBConnected } from "./lib/db.js";
@@ -65,6 +66,7 @@ export function createApp() {
   app.use("/api/assessments", assessmentsRouter);
   app.use("/api/admin", adminRouter);
   app.use("/api/privacy", privacyRouter);
+  app.use("/api/resources", resourcesRouter);
 
   app.use((req, res) => {
     res.status(404).json({ error: `No route for ${req.method} ${req.path}` });

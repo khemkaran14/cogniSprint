@@ -18,6 +18,7 @@ Browser
         │   /api/checkout/coupon/:code, /api/checkout/order/:id          → MongoDB + Razorpay
         ├── /api/auth/*, /api/entitlements                              → MongoDB accounts + access
         ├── /api/learning/*, /api/assessments/*, /api/certificates/*     → MongoDB learning records
+        ├── /api/resources/*                                             → entitlement checks + GridFS PDFs
         ├── /api/admin/*                                                  → role-gated operations + audit records
         └── /api/webhooks/razorpay                                      → signed, deduplicated provider events
 ```
@@ -64,7 +65,7 @@ client/
 
 Deliberate split, not an oversight:
 
-- **In MongoDB** (`server/src/models/`): catalogue content, users, hashed sessions/account tokens with device activity metadata, orders, entitlements, lessons, lesson progress, certificates and retained webhook-event state.
+- **In MongoDB** (`server/src/models/`): catalogue content, users, hashed sessions/account tokens with device activity metadata, orders, entitlements, lessons, lesson progress, certificates, versioned GridFS learning resources, download audit records and retained webhook-event state.
 - Owner-scoped checkout APIs expose newest-first order history and paid/refunded payment receipts; raw provider credentials and other customers' records are never included.
 - **Static in client config** (`client/src/config/`, `client/src/content/`): brand copy, navigation structure, the free challenge's question bank. These are presentation/identity concerns, not data an admin needs to edit without a deploy, and keeping them in version control makes brand-copy review a normal PR rather than a database migration.
 
@@ -88,6 +89,7 @@ Challenge attempts are not persisted. A `User` model now exists, but associating
 5. `POST /api/learning/lessons/:slug/complete` validates every answer, scores against server-side keys, applies the pass mark and atomically records attempts/best score. A UUID and answer hash make client retries idempotent and reject conflicting reuse.
 6. `PATCH /api/learning/preferences` validates and stores the learner's IANA timezone for calendar-day unlock behavior.
 7. `GET /api/learning/analytics` aggregates submissions and progress into overall, module, skill and learner-local daily activity views; `analytics.csv` provides a portable owner-scoped export.
+8. `/api/resources` lists only published files attached to an actively entitled product; downloads repeat that product-specific check, record the request and stream integrity-hashed PDFs from GridFS without public asset URLs.
 8. `/api/assessments` lists published checks without answer keys; assessment detail returns safe questions, and submission uses retry-safe UUIDs, server-only scoring and owner-scoped per-skill attempt history.
 8. Certificate status and claim routes require active entitlement. Claiming also requires at least 365 published lessons and completion of every required lesson, preventing the initial demonstration content from yielding a program certificate; delivery attempts are recorded and the client provides an accessible print/save-PDF view.
 9. Public verification returns only the learner name, issue date and product for an existing non-revoked certificate. Provider retry operations and audited admin revocation remain launch gates.

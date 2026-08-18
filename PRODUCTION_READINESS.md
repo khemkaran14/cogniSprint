@@ -53,7 +53,8 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 - [x] Add owner-scoped overall, per-skill, per-module and daily progress analytics with an accessible UI and CSV export.
 - [ ] Expand the retry-safe assessment foundation into twelve monthly assessments with qualified, reviewed question banks (one technical baseline is seeded).
 - [x] Add provider-backed certificate email retry operations; learner claim, print/save-PDF UI, provider delivery status, public verification and audited admin revocation are implemented.
-- [ ] Deliver the advertised workbook and worksheets through entitlement-protected downloads.
+- [x] Add versioned, integrity-checked GridFS PDF storage, product-specific entitlement checks, audited downloads, and audited administrator publishing for workbooks and worksheets.
+- [ ] Author, professionally review, import and publish the actual advertised workbook and worksheet files.
 - [x] Add content draft/review/changes-requested/approval/publish/archive states and an auditable administrator release process for lessons and assessments.
 
 ## External owner gates

@@ -19,6 +19,7 @@ import { Dispute } from "../models/Dispute.js";
 import { Lesson } from "../models/Lesson.js";
 import { Assessment } from "../models/Assessment.js";
 import { canTransitionContent, contentStatuses, contentTransitionDates, type ContentStatus } from "../lib/contentWorkflow.js";
+import { LearningResource } from "../models/LearningResource.js";
 
 export const adminRouter = Router();
 adminRouter.use(requireAdmin);
@@ -59,6 +60,22 @@ adminRouter.get("/content", async (_req, res, next) => {
       Assessment.find().populate("reviewedBy", "name email").sort({ status: 1, month: 1 }).lean(),
     ]);
     res.json({ lessons, assessments });
+  } catch (error) { next(error); }
+});
+adminRouter.get("/resources", async (_req, res, next) => {
+  try { res.json({ resources: await LearningResource.find().populate("productId", "name slug").populate("releasedBy", "name email").sort({ status: 1, kind: 1, title: 1 }).lean() }); } catch (error) { next(error); }
+});
+const resourceStatusSchema = z.object({ status: z.enum(["draft", "published", "archived"]), note: z.string().trim().min(5).max(2000) });
+adminRouter.patch("/resources/:id/status", async (req, res, next) => {
+  try {
+    if (!z.string().regex(/^[a-f\d]{24}$/i).safeParse(req.params.id).success) return res.status(404).json({ error: "Resource not found." });
+    const parsed = resourceStatusSchema.safeParse(req.body); if (!parsed.success) return res.status(422).json({ error: "Choose a valid state and provide a release note." });
+    const resource = await LearningResource.findById(req.params.id); if (!resource) return res.status(404).json({ error: "Resource not found." });
+    const allowed = resource.status === "draft" ? ["published"] : resource.status === "published" ? ["archived"] : ["draft"];
+    if (!allowed.includes(parsed.data.status)) return res.status(409).json({ error: `Resource cannot move from ${resource.status} to ${parsed.data.status}.` });
+    const previousStatus = resource.status; const now = new Date(); resource.set({ status: parsed.data.status, releaseNote: parsed.data.note, releasedBy: res.locals.user._id, publishedAt: parsed.data.status === "published" ? now : resource.publishedAt, archivedAt: parsed.data.status === "archived" ? now : null }); await resource.save();
+    await AuditEvent.create({ actorUserId: res.locals.user._id, action: `resource.${parsed.data.status}`, targetType: "LearningResource", targetId: String(resource._id), requestId: res.locals.requestId, ipAddress: req.ip || "Unknown", metadata: { previousStatus, status: parsed.data.status, note: parsed.data.note, version: resource.version } });
+    res.json({ resource });
   } catch (error) { next(error); }
 });
 const contentTransitionSchema = z.object({ status: z.enum(contentStatuses), note: z.string().trim().min(5).max(2000) });

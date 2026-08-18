@@ -124,3 +124,12 @@ test("public certificate verification handles a valid code", async ({ page }) =>
   await expect(page.getByRole("heading", { name: "Valid certificate" })).toBeVisible();
   await expect(page.getByText("Asha Rao")).toBeVisible();
 });
+
+test("learner can see entitlement-protected workbook downloads", async ({ page }) => {
+  await page.route("**/api/auth/me", (route) => route.fulfill({ json: { user } }));
+  await page.route("**/api/resources", (route) => route.fulfill({ json: { resources: [{ _id: "resource_1", slug: "focus-workbook", title: "Focus Workbook", description: "Practice sheets for the focus module.", kind: "workbook", version: 2, filename: "focus-workbook.pdf", sizeBytes: 1048576, publishedAt: "2026-08-18T12:00:00Z" }] } }));
+  await page.goto("/learn/resources");
+  await expect(page.getByRole("heading", { name: "Workbooks and worksheets" })).toBeVisible();
+  await expect(page.getByText("Focus Workbook")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Download PDF" })).toHaveAttribute("href", /\/api\/resources\/focus-workbook\/download$/);
+});

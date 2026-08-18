@@ -30,6 +30,7 @@ const AccountPage = lazy(() => import("@/pages/AccountPage"));
 const LearningDashboardPage = lazy(() => import("@/pages/LearningDashboardPage"));
 const LessonPage = lazy(() => import("@/pages/LessonPage"));
 const LearningAnalyticsPage = lazy(() => import("@/pages/LearningAnalyticsPage"));
+const LearningResourcesPage = lazy(() => import("@/pages/LearningResourcesPage"));
 const AssessmentsPage = lazy(() => import("@/pages/AssessmentsPage"));
 const AssessmentPage = lazy(() => import("@/pages/AssessmentPage"));
 const CertificatePage = lazy(() => import("@/pages/CertificatePage"));
@@ -43,6 +44,7 @@ const AdminAlertsPage = lazy(() => import("@/pages/admin/AdminAlertsPage"));
 const AdminPrivacyRequestsPage = lazy(() => import("@/pages/admin/AdminPrivacyRequestsPage"));
 const AdminDisputesPage = lazy(() => import("@/pages/admin/AdminDisputesPage"));
 const AdminContentPage = lazy(() => import("@/pages/admin/AdminContentPage"));
+const AdminResourcesPage = lazy(() => import("@/pages/admin/AdminResourcesPage"));
 
 export default function App() {
   return (
@@ -72,6 +74,7 @@ export default function App() {
             <Route path="/learn" element={<LearningDashboardPage />} />
             <Route path="/learn/lessons/:slug" element={<LessonPage />} />
             <Route path="/learn/progress" element={<LearningAnalyticsPage />} />
+            <Route path="/learn/resources" element={<LearningResourcesPage />} />
             <Route path="/learn/assessments" element={<AssessmentsPage />} />
             <Route path="/learn/assessments/:slug" element={<AssessmentPage />} />
             <Route path="/learn/certificate" element={<CertificatePage />} />
@@ -84,6 +87,7 @@ export default function App() {
             <Route path="/admin/privacy-requests" element={<AdminPrivacyRequestsPage />} />
             <Route path="/admin/disputes" element={<AdminDisputesPage />} />
             <Route path="/admin/content" element={<AdminContentPage />} />
+            <Route path="/admin/resources" element={<AdminResourcesPage />} />
             <Route path="/legal/terms" element={<TermsPage />} />
             <Route path="/legal/privacy" element={<PrivacyPage />} />
             <Route path="/legal/refund-policy" element={<RefundPolicyPage />} />

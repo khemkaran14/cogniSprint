@@ -92,3 +92,13 @@ test("administrator can review and approve queued learning content", async ({ pa
   await expect(page.getByRole("button", { name: "approved" })).toBeEnabled();
   await page.getByRole("button", { name: "approved" }).click();
 });
+
+test("administrator can publish an imported workbook with a release note", async ({ page }) => {
+  await page.route("**/api/auth/me", (route) => route.fulfill({ json: { user: admin } }));
+  await page.route("**/api/admin/resources", (route) => route.fulfill({ json: { resources: [{ _id: "resource_draft", title: "Focus Workbook", kind: "workbook", version: 1, filename: "focus-workbook.pdf", sizeBytes: 1048576, sha256: "a".repeat(64), status: "draft", productId: { name: "CogniSprint Complete" } }] } }));
+  await page.route("**/api/admin/resources/resource_draft/status", (route) => route.fulfill({ json: { resource: { _id: "resource_draft", status: "published" } } }));
+  await page.goto("/admin/resources");
+  await expect(page.getByRole("heading", { name: "Workbook and worksheet releases" })).toBeVisible();
+  await page.locator("#resource-note-resource_draft").fill("Reviewed PDF content and accessibility");
+  await page.getByRole("button", { name: "published" }).click();
+});

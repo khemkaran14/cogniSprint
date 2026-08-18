@@ -81,6 +81,7 @@ Nothing beyond MongoDB is required to see the full marketing site, curriculum, b
 | `server/` | `npm run reconcile` / `npm run reconcile:apply` | Inspect or repair stale payment/order and entitlement mismatches |
 | `server/` | `npm run email:process` | Process up to 100 queued transactional emails with bounded retries |
 | `server/` | `npm run alerts:scan` | Detect and deduplicate operational payment, webhook, email and entitlement alerts |
+| `server/` | `npm run resource:import -- --file ...` | Validate and import a PDF resource as a draft for audited admin publication |
 | `server/` | `npm test` | Server unit and HTTP application tests (no live database required) |
 | `server/` | `INTEGRATION_MONGODB_URI=mongodb://127.0.0.1:27017/cognisprint_integration npm run test:integration` | Destructive integration checks against a disposable MongoDB database |
 | `client/` | `npm run dev` | Vite dev server |
@@ -121,7 +122,7 @@ CogniSprint now includes secure account registration, sign-in/out, opaque databa
 | Marketing, curriculum catalogue, blog, legal and free challenge | Implemented | Public pages and API-backed catalogue content exist. |
 | Accounts and sessions | Foundation implemented | Registration, login/logout, verification, reset, profile preferences and secure owner-scoped device/session revocation exist; data-rights export/deletion workflows remain. |
 | Checkout and entitlements | Foundation implemented | Server-priced Razorpay orders, signed callback/webhook verification, persisted orders, grant/revoke behavior, owner history, printable receipts, audited refunds, and dispute/chargeback handling exist; production reconciliation and legally reviewed tax invoices remain. |
-| Protected learning | Foundation implemented | Active entitlements gate `/learn`; sequential prerequisites, daily unlocks, resumable drafts, idempotent submissions and module/course completion are implemented for three Getting Started lessons. The remaining 362 sessions are not present. |
+| Protected learning | Foundation implemented | Active entitlements gate lessons and versioned workbook/worksheet downloads; sequential prerequisites, daily unlocks, resumable drafts, idempotent submissions and completion are implemented for three lessons. The remaining 362 sessions and reviewed resource files are not present. |
 | Progress and gamification | Partial | Overall, per-skill, per-module and daily activity analytics, CSV export, completion, attempts, recorded duration, best score, computed XP, timezone-aware streak and four badge rules exist. Persistent achievement history does not. |
 | Certificates | Foundation | Eligibility/status, claim, print/save-PDF UI, queued email delivery, signed provider outcome tracking, public verification and audited admin revocation exist. Eligibility deliberately requires at least 365 published and completed lessons. |
 | Monthly assessments | Foundation | Entitlement-gated attempts, server scoring, skill results and one technical baseline exist; eleven qualified and reviewed assessment banks remain. |
@@ -134,6 +135,8 @@ CogniSprint now includes secure account registration, sign-in/out, opaque databa
 Paid learners have a protected `/learn` dashboard backed by active product entitlements. Published lessons are stored separately from curriculum marketing metadata, learner-facing responses omit answer keys, submissions are scored server-side, and best score, attempt count and completion status are persisted. XP, streak and badges are derived from progress records rather than trusted client state.
 
 Only three initial Getting Started lessons are seeded. They prove the workflow; they do **not** constitute the complete 365-day product. Content claims must remain limited to reviewed, published material until all remaining lessons and assessments are delivered.
+
+The protected resource delivery foundation stores versioned PDFs in GridFS, checks product-specific entitlements and audits downloads. See `RESOURCE_DELIVERY.md`. No advertised workbook is bundled by default; an owner must import, review and publish the real approved files before making that claim.
 
 ## Administrator access
 

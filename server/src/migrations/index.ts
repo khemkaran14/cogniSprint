@@ -14,6 +14,7 @@ import { createPrivacyRequestIndexes } from "./013-create-privacy-request-indexe
 import { createDisputeIndexes } from "./014-create-dispute-indexes.js";
 import { createEmailProviderEventIndexes } from "./015-create-email-provider-event-indexes.js";
 import { createContentWorkflowIndexes } from "./016-create-content-workflow-indexes.js";
+import { createLearningResourceIndexes } from "./017-create-learning-resource-indexes.js";
 import type { Migration } from "./types.js";
 
-export const migrations: Migration[] = [createApplicationIndexes, createLearningProgressionIndexes, createAnalyticsIndexes, createAssessmentIndexes, createCertificateDeliveryIndexes, createSessionManagementIndexes, createAdminAuditIndexes, createOrderHistoryIndexes, createRefundIndexes, createReconciliationIndexes, createEmailDeliveryIndexes, createOperationalAlertIndexes, createPrivacyRequestIndexes, createDisputeIndexes, createEmailProviderEventIndexes, createContentWorkflowIndexes];
+export const migrations: Migration[] = [createApplicationIndexes, createLearningProgressionIndexes, createAnalyticsIndexes, createAssessmentIndexes, createCertificateDeliveryIndexes, createSessionManagementIndexes, createAdminAuditIndexes, createOrderHistoryIndexes, createRefundIndexes, createReconciliationIndexes, createEmailDeliveryIndexes, createOperationalAlertIndexes, createPrivacyRequestIndexes, createDisputeIndexes, createEmailProviderEventIndexes, createContentWorkflowIndexes, createLearningResourceIndexes];

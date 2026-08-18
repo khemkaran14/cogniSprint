@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import mongoose from "mongoose";
+import { GridFSBucket } from "mongodb";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
 import { CurriculumModule } from "../src/models/Module.js";
@@ -14,6 +15,8 @@ import { User } from "../src/models/User.js";
 import { WebhookEvent } from "../src/models/WebhookEvent.js";
 import { Dispute } from "../src/models/Dispute.js";
 import { OperationalAlert } from "../src/models/OperationalAlert.js";
+import { LearningResource } from "../src/models/LearningResource.js";
+import { ResourceDownload } from "../src/models/ResourceDownload.js";
 
 let server: Server | undefined; let baseUrl: string;
 
@@ -42,7 +45,7 @@ beforeAll(async () => {
   process.env.RAZORPAY_KEY_SECRET = "integration-payment-secret";
   process.env.RESEND_WEBHOOK_SECRET = `whsec_${Buffer.from("integration-resend-secret").toString("base64")}`;
   await mongoose.connect(uri, { autoIndex: true });
-  await Promise.all([User.syncIndexes(), Product.syncIndexes(), CurriculumModule.syncIndexes(), Lesson.syncIndexes(), Order.syncIndexes(), Entitlement.syncIndexes(), WebhookEvent.syncIndexes(), EmailDelivery.syncIndexes(), Dispute.syncIndexes(), OperationalAlert.syncIndexes()]);
+  await Promise.all([User.syncIndexes(), Product.syncIndexes(), CurriculumModule.syncIndexes(), Lesson.syncIndexes(), Order.syncIndexes(), Entitlement.syncIndexes(), WebhookEvent.syncIndexes(), EmailDelivery.syncIndexes(), Dispute.syncIndexes(), OperationalAlert.syncIndexes(), LearningResource.syncIndexes(), ResourceDownload.syncIndexes()]);
   server = createApp().listen(0); await new Promise<void>((resolve) => server.once("listening", resolve));
   baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
 });
@@ -58,6 +61,17 @@ describe("MongoDB-backed platform", () => {
     const response = await request("/api/learning/dashboard", { headers: { cookie } }); expect(response.status).toBe(200);
     const body = await response.json() as { summary: { totalLessons: number }; modules: unknown[] };
     expect(body.summary.totalLessons).toBe(1); expect(body.modules).toHaveLength(1);
+  });
+
+  it("lists and streams only resources covered by the learner entitlement", async () => {
+    const { cookie, user } = await register("resources@example.com"); const product = await catalogue();
+    const order = await Order.create({ customerName: user.name, customerEmail: user.email, customerPhone: "9999999999", userId: user._id, productId: product._id, amount: 99900, currency: "INR", status: "paid", providerOrderId: "order_resources" });
+    const entitlement = await Entitlement.create({ userId: user._id, productId: product._id, sourceOrderId: order._id, status: "active" });
+    const pdf = Buffer.from("%PDF-1.7\nintegration workbook"); const bucket = new GridFSBucket(mongoose.connection.db!, { bucketName: "learningResources" }); const upload = bucket.openUploadStream("integration-workbook.pdf", { contentType: "application/pdf" }); upload.end(pdf); await new Promise<void>((resolve, reject) => upload.on("finish", resolve).on("error", reject));
+    await LearningResource.create({ productId: product._id, slug: "integration-workbook", title: "Integration Workbook", description: "Private test workbook", kind: "workbook", version: 1, gridFsFileId: upload.id, filename: "integration-workbook.pdf", mimeType: "application/pdf", sizeBytes: pdf.length, sha256: crypto.createHash("sha256").update(pdf).digest("hex"), status: "published", publishedAt: new Date() });
+    const listing = await request("/api/resources", { headers: { cookie } }); expect(listing.status).toBe(200); expect((await listing.json() as { resources: unknown[] }).resources).toHaveLength(1);
+    const download = await request("/api/resources/integration-workbook/download", { headers: { cookie } }); expect(download.status).toBe(200); expect(download.headers.get("content-type")).toBe("application/pdf"); expect(Buffer.from(await download.arrayBuffer())).toEqual(pdf); expect(await ResourceDownload.countDocuments({ userId: user._id, entitlementId: entitlement._id })).toBe(1);
+    const outsider = await register("resource-outsider@example.com"); expect((await request("/api/resources/integration-workbook/download", { headers: { cookie: outsider.cookie } })).status).toBe(403);
   });
 
   it("deduplicates captured-payment webhook replay and grants one entitlement", async () => {
