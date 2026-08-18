@@ -15,7 +15,7 @@ import { WebhookEvent } from "../src/models/WebhookEvent.js";
 import { Dispute } from "../src/models/Dispute.js";
 import { OperationalAlert } from "../src/models/OperationalAlert.js";
 
-let server: Server; let baseUrl: string;
+let server: Server | undefined; let baseUrl: string;
 
 async function request(path: string, init: RequestInit = {}) { return fetch(`${baseUrl}${path}`, init); }
 async function register(email: string) {
@@ -38,13 +38,14 @@ beforeAll(async () => {
   if (!uri) throw new Error("INTEGRATION_MONGODB_URI is required for database integration tests.");
   process.env.CLIENT_URL = "http://localhost:5173";
   process.env.RAZORPAY_WEBHOOK_SECRET = "integration-webhook-secret";
+  process.env.RESEND_WEBHOOK_SECRET = `whsec_${Buffer.from("integration-resend-secret").toString("base64")}`;
   await mongoose.connect(uri, { autoIndex: true });
   await Promise.all([User.syncIndexes(), Product.syncIndexes(), CurriculumModule.syncIndexes(), Lesson.syncIndexes(), Order.syncIndexes(), Entitlement.syncIndexes(), WebhookEvent.syncIndexes(), EmailDelivery.syncIndexes(), Dispute.syncIndexes(), OperationalAlert.syncIndexes()]);
   server = createApp().listen(0); await new Promise<void>((resolve) => server.once("listening", resolve));
   baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
 });
 beforeEach(async () => { for (const collection of await mongoose.connection.db!.collections()) await collection.deleteMany({}); });
-afterAll(async () => { await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve())); await mongoose.disconnect(); });
+afterAll(async () => { if (server) await new Promise<void>((resolve, reject) => server!.close((error) => error ? reject(error) : resolve())); await mongoose.disconnect(); });
 
 describe("MongoDB-backed platform", () => {
   it("persists sessions and enforces entitlement-backed learning access", async () => {
@@ -82,5 +83,15 @@ describe("MongoDB-backed platform", () => {
     expect(await Order.findById(order._id).lean()).toMatchObject({ status: "chargeback" });
     expect(await Entitlement.findOne({ sourceOrderId: order._id }).lean()).toMatchObject({ status: "revoked" });
     expect(await Dispute.findOne({ providerDisputeId: "disp_1" }).lean()).toMatchObject({ status: "lost", lastEventId: "event_dispute_lost" });
+  });
+
+  it("records a signed Resend bounce once and opens an operational alert", async () => {
+    await EmailDelivery.create({ idempotencyKey: "integration-email", category: "purchase", to: "bounce@example.com", subject: "Purchase", text: "Purchase confirmed", status: "sent", attempts: 1, providerMessageId: "resend_message_1", sentAt: new Date() });
+    const raw = JSON.stringify({ type: "email.bounced", created_at: "2026-08-18T12:00:00.000Z", data: { email_id: "resend_message_1", to: ["bounce@example.com"], bounce: { message: "Mailbox unavailable" } } });
+    const timestamp = String(Math.floor(Date.now() / 1000)); const eventId = "resend_event_1"; const secret = Buffer.from(process.env.RESEND_WEBHOOK_SECRET!.slice(6), "base64");
+    const signature = `v1,${crypto.createHmac("sha256", secret).update(`${eventId}.${timestamp}.${raw}`).digest("base64")}`;
+    const send = () => request("/api/webhooks/resend", { method: "POST", headers: { "content-type": "application/json", "svix-id": eventId, "svix-timestamp": timestamp, "svix-signature": signature }, body: raw });
+    expect((await send()).status).toBe(200); expect(await EmailDelivery.findOne({ providerMessageId: "resend_message_1" }).lean()).toMatchObject({ status: "bounced", lastError: "Mailbox unavailable" });
+    expect((await send()).status).toBe(200); expect(await WebhookEvent.countDocuments({ provider: "resend", eventId })).toBe(1); expect(await OperationalAlert.countDocuments({ category: "email_bounce" })).toBe(1);
   });
 });

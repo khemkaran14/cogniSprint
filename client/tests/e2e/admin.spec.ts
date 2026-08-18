@@ -43,6 +43,16 @@ test("administrator can review and retry failed transactional email", async ({ p
   await expect(page.getByRole("button", { name: "Retry" })).toBeVisible();
 });
 
+test("administrator can review a provider-reported email bounce", async ({ page }) => {
+  await page.route("**/api/auth/me", (route) => route.fulfill({ json: { user: admin } }));
+  await page.route("**/api/admin/email-deliveries", (route) => route.fulfill({ json: { deliveries: [{ _id: "delivery_bounced", category: "purchase", to: "bounce@example.com", subject: "Purchase confirmed", status: "bounced", attempts: 1, providerMessageId: "resend_message_1", providerEventAt: "2026-08-18T12:00:00Z", lastError: "Mailbox unavailable" }] } }));
+  await page.goto("/admin/email-deliveries");
+  await expect(page.getByText("Mailbox unavailable")).toBeVisible();
+  await expect(page.getByText("bounced")).toBeVisible();
+  await expect(page.getByText(/Provider update/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Retry" })).toHaveCount(0);
+});
+
 test("administrator can review operational alerts", async ({ page }) => {
   await page.route("**/api/auth/me", (route) => route.fulfill({ json: { user: admin } }));
   await page.route("**/api/admin/alerts", (route) => route.fulfill({ json: { alerts: [{ _id: "alert_1", category: "entitlement_mismatch", severity: "critical", status: "open", title: "Paid order has no active entitlement", details: { orderId: "order_1" }, occurrences: 2, firstSeenAt: "2026-08-15T10:00:00Z", lastSeenAt: "2026-08-15T11:00:00Z" }] } }));

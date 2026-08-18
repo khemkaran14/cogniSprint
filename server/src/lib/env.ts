@@ -55,4 +55,7 @@ export function validateEnvironment(env: NodeJS.ProcessEnv = process.env): void 
   if (env.NODE_ENV === "production" && razorpayKeyId && !env.RAZORPAY_WEBHOOK_SECRET) {
     throw new Error("RAZORPAY_WEBHOOK_SECRET is required when Razorpay is enabled in production.");
   }
+  if (env.NODE_ENV === "production" && env.RESEND_API_KEY && !env.RESEND_WEBHOOK_SECRET) {
+    throw new Error("RESEND_WEBHOOK_SECRET is required when Resend is enabled in production.");
+  }
 }

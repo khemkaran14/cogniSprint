@@ -19,7 +19,7 @@
 - Refund initiation, provider refund records and partial-refund amount tracking
 - A documented decision for how partial refunds affect an entitlement
 - Scheduled reconciliation for pending or inconsistent orders
-- Dispute handling, reconciliation, tax invoices and reliable queued payment/refund emails (owner order history and printable payment receipts are implemented)
+- Production validation of dispute handling, reconciliation, tax invoices and reliable queued payment/refund email delivery
 - A human-owned process for submitting dispute evidence and communicating with affected customers
 - Real-database tests covering callback/webhook races, redelivery, refund and entitlement state
 - Owner-controlled Razorpay KYC, Live credentials, production webhook registration and a real payment/refund smoke test
@@ -95,3 +95,7 @@ Purchase confirmations, payment failures and refunds use idempotent outbox recor
 ## Payment disputes and chargebacks
 
 Enable Razorpay dispute lifecycle webhooks (`payment.dispute.created`, `payment.dispute.won`, `payment.dispute.lost` and `payment.dispute.closed`) on the same signed endpoint. Open disputes create critical operational alerts and appear at `/admin/disputes`; submit evidence and communicate with the provider from an authorized Razorpay account. A won dispute restores the paid order/access state, while a lost dispute records a chargeback and revokes the order entitlement. Webhook state is authoritative and duplicate deliveries remain protected by the event ledger.
+
+## Resend delivery events
+
+Register `POST /api/webhooks/resend` in Resend and store its signing secret as `RESEND_WEBHOOK_SECRET`. Subscribe to sent, delivered, delayed, bounced and complained email events. The API verifies the Svix signature and timestamp against the raw body, deduplicates event IDs, updates the matching provider message, and raises a critical operational alert for bounces or complaints. Review provider outcomes at `/admin/email-deliveries`; do not blindly retry a bounce or complaint.

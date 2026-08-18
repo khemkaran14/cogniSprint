@@ -46,4 +46,8 @@ describe("validateEnvironment", () => {
   it("requires an encrypted production log drain", () => {
     expect(() => validateEnvironment({ ...validEnv, NODE_ENV: "production", LOG_DRAIN_URL: "http://logs.example.com" })).toThrow(/https/);
   });
+
+  it("requires a webhook secret with production Resend delivery", () => {
+    expect(() => validateEnvironment({ ...validEnv, NODE_ENV: "production", RESEND_API_KEY: "re_live_example" })).toThrow(/RESEND_WEBHOOK_SECRET/);
+  });
 });

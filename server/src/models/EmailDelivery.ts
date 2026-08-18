@@ -7,11 +7,15 @@ const emailDeliverySchema = new Schema({
   to: { type: String, required: true, lowercase: true, trim: true },
   subject: { type: String, required: true, maxlength: 200 },
   text: { type: String, required: true, maxlength: 20_000 },
-  status: { type: String, enum: ["queued", "sending", "sent", "failed"], required: true, default: "queued", index: true },
+  status: { type: String, enum: ["queued", "sending", "sent", "delivered", "delayed", "bounced", "complained", "failed"], required: true, default: "queued", index: true },
   attempts: { type: Number, required: true, default: 0, min: 0 },
   nextAttemptAt: { type: Date, required: true, default: Date.now, index: true },
-  providerMessageId: { type: String, sparse: true },
+  providerMessageId: { type: String, sparse: true, index: true },
   sentAt: { type: Date },
+  deliveredAt: { type: Date },
+  bouncedAt: { type: Date },
+  complainedAt: { type: Date },
+  providerEventAt: { type: Date },
   lastError: { type: String, maxlength: 500 },
 }, { timestamps: true });
 

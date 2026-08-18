@@ -7,8 +7,48 @@ import { enqueueEmail } from "../lib/emailQueue.js";
 import { Dispute } from "../models/Dispute.js";
 import { recordAlert } from "../lib/operationalAlerts.js";
 import { disputeStatusForEvent } from "../lib/disputes.js";
+import { resendDeliveryStatus, verifyResendWebhookSignature } from "../lib/resendWebhooks.js";
+import { EmailDelivery } from "../models/EmailDelivery.js";
 
 export const webhooksRouter = Router();
+
+type ResendWebhookEvent = { type?: string; created_at?: string; data?: { email_id?: string; to?: string[]; bounce?: { message?: string } } };
+
+webhooksRouter.post("/resend", async (req, res) => {
+  const rawBody = Buffer.isBuffer(req.body) ? req.body.toString("utf8") : "";
+  const eventId = req.header("svix-id");
+  if (!process.env.RESEND_WEBHOOK_SECRET) return res.status(501).json({ error: "Resend webhook secret not configured." });
+  if (!verifyResendWebhookSignature(rawBody, { id: eventId, timestamp: req.header("svix-timestamp"), signature: req.header("svix-signature") })) return res.status(400).json({ error: "Invalid signature." });
+  let event: ResendWebhookEvent;
+  try { event = JSON.parse(rawBody) as ResendWebhookEvent; } catch { return res.status(400).json({ error: "Invalid payload." }); }
+  if (!eventId || !event.type) return res.status(400).json({ error: "Webhook event ID and type are required." });
+  try {
+    await WebhookEvent.create({ provider: "resend", eventId, eventType: event.type, status: "processing" });
+  } catch (error) {
+    if ((error as { code?: number }).code !== 11000) throw error;
+    const existing = await WebhookEvent.findOne({ provider: "resend", eventId });
+    const stale = existing?.status === "processing" && existing.updatedAt < new Date(Date.now() - 5 * 60_000);
+    if (existing?.status === "processed" || (existing?.status === "processing" && !stale)) return res.json({ received: true, duplicate: true });
+    await WebhookEvent.updateOne({ provider: "resend", eventId }, { status: "processing", failureReason: null });
+  }
+  try {
+    const status = resendDeliveryStatus(event.type);
+    const messageId = event.data?.email_id;
+    if (status && !messageId) throw new Error("Resend delivery webhook is missing its email ID.");
+    if (status && messageId) {
+      const eventAt = event.created_at && !Number.isNaN(Date.parse(event.created_at)) ? new Date(event.created_at) : new Date();
+      const timestamps = status === "delivered" ? { deliveredAt: eventAt } : status === "bounced" ? { bouncedAt: eventAt } : status === "complained" ? { complainedAt: eventAt } : {};
+      const delivery = await EmailDelivery.findOneAndUpdate({ providerMessageId: messageId, $or: [{ providerEventAt: null }, { providerEventAt: { $lte: eventAt } }] }, { status, providerEventAt: eventAt, ...timestamps, lastError: status === "bounced" ? event.data?.bounce?.message?.slice(0, 500) : null }, { new: true });
+      if (!delivery && !await EmailDelivery.exists({ providerMessageId: messageId })) throw new Error(`No queued email matches Resend message ${messageId}.`);
+      if (delivery && (status === "bounced" || status === "complained")) await recordAlert({ fingerprint: `email-${status}:${messageId}`, category: "email_bounce", severity: "critical", title: `Transactional email ${status}`, details: { deliveryId: String(delivery._id), messageId, to: delivery.to, category: delivery.category, reason: event.data?.bounce?.message } });
+    }
+    await WebhookEvent.updateOne({ provider: "resend", eventId }, { status: "processed", processedAt: new Date() });
+  } catch (error) {
+    await WebhookEvent.updateOne({ provider: "resend", eventId }, { status: "failed", failureReason: error instanceof Error ? error.message.slice(0, 500) : "Unknown error" });
+    throw error;
+  }
+  res.json({ received: true });
+});
 
 type RazorpayWebhookEvent = {
   event?: string;

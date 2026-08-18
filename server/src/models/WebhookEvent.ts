@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 
 const webhookEventSchema = new Schema(
   {
-    provider: { type: String, enum: ["razorpay"], required: true },
+    provider: { type: String, enum: ["razorpay", "resend"], required: true },
     eventId: { type: String, required: true },
     eventType: { type: String, required: true },
     status: { type: String, enum: ["processing", "processed", "failed"], required: true, default: "processing" },
