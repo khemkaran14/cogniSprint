@@ -6,37 +6,35 @@ import { DailyRoutine } from "@/components/marketing/DailyRoutine";
 import { SkillGrid } from "@/components/marketing/SkillGrid";
 import { CourseTimeline } from "@/components/marketing/CourseTimeline";
 import { SampleLessonPreview } from "@/components/marketing/SampleLessonPreview";
-import { WorkbookPreview } from "@/components/marketing/WorkbookPreview";
 import { AudienceSection } from "@/components/marketing/AudienceSection";
 import { BenefitsSection } from "@/components/marketing/BenefitsSection";
 import { HowItWorksSection } from "@/components/marketing/HowItWorksSection";
 import { GamificationPreview } from "@/components/marketing/GamificationPreview";
 import { BonusesSection } from "@/components/marketing/BonusesSection";
 import { HomePricingSection } from "@/components/marketing/home/PricingSection";
-import { PurchaseReassurance } from "@/components/marketing/PurchaseReassurance";
 import { FaqSection } from "@/components/marketing/FaqSection";
 import { FinalCta } from "@/components/marketing/FinalCta";
 import { siteConfig } from "@/config/seo";
+import { useContentAvailability } from "@/lib/queries";
 
 export default function HomePage() {
+  const availability = useContentAvailability();
   return (
     <>
       <Seo title={siteConfig.title} description={siteConfig.description} path="/" />
       <HeroSection />
-      <TrustFactsSection />
+      <TrustFactsSection availability={availability.data} />
       <ProblemSolutionSection />
       <DailyRoutine />
       <SkillGrid />
-      <CourseTimeline />
+      <CourseTimeline availability={availability.data} />
       <SampleLessonPreview />
-      <WorkbookPreview />
       <AudienceSection />
       <BenefitsSection />
       <HowItWorksSection />
       <GamificationPreview />
       <BonusesSection />
       <HomePricingSection />
-      <PurchaseReassurance />
       <FaqSection limit={8} />
       <FinalCta />
     </>

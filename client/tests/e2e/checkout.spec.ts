@@ -1,21 +1,15 @@
 import { test, expect } from "@playwright/test";
 import { mockApi } from "./mockApi";
 
-test("checkout page shows order summary and validates required fields", async ({ page }) => {
+test("a stale checkout link cannot load a product while enrollment is closed", async ({ page }) => {
   await mockApi(page);
   await page.goto("/checkout?product=cognisprint-complete");
-
-  await expect(page.getByText("CogniSprint Complete Brain Training Program")).toBeVisible();
-  await expect(page.getByText("Total due today")).toBeVisible();
-
-  await page.getByRole("button", { name: /pay .* securely/i }).click();
-
-  await expect(page.getByText(/enter your full name/i)).toBeVisible();
-  await expect(page.getByText(/you must accept the terms/i)).toBeVisible();
+  await expect(page.getByText(/couldn't find that product/i)).toBeVisible();
+  await expect(page.getByRole("button", { name: /pay .* securely/i })).toHaveCount(0);
 });
 
-test("submitting a valid checkout without a configured payment provider fails safely, without a fake success state", async ({ page }) => {
-  await mockApi(page);
+test("server enrollment closure stops payment even if a stale product response is cached", async ({ page }) => {
+  await mockApi(page, { enrollmentOpen: true });
   await page.goto("/checkout?product=cognisprint-complete");
 
   const form = page.locator("form").filter({ hasText: "Your details" });
@@ -26,5 +20,5 @@ test("submitting a valid checkout without a configured payment provider fails sa
 
   await form.getByRole("button", { name: /pay .* securely/i }).click();
 
-  await expect(page.getByText(/payment isn.t connected yet/i)).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText(/enrollment is currently closed/i)).toBeVisible({ timeout: 10_000 });
 });

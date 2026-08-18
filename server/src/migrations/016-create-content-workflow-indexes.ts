@@ -1,0 +1,2 @@
+import type { Migration } from "./types.js";
+export const createContentWorkflowIndexes: Migration = { id: "202608180016-create-content-workflow-indexes", checksum: "sha256:aa15d82bcfc5f12e56c43d77c39e31983aa47f33b063134f7c1c80ef2666dfa1", async up({ connection, log }) { await connection.collection("lessons").createIndex({ status: 1, updatedAt: -1 }, { name: "lesson_review_queue" }); await connection.collection("assessments").createIndex({ status: 1, updatedAt: -1 }, { name: "assessment_review_queue" }); log("content workflow indexes ready"); } };
