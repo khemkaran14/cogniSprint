@@ -20,6 +20,7 @@ import { Lesson } from "../models/Lesson.js";
 import { Assessment } from "../models/Assessment.js";
 import { canTransitionContent, contentStatuses, contentTransitionDates, type ContentStatus } from "../lib/contentWorkflow.js";
 import { LearningResource } from "../models/LearningResource.js";
+import { Session } from "../models/Session.js";
 
 export const adminRouter = Router();
 adminRouter.use(requireAdmin);
@@ -33,6 +34,73 @@ adminRouter.get("/dashboard", async (_req, res, next) => {
       AuditEvent.find().populate("actorUserId", "name email").sort({ createdAt: -1 }).limit(10).lean(),
     ]);
     res.json({ summary: { users, activeEntitlements, pendingOrders, failedWebhooks, openDisputes, failedCertificateEmails }, recentOrders, recentAudits });
+  } catch (error) { next(error); }
+});
+
+const userDirectoryQuery = z.object({
+  query: z.string().trim().max(100).optional().default(""),
+  status: z.enum(["all", "active", "suspended"]).optional().default("all"),
+  page: z.coerce.number().int().min(1).optional().default(1),
+});
+const userStatusSchema = z.object({ status: z.enum(["active", "suspended"]), reason: z.string().trim().min(10).max(500) });
+const sessionRevocationSchema = z.object({ reason: z.string().trim().min(10).max(500) });
+const objectIdSchema = z.string().regex(/^[a-f\d]{24}$/i);
+
+adminRouter.get("/users", async (req, res, next) => {
+  try {
+    const parsed = userDirectoryQuery.safeParse(req.query);
+    if (!parsed.success) return res.status(422).json({ error: "Check the user directory filters." });
+    const { query, status, page } = parsed.data;
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const filter = {
+      role: "learner",
+      ...(status === "all" ? {} : { status }),
+      ...(query ? { $or: [{ name: { $regex: escaped, $options: "i" } }, { email: { $regex: escaped, $options: "i" } }] } : {}),
+    };
+    const limit = 25;
+    const [users, total] = await Promise.all([
+      User.find(filter).select("name email status emailVerifiedAt lastLoginAt timezone createdAt updatedAt").sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+      User.countDocuments(filter),
+    ]);
+    const userIds = users.map((user) => user._id);
+    const [entitlementCounts, sessionCounts] = await Promise.all([
+      Entitlement.aggregate<{ _id: unknown; count: number }>([{ $match: { userId: { $in: userIds }, status: "active" } }, { $group: { _id: "$userId", count: { $sum: 1 } } }]),
+      Session.aggregate<{ _id: unknown; count: number }>([{ $match: { userId: { $in: userIds }, expiresAt: { $gt: new Date() } } }, { $group: { _id: "$userId", count: { $sum: 1 } } }]),
+    ]);
+    const counts = (rows: Array<{ _id: unknown; count: number }>) => new Map(rows.map((row) => [String(row._id), row.count]));
+    const entitlements = counts(entitlementCounts); const sessions = counts(sessionCounts);
+    res.json({ users: users.map((user) => ({ ...user, activeEntitlements: entitlements.get(String(user._id)) ?? 0, activeSessions: sessions.get(String(user._id)) ?? 0 })), pagination: { page, limit, total, pages: Math.ceil(total / limit) } });
+  } catch (error) { next(error); }
+});
+
+adminRouter.patch("/users/:id/status", async (req, res, next) => {
+  try {
+    if (!objectIdSchema.safeParse(req.params.id).success) return res.status(404).json({ error: "Learner not found." });
+    const parsed = userStatusSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(422).json({ error: "Choose a valid account status and provide a reason of at least 10 characters." });
+    if (String(res.locals.user._id) === req.params.id) return res.status(409).json({ error: "You cannot change your own administrator status." });
+    const learner = await User.findOne({ _id: req.params.id, role: "learner" });
+    if (!learner) return res.status(404).json({ error: "Learner not found." });
+    if (learner.status === parsed.data.status) return res.status(409).json({ error: `This learner is already ${parsed.data.status}.` });
+    const previousStatus = learner.status;
+    learner.status = parsed.data.status;
+    await learner.save();
+    const revokedSessions = parsed.data.status === "suspended" ? (await Session.deleteMany({ userId: learner._id })).deletedCount : 0;
+    await AuditEvent.create({ actorUserId: res.locals.user._id, action: `user.${parsed.data.status}`, targetType: "User", targetId: String(learner._id), requestId: res.locals.requestId, ipAddress: req.ip || "Unknown", metadata: { previousStatus, status: parsed.data.status, reason: parsed.data.reason, revokedSessions } });
+    res.json({ user: { id: String(learner._id), name: learner.name, email: learner.email, status: learner.status }, revokedSessions });
+  } catch (error) { next(error); }
+});
+
+adminRouter.post("/users/:id/sessions/revoke", async (req, res, next) => {
+  try {
+    if (!objectIdSchema.safeParse(req.params.id).success) return res.status(404).json({ error: "Learner not found." });
+    const parsed = sessionRevocationSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(422).json({ error: "Provide a session revocation reason of at least 10 characters." });
+    const learner = await User.findOne({ _id: req.params.id, role: "learner" }).select("name email");
+    if (!learner) return res.status(404).json({ error: "Learner not found." });
+    const revokedSessions = (await Session.deleteMany({ userId: learner._id })).deletedCount;
+    await AuditEvent.create({ actorUserId: res.locals.user._id, action: "user.sessions_revoke", targetType: "User", targetId: String(learner._id), requestId: res.locals.requestId, ipAddress: req.ip || "Unknown", metadata: { reason: parsed.data.reason, revokedSessions } });
+    res.json({ revokedSessions });
   } catch (error) { next(error); }
 });
 

@@ -102,3 +102,16 @@ test("administrator can publish an imported workbook with a release note", async
   await page.locator("#resource-note-resource_draft").fill("Reviewed PDF content and accessibility");
   await page.getByRole("button", { name: "published" }).click();
 });
+
+test("administrator can search learner accounts and prepare an audited suspension", async ({ page }) => {
+  await page.route("**/api/auth/me", (route) => route.fulfill({ json: { user: admin } }));
+  await page.route("**/api/admin/users?**", (route) => route.fulfill({ json: { users: [{ _id: "66bb88cc00dd11ee22ff3344", name: "Asha Rao", email: "asha@example.com", status: "active", emailVerifiedAt: "2026-08-01T12:00:00Z", lastLoginAt: "2026-08-18T12:00:00Z", timezone: "Asia/Kolkata", createdAt: "2026-07-01T12:00:00Z", activeEntitlements: 1, activeSessions: 2 }], pagination: { page: 1, limit: 25, total: 1, pages: 1 } } }));
+  await page.goto("/admin/users");
+  await expect(page.getByRole("heading", { name: "Learner access support" })).toBeVisible();
+  await expect(page.getByText("asha@example.com", { exact: false })).toBeVisible();
+  await expect(page.getByText("1 active entitlement · 2 active sessions")).toBeVisible();
+  const suspend = page.getByRole("button", { name: "Suspend account" });
+  await expect(suspend).toBeDisabled();
+  await page.getByPlaceholder("Ticket reference and reason for this action").fill("Support case CS-1842 compromised device");
+  await expect(suspend).toBeEnabled();
+});
