@@ -82,6 +82,7 @@ Nothing beyond MongoDB is required to see the full marketing site, curriculum, b
 | `server/` | `npm run email:process` | Process up to 100 queued transactional emails with bounded retries |
 | `server/` | `npm run alerts:scan` | Detect and deduplicate operational payment, webhook, email and entitlement alerts |
 | `server/` | `npm run resource:import -- --file ...` | Validate and import a PDF resource as a draft for audited admin publication |
+| `server/` | `npm run content:audit` | Report published content counts and fail if enrollment is open below launch targets |
 | `server/` | `npm test` | Server unit and HTTP application tests (no live database required) |
 | `server/` | `INTEGRATION_MONGODB_URI=mongodb://127.0.0.1:27017/cognisprint_integration npm run test:integration` | Destructive integration checks against a disposable MongoDB database |
 | `client/` | `npm run dev` | Vite dev server |
@@ -137,6 +138,8 @@ Paid learners have a protected `/learn` dashboard backed by active product entit
 Only three initial Getting Started lessons are seeded. They prove the workflow; they do **not** constitute the complete 365-day product. Content claims must remain limited to reviewed, published material until all remaining lessons and assessments are delivered.
 
 The protected resource delivery foundation stores versioned PDFs in GridFS, checks product-specific entitlements and audits downloads. See `RESOURCE_DELIVERY.md`. No advertised workbook is bundled by default; an owner must import, review and publish the real approved files before making that claim.
+
+Public lesson and assessment totals are loaded from `/api/content-availability`; the operator and staging checks are documented in `CONTENT_AVAILABILITY.md`. Roadmap module totals remain plans and are deliberately separated from published inventory.
 
 ## Administrator access
 

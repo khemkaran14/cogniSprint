@@ -63,6 +63,7 @@ export const mockBlogArticle = {
 export async function mockApi(page: Page, options: { enrollmentOpen?: boolean } = {}) {
   await page.route("**/api/auth/me", (route) => route.fulfill({ json: { user: { id: "learner_1", name: "Test Customer", email: "test@example.com", role: "learner", timezone: "UTC", emailVerified: true } } }));
   await page.route("**/api/products", (route) => route.fulfill({ json: options.enrollmentOpen ? [mockProduct] : [] }));
+  await page.route("**/api/content-availability", (route) => route.fulfill({ json: { published: { lessons: 3, exercises: 3, assessments: 1, assessmentQuestions: 2, workbooks: 0, worksheets: 0 }, targets: { lessons: 365, assessments: 12, workbooks: 1 }, launchContentComplete: false, enrollmentOpen: Boolean(options.enrollmentOpen) } }));
   await page.route("**/api/products/cognisprint-complete", (route) => options.enrollmentOpen ? route.fulfill({ json: mockProduct }) : route.fulfill({ status: 404, json: { error: "Enrollment is currently closed." } }));
   await page.route("**/api/curriculum", (route) => route.fulfill({ json: mockModules }));
   await page.route(/\/api\/faq(\?.*)?$/, (route) => route.fulfill({ json: mockFaq }));

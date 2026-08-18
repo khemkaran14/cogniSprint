@@ -7,7 +7,7 @@ import { Reveal } from "@/components/shared/Reveal";
 import { CurriculumAccordion } from "@/components/course/CurriculumAccordion";
 import { FaqSection } from "@/components/marketing/FaqSection";
 import { LoadingState, ErrorState } from "@/components/shared/QueryStates";
-import { useCurriculum } from "@/lib/queries";
+import { useContentAvailability, useCurriculum } from "@/lib/queries";
 
 const phaseGroups = [
   { phase: "guided_learning" as const, title: "Guided learning (months 1–3)" },
@@ -17,19 +17,20 @@ const phaseGroups = [
 
 export default function CoursePage() {
   const { data: modules, isLoading, isError, refetch } = useCurriculum();
+  const availability = useContentAvailability(); const lessonCount = availability.data?.published.lessons; const assessmentCount = availability.data?.published.assessments;
 
     const facts = [
-    { icon: Calendar, label: "3 lessons", detail: "Published foundation content" },
+    { icon: Calendar, label: `${lessonCount ?? "—"} lessons`, detail: "Published foundation content" },
     { icon: Clock, label: "~15 minutes", detail: "Proposed session target" },
     { icon: Layers, label: `${modules?.length ?? 20} modules`, detail: "Roadmap structure, mostly unpublished" },
-    { icon: Award, label: "1 assessment", detail: "Technical baseline, not a monthly bank" },
+    { icon: Award, label: `${assessmentCount ?? "—"} assessments`, detail: "Published checks, not yet a monthly bank" },
   ];
 
   return (
     <>
       <Seo
         title="CogniSprint Course Roadmap and Published Preview"
-        description="Review three published CogniSprint foundation lessons and the proposed curriculum roadmap. Paid enrollment is currently closed."
+        description={`Review ${lessonCount ?? "the currently"} published CogniSprint foundation lessons and the proposed curriculum roadmap. Paid enrollment is currently closed.`}
         path="/brain-training-course"
       />
 
@@ -38,8 +39,8 @@ export default function CoursePage() {
           <Reveal>
             <SectionHeading
               eyebrow="Published preview and roadmap"
-              title="Three lessons available; the complete curriculum is still in development"
-              description="CogniSprint currently demonstrates protected learning, exercises, scoring and progress with three reviewed foundation lessons. The wider module structure is a roadmap, not delivered purchase content."
+              title={`${lessonCount ?? "Published"} lessons available; the complete curriculum is still in development`}
+              description={`CogniSprint currently demonstrates protected learning, exercises, scoring and progress with ${lessonCount ?? "its reviewed"} published lessons. The wider module structure is a roadmap, not delivered purchase content.`}
             />
           </Reveal>
 
@@ -60,7 +61,7 @@ export default function CoursePage() {
       <section className="bg-[var(--color-surface-sunken)] py-16 sm:py-24">
         <Container>
           <Reveal>
-            <SectionHeading eyebrow="Curriculum roadmap" title="Published foundations and planned modules" description="Counts on planned module cards are design targets. Only three Getting Started lessons are currently published." align="left" />
+            <SectionHeading eyebrow="Curriculum roadmap" title="Published foundations and planned modules" description={`Counts on planned module cards are design targets. The live inventory currently reports ${lessonCount ?? "the verified set of"} published lessons.`} align="left" />
           </Reveal>
 
           {isLoading ? <LoadingState label="Loading curriculum…" /> : null}
@@ -91,9 +92,8 @@ export default function CoursePage() {
             <div className="surface-card h-full p-8">
               <h3 className="text-xl font-semibold">Learning format</h3>
               <p className="mt-3 text-sm text-[var(--color-ink-muted)]">
-                The three published lessons combine short explanations and interactive exercises with immediate feedback.
-                One technical assessment baseline demonstrates secure scoring. Monthly assessment coverage, printable
-                worksheets and a downloadable workbook are not currently available.
+                The {lessonCount ?? "currently"} published lessons combine short explanations and interactive exercises with immediate feedback.
+                The {assessmentCount ?? "currently"} published assessments demonstrate secure scoring. Complete monthly assessment coverage and reviewed downloadable resources are not currently available.
               </p>
             </div>
           </Reveal>

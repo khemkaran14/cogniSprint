@@ -14,11 +14,18 @@ async function jsonField(response: Response, field: string, expected: string) {
   if (body[field] !== expected) throw new Error(`Expected ${field}=${expected}.`);
 }
 
+async function stagingContentAvailability(response: Response) {
+  const body = await response.json() as { enrollmentOpen?: boolean; published?: { lessons?: number; assessments?: number }; targets?: { lessons?: number; assessments?: number } };
+  if (body.enrollmentOpen !== false) throw new Error("Staging enrollment must remain closed.");
+  if (!Number.isInteger(body.published?.lessons) || !Number.isInteger(body.published?.assessments) || !body.targets?.lessons || !body.targets?.assessments) throw new Error("Content availability inventory is incomplete.");
+}
+
 export function deploymentChecks(apiValue: string, appValue: string): SmokeCheck[] {
   const api = normalizedOrigin(apiValue, "API_URL"); const app = normalizedOrigin(appValue, "APP_URL");
   return [
     { name: "API liveness", url: `${api}/api/health`, expectedStatus: 200, validate: (response) => jsonField(response, "status", "ok") },
     { name: "API readiness", url: `${api}/api/ready`, expectedStatus: 200, validate: (response) => jsonField(response, "database", "connected") },
+    { name: "Content availability", url: `${api}/api/content-availability`, expectedStatus: 200, validate: stagingContentAvailability },
     { name: "Authentication guard", url: `${api}/api/auth/sessions`, expectedStatus: 401 },
     { name: "Learning entitlement guard", url: `${api}/api/learning/dashboard`, expectedStatus: 401 },
     { name: "SPA login fallback", url: `${app}/login`, expectedStatus: 200, validate: async (response) => { if (!response.headers.get("content-type")?.includes("text/html")) throw new Error("Expected an HTML response."); } },

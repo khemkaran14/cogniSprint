@@ -1,13 +1,15 @@
 import { Container, SectionHeading } from "@/components/ui/Container";
 import { Reveal } from "@/components/shared/Reveal";
-const phases = [
-  { label: "Available now", title: "Foundation preview", description: "Three published Getting Started lessons demonstrate protected access, exercises, scoring, drafts and progress tracking." },
-  { label: "Available now", title: "Assessment baseline", description: "One technical baseline demonstrates server-side assessment scoring. It is not a complete monthly assessment bank." },
-  { label: "Planned", title: "Expanded curriculum", description: "The additional modules and daily sessions remain an authoring roadmap and are not currently included in a sale." },
-  { label: "Unavailable", title: "Program certificate", description: "The verification workflow exists, but qualification is impossible until at least 365 reviewed lessons are published and completed." },
-];
+import type { ContentAvailability } from "@/lib/queries";
 
-export function CourseTimeline() {
+export function CourseTimeline({ availability }: { availability?: ContentAvailability }) {
+  const lessonCount = availability?.published.lessons; const assessmentCount = availability?.published.assessments;
+  const phases = [
+    { label: "Available now", title: "Foundation preview", description: `${lessonCount === undefined ? "Published lessons" : `${lessonCount} published lesson${lessonCount === 1 ? "" : "s"}`} demonstrate protected access, exercises, scoring, drafts and progress tracking.` },
+    { label: "Available now", title: "Assessment baseline", description: `${assessmentCount === undefined ? "Published assessments" : `${assessmentCount} published assessment${assessmentCount === 1 ? "" : "s"}`} demonstrate server-side scoring. This is not yet the complete ${availability?.targets.assessments ?? 12}-assessment bank.` },
+    { label: "Planned", title: "Expanded curriculum", description: "The additional modules and daily sessions remain an authoring roadmap and are not currently included in a sale." },
+    { label: "Unavailable", title: "Program certificate", description: `The verification workflow exists, but qualification is impossible until at least ${availability?.targets.lessons ?? 365} reviewed lessons are published and completed.` },
+  ];
   return (
     <section className="bg-[var(--color-surface-sunken)] py-20 sm:py-28">
       <Container>

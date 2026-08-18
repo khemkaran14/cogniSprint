@@ -3,7 +3,7 @@ import { deploymentChecks, runDeploymentSmoke } from "../src/lib/deploymentSmoke
 
 describe("deployment smoke checks", () => {
   it("defines liveness, readiness, access guard, and SPA checks", () => {
-    expect(deploymentChecks("https://api.example.com", "https://app.example.com").map((check) => check.name)).toEqual(["API liveness", "API readiness", "Authentication guard", "Learning entitlement guard", "SPA login fallback"]);
+    expect(deploymentChecks("https://api.example.com", "https://app.example.com").map((check) => check.name)).toEqual(["API liveness", "API readiness", "Content availability", "Authentication guard", "Learning entitlement guard", "SPA login fallback"]);
   });
   it("rejects non-origin configuration", () => {
     expect(() => deploymentChecks("https://api.example.com/api", "https://app.example.com")).toThrow(/origin/);

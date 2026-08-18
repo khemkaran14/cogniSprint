@@ -48,7 +48,7 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 ## Repository gates before selling the complete 365-day product
 
 - [ ] Author and review the remaining 362 daily sessions, exercises, explanations and required media.
-- [ ] Reconcile database counts with every lesson/exercise claim on public pages.
+- [x] Back public lesson/assessment availability counts with a live MongoDB inventory endpoint, expose launch targets, make catalogue/checkout fail closed below those targets, add an unsafe-enrollment audit command, and validate the inventory in staging smoke checks.
 - [x] Add prerequisites, timezone-aware daily scheduling, resumable drafts, idempotent attempts and module/course completion rules.
 - [x] Add owner-scoped overall, per-skill, per-module and daily progress analytics with an accessible UI and CSV export.
 - [ ] Expand the retry-safe assessment foundation into twelve monthly assessments with qualified, reviewed question banks (one technical baseline is seeded).

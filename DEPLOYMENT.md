@@ -41,7 +41,7 @@ Vite values are compiled into the static bundle. Rebuild the web service after c
 ## 3. First deployment
 
 1. Deploy the API. Render runs `npm run migrate:prod` as the pre-deploy command and refuses promotion if a migration fails.
-2. Confirm `GET /api/health` returns `200` and `GET /api/ready` reports a connected database.
+2. Confirm `GET /api/health` returns `200`, `GET /api/ready` reports a connected database, and `GET /api/content-availability` reports the expected published inventory with enrollment closed.
 3. Enter the resulting API origin as `VITE_API_URL`, enter the web origin as API `CLIENT_URL`, and deploy the web service.
 4. Register `/api/webhooks/razorpay` in Razorpay Test mode and `/api/webhooks/resend` in Resend using their separate staging signing secrets.
 5. Add repository variables `STAGING_API_URL` and `STAGING_APP_URL`, then manually run **Staging deployment smoke tests**.

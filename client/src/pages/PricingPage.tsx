@@ -5,11 +5,12 @@ import { PurchaseReassurance } from "@/components/marketing/PurchaseReassurance"
 import { FaqSection } from "@/components/marketing/FaqSection";
 import { LoadingState, ErrorState } from "@/components/shared/QueryStates";
 import { Alert } from "@/components/ui/Alert";
-import { useProducts } from "@/lib/queries";
+import { useContentAvailability, useProducts } from "@/lib/queries";
 
 export default function PricingPage() {
   const { data: products, isLoading, isError, refetch } = useProducts();
   const product = products?.[0];
+  const availability = useContentAvailability();
 
   return (
     <>
@@ -24,7 +25,7 @@ export default function PricingPage() {
           <SectionHeading
             eyebrow="Availability"
             title="Paid enrollment is currently closed"
-            description="Three foundation lessons and one technical assessment baseline are published. Pricing and checkout will remain unavailable until the launch content, downloads, terms and operational checks are complete."
+            description={`${availability.data?.published.lessons ?? "Verified"} foundation lessons and ${availability.data?.published.assessments ?? "verified"} assessments are published. Pricing and checkout remain unavailable until launch content, terms and operational checks are complete.`}
           />
           <div className="mx-auto mt-12 max-w-lg">
             {isLoading ? <LoadingState label="Loading pricing…" /> : null}

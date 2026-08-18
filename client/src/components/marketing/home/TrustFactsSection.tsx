@@ -1,11 +1,12 @@
 import { Container } from "@/components/ui/Container";
+import type { ContentAvailability } from "@/lib/queries";
 
-export function TrustFactsSection() {
+export function TrustFactsSection({ availability }: { availability?: ContentAvailability }) {
   const facts = [
-    { value: "3", label: "Published foundation lessons" },
-    { value: "1", label: "Technical assessment baseline" },
+    { value: availability ? String(availability.published.lessons) : "—", label: "Published foundation lessons" },
+    { value: availability ? String(availability.published.assessments) : "—", label: "Published assessment baselines" },
     { value: "6", label: "Skills in the free challenge" },
-    { value: "Closed", label: "Paid enrollment status" },
+    { value: availability?.enrollmentOpen ? "Open" : "Closed", label: "Paid enrollment status" },
   ];
 
   return (

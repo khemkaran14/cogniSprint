@@ -9,6 +9,8 @@ test("homepage states preview availability and links to the free challenge", asy
   await expect(page.getByRole("link", { name: /try a free challenge/i }).first()).toHaveAttribute("href", "/sample-challenge");
   await expect(page.getByRole("link", { name: /view availability/i }).first()).toHaveAttribute("href", "/pricing");
   await expect(page.getByText(/paid enrollment status/i)).toBeVisible();
+  await expect(page.getByText("3 published lessons demonstrate protected access, exercises, scoring, drafts and progress tracking.")).toBeVisible();
+  await expect(page.getByText(/1 published assessment demonstrates server-side scoring/)).toBeVisible();
 });
 
 test("educational disclaimer is present on the homepage", async ({ page }) => {

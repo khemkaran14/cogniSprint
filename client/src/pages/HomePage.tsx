@@ -15,17 +15,19 @@ import { HomePricingSection } from "@/components/marketing/home/PricingSection";
 import { FaqSection } from "@/components/marketing/FaqSection";
 import { FinalCta } from "@/components/marketing/FinalCta";
 import { siteConfig } from "@/config/seo";
+import { useContentAvailability } from "@/lib/queries";
 
 export default function HomePage() {
+  const availability = useContentAvailability();
   return (
     <>
       <Seo title={siteConfig.title} description={siteConfig.description} path="/" />
       <HeroSection />
-      <TrustFactsSection />
+      <TrustFactsSection availability={availability.data} />
       <ProblemSolutionSection />
       <DailyRoutine />
       <SkillGrid />
-      <CourseTimeline />
+      <CourseTimeline availability={availability.data} />
       <SampleLessonPreview />
       <AudienceSection />
       <BenefitsSection />

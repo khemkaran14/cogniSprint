@@ -61,6 +61,12 @@ describe("MongoDB-backed platform", () => {
     const response = await request("/api/learning/dashboard", { headers: { cookie } }); expect(response.status).toBe(200);
     const body = await response.json() as { summary: { totalLessons: number }; modules: unknown[] };
     expect(body.summary.totalLessons).toBe(1); expect(body.modules).toHaveLength(1);
+    const availability = await request("/api/content-availability"); expect(availability.status).toBe(200); expect(await availability.json()).toMatchObject({ published: { lessons: 1, exercises: 1, assessments: 0, workbooks: 0 }, targets: { lessons: 365, assessments: 12, workbooks: 1 }, launchContentComplete: false, enrollmentOpen: false });
+    process.env.ENROLLMENT_OPEN = "true";
+    try {
+      const products = await request("/api/products"); expect(products.status).toBe(200); expect(await products.json()).toEqual([]);
+      const checkout = await request("/api/checkout/create-order", { method: "POST", headers: { "content-type": "application/json", cookie }, body: JSON.stringify({ productSlug: product.slug, customer: { name: user.name, email: user.email, phone: "9999999999" } }) }); expect(checkout.status).toBe(503); expect(await checkout.json()).toMatchObject({ error: expect.stringMatching(/content is incomplete/) });
+    } finally { process.env.ENROLLMENT_OPEN = "false"; }
   });
 
   it("lists and streams only resources covered by the learner entitlement", async () => {

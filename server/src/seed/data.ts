@@ -4,12 +4,12 @@ export const productSeed = {
   shortName: "CogniSprint Preview",
   tagline: "A reviewed preview of the CogniSprint learning workflow.",
   description:
-    "Three published foundation lessons and one technical assessment baseline. Enrollment remains closed while the complete curriculum is authored and independently reviewed.",
+    "Published foundation content is reported from the live content inventory. Enrollment remains closed while the complete curriculum is authored and independently reviewed.",
   productType: "bundle" as const,
   accessDuration: "lifetime" as const,
   status: "draft" as const,
   includes: [
-    { key: "guided_learning", label: "Three published foundation lessons", enabled: true },
+    { key: "guided_learning", label: "Published foundation lessons shown in the live inventory", enabled: true },
     { key: "practice_phase", label: "Structured practice phase (planned, unavailable)", enabled: false },
     { key: "daily_sessions", label: "365 daily training sessions (planned, unavailable)", enabled: false },
     { key: "mental_math", label: "Mental mathematics exercises, including tables up to 100", enabled: true },
@@ -18,7 +18,7 @@ export const productSeed = {
     { key: "logic", label: "Logical reasoning challenges", enabled: true },
     { key: "critical_thinking", label: "Critical-thinking exercises", enabled: true },
     { key: "observation", label: "Observation activities", enabled: true },
-    { key: "assessments", label: "One technical assessment baseline", enabled: true },
+    { key: "assessments", label: "Published assessment baselines shown in the live inventory", enabled: true },
     { key: "habit_tracker", label: "Habit and streak tracker", enabled: true },
     { key: "progress_sheets", label: "Printable progress sheets (planned, unavailable)", enabled: false },
     { key: "badges", label: "Achievement badges", enabled: true },
@@ -137,7 +137,7 @@ export const curriculumSeed = [
   },
   {
     position: 19, slug: "monthly-assessments", title: "Planned Monthly Assessments",
-    description: "Roadmap target for twelve reviewed assessments. Only one technical baseline is currently published.",
+    description: "Roadmap target for twelve reviewed assessments. Current publication counts come from the live content inventory.",
     skills: ["mental-math", "memory", "focus", "logic", "observation", "critical-thinking"], lessonCount: 12, exerciseCount: 360, difficulty: "advanced", estimatedMinutes: 240, previewAvailable: false, phase: "assessment",
   },
   {
