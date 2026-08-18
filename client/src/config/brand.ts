@@ -1,15 +1,15 @@
 export const brand = {
   name: "CogniSprint",
   legalName: "CogniSprint",
-  tagline: "Train Smarter. Think Faster. Every Day.",
-  heroHeadline: "Train Your Brain in 15 Minutes a Day",
+  tagline: "Published Preview • Enrollment Closed",
+  heroHeadline: "Explore CogniSprint’s Published Learning Preview",
   heroSubheadline:
-    "Build stronger mental math, memory, focus, reasoning and problem-solving skills through structured daily practice.",
-  heroMicrocopy: "Designed for ages 10+ • Printable and digital • No special equipment required",
-  primaryCta: "Start Your Training",
+    "Try the free challenge and review three published foundation lessons while the complete curriculum undergoes authoring and independent review.",
+  heroMicrocopy: "Three lessons published • One assessment baseline • No paid enrollment currently available",
+  primaryCta: "View Availability",
   secondaryCta: "Try a Free Challenge",
   positioningStatement:
-    "CogniSprint is a structured 365-day brain-training and cognitive skills practice program that combines mental mathematics, memory, focus, reasoning, observation and problem-solving exercises into a simple 15-minute daily routine.",
+    "CogniSprint is an educational skills-practice platform in development. The current repository contains three published foundation lessons and one technical assessment baseline; the larger curriculum shown on this site is a roadmap, not currently delivered content.",
   supportEmail: "support@cognisprint.com",
   contactEmail: "hello@cognisprint.com",
   company: { owner: "Divyrs Systems" },

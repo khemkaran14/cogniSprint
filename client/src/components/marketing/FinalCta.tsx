@@ -14,10 +14,10 @@ export function FinalCta() {
             style={{ background: "linear-gradient(135deg, var(--color-brand-navy), var(--color-brand-blue-strong) 55%, var(--color-brand-violet))" }}
           >
             <h2 className="mx-auto max-w-2xl text-3xl font-semibold sm:text-4xl">
-              Your next 15 minutes could go toward something you&apos;ll actually feel in a year.
+              See how CogniSprint approaches a focused 15-minute practice session.
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-white/80">
-              Start with the free challenge, or go straight to the full 365-day program.
+              Start with the free challenge or review current content availability. Paid enrollment is closed.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <LinkButton to="/pricing" size="lg" className="bg-white text-[var(--color-brand-navy)] hover:bg-white/90">
