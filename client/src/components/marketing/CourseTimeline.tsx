@@ -1,31 +1,21 @@
 import { Container, SectionHeading } from "@/components/ui/Container";
 import { Reveal } from "@/components/shared/Reveal";
-import { useCurriculum } from "@/lib/queries";
-
 const phases = [
-  { label: "Months 1–3", title: "Guided learning", description: "Structured lessons introduce each technique step by step — mental arithmetic foundations, memory methods, focus drills and early logic work." },
-  { label: "Months 4–12", title: "Structured practice", description: "Daily sessions apply what you've learned with progressively harder exercises across all six skill areas, plus a rotating library of brain games." },
-  { label: "Every month", title: "Assessment checkpoint", description: "A short monthly assessment summarises progress across every skill category so you can see what's improving and what needs more attention." },
-  { label: "Day 365", title: "Completion certificate", description: "Finish the full one-year practice calendar and unlock a shareable completion certificate with a verification ID." },
+  { label: "Available now", title: "Foundation preview", description: "Three published Getting Started lessons demonstrate protected access, exercises, scoring, drafts and progress tracking." },
+  { label: "Available now", title: "Assessment baseline", description: "One technical baseline demonstrates server-side assessment scoring. It is not a complete monthly assessment bank." },
+  { label: "Planned", title: "Expanded curriculum", description: "The additional modules and daily sessions remain an authoring roadmap and are not currently included in a sale." },
+  { label: "Unavailable", title: "Program certificate", description: "The verification workflow exists, but qualification is impossible until at least 365 reviewed lessons are published and completed." },
 ];
 
 export function CourseTimeline() {
-  const { data: modules } = useCurriculum();
-  const lessonCount = modules?.reduce((sum, m) => sum + m.lessonCount, 0) ?? 0;
-  const exerciseCount = modules?.reduce((sum, m) => sum + m.exerciseCount, 0) ?? 0;
-
   return (
     <section className="bg-[var(--color-surface-sunken)] py-20 sm:py-28">
       <Container>
         <Reveal>
           <SectionHeading
-            eyebrow="The 12-month roadmap"
-            title="365 days, structured into four phases"
-            description={
-              lessonCount
-                ? `${lessonCount.toLocaleString("en-IN")}+ lessons and ${exerciseCount.toLocaleString("en-IN")}+ exercises across the full program.`
-                : "Lessons and exercises across the full program."
-            }
+            eyebrow="Content availability"
+            title="Published now versus planned"
+            description="Only reviewed, published material is represented as available. Roadmap counts are not purchase deliverables."
           />
         </Reveal>
 
