@@ -1,30 +1,30 @@
 export const productSeed = {
   slug: "cognisprint-complete",
-  name: "CogniSprint Complete Brain Training Program",
-  shortName: "CogniSprint Complete",
-  tagline: "365 days of guided and structured brain-training practice.",
+  name: "CogniSprint Learning Preview",
+  shortName: "CogniSprint Preview",
+  tagline: "A reviewed preview of the CogniSprint learning workflow.",
   description:
-    "A full 12-month program combining mental mathematics, memory technique, focus drills, logical reasoning, observation and critical-thinking exercises in a 15-minute daily format.",
+    "Published foundation content is reported from the live content inventory. Enrollment remains closed while the complete curriculum is authored and independently reviewed.",
   productType: "bundle" as const,
   accessDuration: "lifetime" as const,
-  status: "active" as const,
+  status: "draft" as const,
   includes: [
-    { key: "guided_learning", label: "3 months of guided, structured learning", enabled: true },
-    { key: "practice_phase", label: "9 months of daily structured practice", enabled: true },
-    { key: "daily_sessions", label: "365 daily 15-minute training sessions", enabled: true },
+    { key: "guided_learning", label: "Published foundation lessons shown in the live inventory", enabled: true },
+    { key: "practice_phase", label: "Structured practice phase (planned, unavailable)", enabled: false },
+    { key: "daily_sessions", label: "365 daily training sessions (planned, unavailable)", enabled: false },
     { key: "mental_math", label: "Mental mathematics exercises, including tables up to 100", enabled: true },
     { key: "memory", label: "Memory technique lessons and recall drills", enabled: true },
     { key: "focus", label: "Focus and concentration drills", enabled: true },
     { key: "logic", label: "Logical reasoning challenges", enabled: true },
     { key: "critical_thinking", label: "Critical-thinking exercises", enabled: true },
     { key: "observation", label: "Observation activities", enabled: true },
-    { key: "assessments", label: "Monthly skill assessments", enabled: true },
+    { key: "assessments", label: "Published assessment baselines shown in the live inventory", enabled: true },
     { key: "habit_tracker", label: "Habit and streak tracker", enabled: true },
-    { key: "progress_sheets", label: "Printable progress sheets", enabled: true },
+    { key: "progress_sheets", label: "Printable progress sheets (planned, unavailable)", enabled: false },
     { key: "badges", label: "Achievement badges", enabled: true },
-    { key: "workbook", label: "Downloadable workbook (PDF)", enabled: true },
-    { key: "worksheets", label: "Printable practice worksheets", enabled: true },
-    { key: "certificate", label: "Completion certificate", enabled: true },
+    { key: "workbook", label: "Downloadable workbook (planned, unavailable)", enabled: false },
+    { key: "worksheets", label: "Printable worksheets (planned, unavailable)", enabled: false },
+    { key: "certificate", label: "Completion certificate (unavailable until the reviewed program is complete)", enabled: false },
     { key: "updates", label: "Future content updates", enabled: true },
   ],
 };
@@ -136,26 +136,67 @@ export const curriculumSeed = [
     skills: ["focus"], lessonCount: 4, exerciseCount: 40, difficulty: "beginner", estimatedMinutes: 40, previewAvailable: true, phase: "structured_practice",
   },
   {
-    position: 19, slug: "monthly-assessments", title: "Monthly Assessments",
-    description: "Twelve structured assessments — one per month — that summarise progress across every skill category.",
+    position: 19, slug: "monthly-assessments", title: "Planned Monthly Assessments",
+    description: "Roadmap target for twelve reviewed assessments. Current publication counts come from the live content inventory.",
     skills: ["mental-math", "memory", "focus", "logic", "observation", "critical-thinking"], lessonCount: 12, exerciseCount: 360, difficulty: "advanced", estimatedMinutes: 240, previewAvailable: false, phase: "assessment",
   },
   {
-    position: 20, slug: "one-year-challenge", title: "One-Year Challenge",
-    description: "The full 365-day practice calendar that ties every module together into a single daily routine, with a completion certificate at the end.",
+    position: 20, slug: "one-year-challenge", title: "Planned One-Year Challenge",
+    description: "Unpublished roadmap target for a 365-day practice calendar. It is not currently available or included in a sale.",
     skills: ["mental-math", "memory", "focus", "logic", "observation", "critical-thinking"], lessonCount: 365, exerciseCount: 3650, difficulty: "advanced", estimatedMinutes: 5475, previewAvailable: false, phase: "assessment",
   },
 ];
+
+export const lessonSeed = [
+  {
+    moduleSlug: "getting-started", position: 1, sequenceNumber: 1, unlockDay: 1, slug: "build-your-15-minute-routine", title: "Build Your 15-Minute Routine",
+    summary: "Create a small, repeatable practice cue that fits your day.", estimatedMinutes: 8, status: "published" as const,
+    content: [
+      "Consistency starts with a reliable cue. Choose an existing event—such as finishing breakfast—and place CogniSprint immediately after it.",
+      "Keep the first goal deliberately small. Completing a focused session matters more than extending it when your attention has already faded.",
+      "Record completion honestly. A missed day is information, not failure: restart at the next available cue instead of trying to compensate with an exhausting session."
+    ],
+    exercises: [{ prompt: "Which plan is most likely to become a repeatable routine?", options: ["Practise whenever inspiration appears", "Practise after breakfast at the same desk", "Complete a week of exercises every Sunday"], correctIndex: 1, explanation: "Attaching a small session to a stable daily cue makes the behavior easier to repeat." }],
+  },
+  {
+    moduleSlug: "getting-started", position: 2, sequenceNumber: 2, unlockDay: 2, prerequisiteSlug: "build-your-15-minute-routine", slug: "accuracy-before-speed", title: "Accuracy Before Speed",
+    summary: "Learn why controlled, correct practice comes before faster responses.", estimatedMinutes: 7, status: "published" as const,
+    content: ["Speed is useful only when the underlying method is reliable. Begin slowly enough to notice each decision.", "Once a method is accurate, shorten response time gradually while continuing to record mistakes."],
+    exercises: [{ prompt: "What should you do when faster practice causes frequent mistakes?", options: ["Guess more quickly", "Return to a controlled pace and review the method", "Skip the skill"], correctIndex: 1, explanation: "Reducing speed temporarily helps restore a correct and repeatable method." }],
+  },
+  {
+    moduleSlug: "getting-started", position: 3, sequenceNumber: 3, unlockDay: 3, prerequisiteSlug: "accuracy-before-speed", slug: "reflect-on-errors", title: "Reflect on Errors",
+    summary: "Turn mistakes into specific changes for the next attempt.", estimatedMinutes: 8, status: "published" as const,
+    content: ["After an incorrect answer, identify whether the cause was knowledge, attention, or strategy.", "Write one short adjustment for the next attempt. Specific adjustments are more useful than simply promising to try harder."],
+    exercises: [{ prompt: "Which reflection is most actionable?", options: ["I am bad at this", "I will try harder", "I missed the sign; next time I will circle it before calculating"], correctIndex: 2, explanation: "A specific observed cause and a concrete next action make reflection useful." }],
+  },
+];
+
+// This repository seed is a technical baseline only. A qualified reviewer must
+// approve and publish the complete twelve-assessment bank before it is sold.
+export const assessmentSeed = [{
+  slug: "month-1-foundations-check", title: "Month 1 Foundations Check", month: 1,
+  description: "A short baseline check across the six CogniSprint practice categories.",
+  passingScore: 60, estimatedMinutes: 10, status: "published" as const,
+  questions: [
+    { skill: "mental-math", prompt: "What is 48 + 27?", options: ["65", "75", "85"], correctIndex: 1, explanation: "48 + 20 + 7 = 75." },
+    { skill: "memory", prompt: "Which sequence exactly matches 7, 2, 9, 4?", options: ["7, 2, 9, 4", "7, 9, 2, 4", "2, 7, 9, 4"], correctIndex: 0, explanation: "The first option preserves every item and its order." },
+    { skill: "focus", prompt: "How many times does the letter P appear in APPLE PIE?", options: ["2", "3", "4"], correctIndex: 1, explanation: "APPLE contains two Ps and PIE contains one." },
+    { skill: "logic", prompt: "All tulips are flowers. This is a tulip. What follows?", options: ["It is a flower", "All flowers are tulips", "Nothing follows"], correctIndex: 0, explanation: "The stated rule applies to the identified tulip." },
+    { skill: "observation", prompt: "Which item differs from the others?", options: ["AB12", "AB12", "AB21"], correctIndex: 2, explanation: "The final option reverses the two digits." },
+    { skill: "critical-thinking", prompt: "A claim has no source. What is the best next step?", options: ["Share it immediately", "Check independent reliable evidence", "Assume it is false"], correctIndex: 1, explanation: "Verifying with reliable independent evidence is more justified than accepting or rejecting it without review." },
+  ],
+}];
 
 export const faqSeed = [
   { category: "general", question: "How much time does this take each day?", answer: "Each daily session targets around 15 minutes, split across mental math, memory, focus, logic, observation and critical thinking. It's a target, not a hard cut-off — you can finish a task even if it runs slightly over." },
   { category: "audience", question: "Who is CogniSprint designed for?", answer: "Anyone aged 10 and above who wants structured mental practice — students, competitive-exam aspirants, working professionals, parents looking for screen-free activities for their children, teachers, and adults who want a consistent learning routine." },
   { category: "audience", question: "Is this only for kids?", answer: "No. The curriculum and exercises are built to work across ages, from students to working professionals and senior learners. Difficulty progresses through the program regardless of the age of the person practising." },
   { category: "purchase", question: "What is the refund policy?", answer: "Refund terms are set out in full on our Refund & Cancellation Policy page. Read that page for the current window and conditions before purchasing." },
-  { category: "content", question: "Do I get future updates?", answer: "Yes. Future content updates are included as part of the program access described on the pricing page, for as long as your access term is active." },
-  { category: "content", question: "Is there a certificate?", answer: "Yes, a completion certificate with a unique verification ID becomes available once the defined completion requirements for the program are met." },
-  { category: "content", question: "Can I practise offline or on paper?", answer: "Yes. The program includes printable worksheets and a downloadable workbook alongside the digital lessons, so you can practise on paper as well as on screen." },
-  { category: "content", question: "Are the worksheets printable?", answer: "Yes, all worksheets and the workbook are formatted for standard home printing." },
+  { category: "content", question: "Do I get future updates?", answer: "Enrollment is currently closed. Future access terms will be published only after the reviewed content included at launch is known." },
+  { category: "content", question: "Is there a certificate?", answer: "The certificate workflow exists, but no learner can qualify while the full reviewed program is unavailable. It is not part of a current sale." },
+  { category: "content", question: "Can I practise offline or on paper?", answer: "Not yet. A workbook and printable worksheets are roadmap items and are not currently available or included in a purchase." },
+  { category: "content", question: "Are the worksheets printable?", answer: "Printable worksheets are planned but not currently published. Enrollment remains closed while launch content is reviewed." },
   { category: "general", question: "What language is the course in?", answer: "The course is currently available in English. The underlying content structure is designed so additional languages can be added in future." },
   { category: "audience", question: "Is this useful for working professionals, not just students?", answer: "Yes. Many exercises — quick mental calculation, structured decision-making, focus drills — are aimed squarely at professional, everyday use rather than academic tests alone." },
   { category: "access", question: "How do I access the course after payment?", answer: "After your payment is verified, you'll get access instructions by email and a direct link to your dashboard, where you can start your first lesson immediately." },
