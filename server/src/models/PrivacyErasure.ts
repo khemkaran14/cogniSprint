@@ -1,0 +1,3 @@
+import { Schema, model, Types } from "mongoose";
+const schema = new Schema({ requestId: { type: Types.ObjectId, ref: "PrivacyRequest", required: true, unique: true }, userId: { type: Types.ObjectId, required: true }, policyVersion: { type: String, required: true }, mode: { type: String, enum: ["dry_run", "applied"], required: true }, summary: { type: Schema.Types.Mixed, required: true }, executedBy: { type: Types.ObjectId, ref: "User", required: true }, executedAt: { type: Date, required: true, default: Date.now } }, { timestamps: true });
+export const PrivacyErasure = model("PrivacyErasure", schema);

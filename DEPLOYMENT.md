@@ -58,3 +58,5 @@ Vite values are compiled into the static bundle. Rebuild the web service after c
 ## 5. Staging acceptance
 
 Before treating the deployment as validated, verify registration/login/logout, cross-origin cookie behavior, a Razorpay Test payment, webhook recovery, entitlement access, a refund, queued email delivery, administrator access, structured logs and the full checklist in `PRODUCTION_READINESS.md`.
+
+Create a compressed backup with `npm run backup -- --archive /secure/staging.archive`, retain the emitted SHA-256 in the private release record, then test `--restore` only against an isolated URI. Attach the evidence enumerated in `RELEASE_EVIDENCE.md`; never restore over the configured source database.

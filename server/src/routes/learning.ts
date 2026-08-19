@@ -12,6 +12,8 @@ import { learningStats } from "../lib/gamification.js";
 import { calendarDayNumber, isValidTimezone, lessonAvailability } from "../lib/learningProgression.js";
 import { analyticsCsv, buildLearningAnalytics } from "../lib/learningAnalytics.js";
 import { syncAchievements } from "../lib/achievements.js";
+import { ReminderPreference } from "../models/ReminderPreference.js";
+import { isQuietTime, nextReminderAt } from "../lib/reminders.js";
 
 export const learningRouter = Router();
 learningRouter.use(requireAuth, requireActiveEntitlement);
@@ -275,6 +277,10 @@ learningRouter.post("/lessons/:slug/complete", async (req, res, next) => {
 });
 
 const preferenceSchema = z.object({ timezone: z.string().min(1).max(100).refine(isValidTimezone, "Invalid IANA timezone.") });
+
+const reminderSchema = z.object({ enabled: z.boolean(), localTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/), weekdays: z.array(z.number().int().min(0).max(6)).min(1).max(7), quietStart: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/), quietEnd: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/) }).refine((value) => !value.enabled || !isQuietTime(value.localTime, value.quietStart, value.quietEnd), { message: "Reminder time must be outside quiet hours." });
+learningRouter.get("/reminders", async (_req, res, next) => { try { const preference = await ReminderPreference.findOne({ userId: res.locals.user._id }).lean(); res.json({ preference: preference ?? { enabled: false, localTime: "18:00", weekdays: [0,1,2,3,4,5,6], quietStart: "21:00", quietEnd: "08:00" } }); } catch (error) { next(error); } });
+learningRouter.patch("/reminders", async (req, res, next) => { try { const parsed = reminderSchema.safeParse(req.body); if (!parsed.success) return res.status(422).json({ error: "Reminder preferences are invalid." }); const nextAt = parsed.data.enabled ? nextReminderAt(res.locals.user.timezone || "UTC", parsed.data.localTime, parsed.data.weekdays) : null; const preference = await ReminderPreference.findOneAndUpdate({ userId: res.locals.user._id }, { ...parsed.data, nextReminderAt: nextAt, unsubscribedAt: parsed.data.enabled ? null : new Date() }, { upsert: true, new: true }); res.json({ preference }); } catch (error) { next(error); } });
 
 learningRouter.patch("/preferences", async (req, res, next) => {
   try {

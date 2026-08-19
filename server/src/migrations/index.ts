@@ -17,6 +17,7 @@ import { createContentWorkflowIndexes } from "./016-create-content-workflow-inde
 import { createLearningResourceIndexes } from "./017-create-learning-resource-indexes.js";
 import { createAchievementIndexes } from "./018-create-achievement-indexes.js";
 import { createAdminPermissions } from "./019-create-admin-permissions.js";
+import { createAuthoringPrivacyReminderIndexes } from "./020-create-authoring-privacy-reminder-indexes.js";
 import type { Migration } from "./types.js";
 
-export const migrations: Migration[] = [createApplicationIndexes, createLearningProgressionIndexes, createAnalyticsIndexes, createAssessmentIndexes, createCertificateDeliveryIndexes, createSessionManagementIndexes, createAdminAuditIndexes, createOrderHistoryIndexes, createRefundIndexes, createReconciliationIndexes, createEmailDeliveryIndexes, createOperationalAlertIndexes, createPrivacyRequestIndexes, createDisputeIndexes, createEmailProviderEventIndexes, createContentWorkflowIndexes, createLearningResourceIndexes, createAchievementIndexes, createAdminPermissions];
+export const migrations: Migration[] = [createApplicationIndexes, createLearningProgressionIndexes, createAnalyticsIndexes, createAssessmentIndexes, createCertificateDeliveryIndexes, createSessionManagementIndexes, createAdminAuditIndexes, createOrderHistoryIndexes, createRefundIndexes, createReconciliationIndexes, createEmailDeliveryIndexes, createOperationalAlertIndexes, createPrivacyRequestIndexes, createDisputeIndexes, createEmailProviderEventIndexes, createContentWorkflowIndexes, createLearningResourceIndexes, createAchievementIndexes, createAdminPermissions, createAuthoringPrivacyReminderIndexes];

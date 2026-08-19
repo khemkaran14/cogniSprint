@@ -21,6 +21,9 @@ import { Assessment } from "../models/Assessment.js";
 import { canTransitionContent, contentStatuses, contentTransitionDates, type ContentStatus } from "../lib/contentWorkflow.js";
 import { LearningResource } from "../models/LearningResource.js";
 import { Session } from "../models/Session.js";
+import { ContentRevision } from "../models/ContentRevision.js";
+import { assessmentAuthoringSchema, authoringRequestSchema, learnerPreview, lessonAuthoringSchema } from "../lib/contentAuthoring.js";
+import { executePrivacyErasure } from "../lib/privacyErasure.js";
 
 export const adminRouter = Router();
 adminRouter.use(requireAdmin);
@@ -168,6 +171,32 @@ adminRouter.get("/content", async (_req, res, next) => {
     res.json({ lessons, assessments });
   } catch (error) { next(error); }
 });
+adminRouter.get("/content/:type/:id/revisions", async (req, res, next) => {
+  try { if (!objectIdSchema.safeParse(req.params.id).success || !["lesson", "assessment"].includes(req.params.type)) return res.status(404).json({ error: "Content not found." }); res.json({ revisions: await ContentRevision.find({ contentType: req.params.type, contentId: req.params.id }).populate("authorUserId", "name email").sort({ version: -1 }).lean() }); } catch (error) { next(error); }
+});
+adminRouter.post("/content/:type", async (req, res, next) => {
+  try {
+    if (!["lesson", "assessment"].includes(req.params.type)) return res.status(404).json({ error: "Content type not found." });
+    const request = authoringRequestSchema.safeParse(req.body); if (!request.success) return res.status(422).json({ error: "Provide valid content and a change note." });
+    const schema = req.params.type === "lesson" ? lessonAuthoringSchema : assessmentAuthoringSchema; const parsed = schema.safeParse(request.data.data);
+    if (!parsed.success) return res.status(422).json({ error: "Content validation failed.", issues: parsed.error.flatten() });
+    const content = req.params.type === "lesson" ? await Lesson.create({ ...parsed.data, status: "draft" }) : await Assessment.create({ ...parsed.data, status: "draft" });
+    await ContentRevision.create({ contentType: req.params.type, contentId: content._id, version: 1, snapshot: content.toObject(), changeNote: request.data.changeNote, authorUserId: res.locals.user._id });
+    await AuditEvent.create({ actorUserId: res.locals.user._id, action: "content.create", targetType: req.params.type, targetId: String(content._id), requestId: res.locals.requestId, ipAddress: req.ip || "Unknown", metadata: { changeNote: request.data.changeNote } });
+    res.status(201).json({ content, preview: learnerPreview(req.params.type as "lesson" | "assessment", content.toObject()) });
+  } catch (error) { next(error); }
+});
+adminRouter.put("/content/:type/:id", async (req, res, next) => {
+  try {
+    if (!objectIdSchema.safeParse(req.params.id).success || !["lesson", "assessment"].includes(req.params.type)) return res.status(404).json({ error: "Content not found." });
+    const request = authoringRequestSchema.safeParse(req.body); if (!request.success) return res.status(422).json({ error: "Provide valid content and a change note." });
+    const parsed = (req.params.type === "lesson" ? lessonAuthoringSchema : assessmentAuthoringSchema).safeParse(request.data.data); if (!parsed.success) return res.status(422).json({ error: "Content validation failed.", issues: parsed.error.flatten() });
+    const current = req.params.type === "lesson" ? await Lesson.findById(req.params.id) : await Assessment.findById(req.params.id); if (!current) return res.status(404).json({ error: "Content not found." }); if (!["draft", "changes_requested"].includes(current.status)) return res.status(409).json({ error: "Only draft or changes-requested content can be edited." });
+    current.set(parsed.data); await current.save(); const latest = await ContentRevision.findOne({ contentType: req.params.type, contentId: current._id }).sort({ version: -1 }).select("version").lean();
+    await ContentRevision.create({ contentType: req.params.type, contentId: current._id, version: (latest?.version ?? 0) + 1, snapshot: current.toObject(), changeNote: request.data.changeNote, authorUserId: res.locals.user._id });
+    res.json({ content: current, preview: learnerPreview(req.params.type as "lesson" | "assessment", current.toObject()) });
+  } catch (error) { next(error); }
+});
 adminRouter.get("/resources", async (_req, res, next) => {
   try { res.json({ resources: await LearningResource.find().populate("productId", "name slug").populate("releasedBy", "name email").sort({ status: 1, kind: 1, title: 1 }).lean() }); } catch (error) { next(error); }
 });
@@ -242,6 +271,8 @@ adminRouter.patch("/privacy-requests/:id", async (req, res, next) => {
     res.json({ request: privacyRequest });
   } catch (error) { next(error); }
 });
+const erasureSchema = z.object({ apply: z.boolean(), confirmation: z.string() });
+adminRouter.post("/privacy-requests/:id/erasure", async (req, res, next) => { try { if (!objectIdSchema.safeParse(req.params.id).success) return res.status(404).json({ error: "Privacy request not found." }); const parsed = erasureSchema.safeParse(req.body); if (!parsed.success || (parsed.data.apply && parsed.data.confirmation !== `ERASE ${req.params.id}`)) return res.status(422).json({ error: "Exact erasure confirmation is required." }); const policyVersion = process.env.PRIVACY_RETENTION_POLICY_VERSION; if (!policyVersion) return res.status(503).json({ error: "An approved privacy retention policy version is not configured." }); const result = await executePrivacyErasure({ requestId: req.params.id as unknown as import("mongoose").Types.ObjectId, actorId: res.locals.user._id, policyVersion, apply: parsed.data.apply }); res.json(result); } catch (error) { next(error); } });
 
 const refundSchema = z.object({ amount: z.number().int().positive(), reason: z.string().trim().min(10).max(500) });
 adminRouter.post("/orders/:id/refunds", async (req, res, next) => {

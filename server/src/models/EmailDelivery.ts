@@ -2,7 +2,7 @@ import { Schema, model, Types } from "mongoose";
 
 const emailDeliverySchema = new Schema({
   idempotencyKey: { type: String, required: true, unique: true, index: true },
-  category: { type: String, enum: ["purchase", "payment_failed", "refund", "dispute", "certificate", "ops_alert"], required: true, index: true },
+  category: { type: String, enum: ["purchase", "payment_failed", "refund", "dispute", "certificate", "ops_alert", "reminder"], required: true, index: true },
   userId: { type: Types.ObjectId, ref: "User", index: true },
   to: { type: String, required: true, lowercase: true, trim: true },
   subject: { type: String, required: true, maxlength: 200 },

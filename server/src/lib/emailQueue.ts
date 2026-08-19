@@ -1,6 +1,6 @@
 import { EmailDelivery } from "../models/EmailDelivery.js";
 
-export type TransactionalEmail = { idempotencyKey: string; category: "purchase" | "payment_failed" | "refund" | "dispute" | "certificate" | "ops_alert"; userId?: unknown; to: string; subject: string; text: string };
+export type TransactionalEmail = { idempotencyKey: string; category: "purchase" | "payment_failed" | "refund" | "dispute" | "certificate" | "ops_alert" | "reminder"; userId?: unknown; to: string; subject: string; text: string };
 
 export async function enqueueEmail(email: TransactionalEmail) {
   return EmailDelivery.findOneAndUpdate(
