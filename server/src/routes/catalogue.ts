@@ -4,10 +4,18 @@ import { Price } from "../models/Price.js";
 import { CurriculumModule } from "../models/Module.js";
 import { FaqItem } from "../models/FaqItem.js";
 import { BlogArticle } from "../models/BlogArticle.js";
+import { isEnrollmentOpen } from "../lib/availability.js";
+import { loadContentAvailability } from "../lib/contentAvailability.js";
 
 export const catalogueRouter = Router();
 
+catalogueRouter.get("/content-availability", async (_req, res, next) => {
+  try { res.json({ ...(await loadContentAvailability()), enrollmentOpen: isEnrollmentOpen() }); } catch (error) { next(error); }
+});
+
 catalogueRouter.get("/products", async (_req, res) => {
+  if (!isEnrollmentOpen()) return res.json([]);
+  if (!(await loadContentAvailability()).launchContentComplete) return res.json([]);
   const products = await Product.find({ status: "active" }).lean();
   const withPrices = await Promise.all(
     products.map(async (product) => {
@@ -19,6 +27,8 @@ catalogueRouter.get("/products", async (_req, res) => {
 });
 
 catalogueRouter.get("/products/:slug", async (req, res) => {
+  if (!isEnrollmentOpen()) return res.status(404).json({ error: "Enrollment is currently closed." });
+  if (!(await loadContentAvailability()).launchContentComplete) return res.status(404).json({ error: "Enrollment content is incomplete." });
   const product = await Product.findOne({ slug: req.params.slug, status: "active" }).lean();
   if (!product) return res.status(404).json({ error: "Product not found." });
 

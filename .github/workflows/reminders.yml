@@ -1,0 +1,19 @@
+name: Learning reminders
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+concurrency: { group: learning-reminders, cancel-in-progress: false }
+permissions: { contents: read }
+jobs:
+  queue:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: server } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: server/package-lock.json }
+      - run: npm ci
+      - run: npm run reminders:process
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
