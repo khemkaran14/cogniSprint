@@ -1,0 +1,28 @@
+name: Operational alert scan
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: operational-alert-scan
+  cancel-in-progress: false
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+      - run: npm run alerts:scan
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          SUPPORT_EMAIL: ${{ secrets.SUPPORT_EMAIL }}

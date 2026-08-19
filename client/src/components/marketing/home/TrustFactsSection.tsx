@@ -1,15 +1,12 @@
 import { Container } from "@/components/ui/Container";
-import { useCurriculum } from "@/lib/queries";
+import type { ContentAvailability } from "@/lib/queries";
 
-export function TrustFactsSection() {
-  const { data: modules } = useCurriculum();
-  const exerciseCount = modules?.reduce((sum, m) => sum + m.exerciseCount, 0) ?? 0;
-
+export function TrustFactsSection({ availability }: { availability?: ContentAvailability }) {
   const facts = [
-    { value: "365", label: "Daily training sessions" },
-    { value: "15 min", label: "Target daily practice time" },
-    { value: `${modules?.length ?? 20}`, label: "Structured learning modules" },
-    { value: exerciseCount ? `${exerciseCount.toLocaleString("en-IN")}+` : "10,000+", label: "Practice exercises" },
+    { value: availability ? String(availability.published.lessons) : "—", label: "Published foundation lessons" },
+    { value: availability ? String(availability.published.assessments) : "—", label: "Published assessment baselines" },
+    { value: "6", label: "Skills in the free challenge" },
+    { value: availability?.enrollmentOpen ? "Open" : "Closed", label: "Paid enrollment status" },
   ];
 
   return (
