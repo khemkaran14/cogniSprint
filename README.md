@@ -163,6 +163,10 @@ Learners can download their account, commerce and learning data or open/cancel a
 - Add provider-specific deployment, centralized monitoring, backup/restore validation and real database/full-stack tests. A versioned, locked migration runner is available via `npm run migrate`.
 - Complete the owner-controlled launch gates in `PRODUCTION_READINESS.md`: secret rotation, Razorpay KYC/live setup, Atlas/DNS/email setup, legal/security/accessibility review and educational approval.
 
+## Consolidating cumulative pull requests
+
+When several milestone branches overlap, consolidate them into the newest cumulative pull request rather than merging each branch independently. The conflict-resolution procedure and automated guard are documented in [`CONSOLIDATION.md`](CONSOLIDATION.md); run `npm run verify:consolidation` from `server/` before pushing the resolved branch.
+
 ## Deployment notes
 
 The repository includes a Render staging blueprint and ordered operator procedure in `DEPLOYMENT.md`. The blueprint keeps automatic deploys disabled, executes database migrations before API promotion, and references dashboard-managed values rather than embedding credentials.

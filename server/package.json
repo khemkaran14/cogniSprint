@@ -27,6 +27,7 @@
     "resource:import": "tsx src/ops/importResource.ts",
     "content:audit": "tsx src/ops/auditContentAvailability.ts",
     "backup": "tsx src/ops/backup.ts",
+    "verify:consolidation": "tsx src/ops/verifyConsolidation.ts",
     "test": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:watch": "vitest",
