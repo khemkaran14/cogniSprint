@@ -15,7 +15,7 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 | Public marketing/catalogue/challenge | Implemented | Public React routes, catalogue APIs and mocked browser flows exist. |
 | Accounts and opaque sessions | Foundation | Register/login/logout, verification, reset, profile preferences, owner-scoped device/session revocation, portable data export and audited deletion-request intake exist; approved deletion/anonymization remains dependent on the legal retention policy. |
 | Razorpay checkout and entitlements | Foundation | Server-priced orders, signed verification, event dedupe, audited refunds/disputes, reconciliation, entitlement grant/revoke, owner history and printable payment receipts exist; production validation and legally reviewed tax invoices remain. |
-| Protected lessons and progress | Foundation | Entitlement gating, progression, resumable drafts, retry-safe scoring, overall/module/skill/activity analytics and CSV export exist for three lessons; the remaining 362 sessions remain. |
+| Protected lessons and progress | Authored; review pending | Entitlement gating, progression, resumable drafts, retry-safe scoring, overall/module/skill/activity analytics and CSV export exist. The 365-day seed curriculum is structurally complete; three lessons are published and 362 remain review-gated pending independent educational approval. |
 | XP, streak and badges | Foundation | Derived UTC streak and XP, persisted badge awards, timezone-aware reminder preferences, quiet hours, unsubscribe state and scheduled reminder queueing exist; production delivery validation remains. |
 | Certificates | Foundation | Eligibility, claim, printable UI, public verification, queued/provider-tracked email delivery with audited retry, and audited admin revocation exist; production provider validation remains. |
 | Assessments | Foundation | Entitlement-protected catalogue, attempt UI, retry-safe server scoring, per-skill results and one technical baseline exist; eleven assessments and qualified content review remain. |
@@ -47,7 +47,7 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 
 ## Repository gates before selling the complete 365-day product
 
-- [ ] Author and review the remaining 362 daily sessions, exercises, explanations and required media.
+- [ ] Independently review, revise and approve the 362 authored daily sessions, exercises and explanations; produce and approve any required media.
 - [x] Back public lesson/assessment availability counts with a live MongoDB inventory endpoint, expose launch targets, make catalogue/checkout fail closed below those targets, add an unsafe-enrollment audit command, and validate the inventory in staging smoke checks.
 - [x] Add prerequisites, timezone-aware daily scheduling, resumable drafts, idempotent attempts and module/course completion rules.
 - [x] Add owner-scoped overall, per-skill, per-module and daily progress analytics with an accessible UI and CSV export.

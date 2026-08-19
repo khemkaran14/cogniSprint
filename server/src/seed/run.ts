@@ -44,6 +44,11 @@ async function run() {
     if (prerequisiteSlug && !prerequisite) throw new Error(`Cannot seed lesson: prerequisite ${prerequisiteSlug} was not found.`);
     const persistedLesson = { ...lessonData } as typeof lessonData & { prerequisiteSlug?: string };
     delete persistedLesson.prerequisiteSlug;
+    const existingLesson = await Lesson.findOne({ slug: lesson.slug }).select("status");
+    if (existingLesson && ["approved", "published", "archived"].includes(existingLesson.status)) {
+      console.info(`[seed] preserving reviewed lesson: ${lesson.slug}`);
+      continue;
+    }
     await Lesson.findOneAndUpdate(
       { slug: lesson.slug },
       { ...persistedLesson, moduleId: module._id, prerequisiteLessonId: prerequisite?._id ?? null },

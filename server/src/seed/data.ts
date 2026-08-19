@@ -4,7 +4,7 @@ export const productSeed = {
   shortName: "CogniSprint Preview",
   tagline: "A reviewed preview of the CogniSprint learning workflow.",
   description:
-    "Published foundation content is reported from the live content inventory. Enrollment remains closed while the complete curriculum is authored and independently reviewed.",
+    "Published foundation content is reported from the live content inventory. The complete 365-day curriculum is authored as review-gated drafts; enrollment remains closed until independent review and approval are complete.",
   productType: "bundle" as const,
   accessDuration: "lifetime" as const,
   status: "draft" as const,
@@ -147,30 +147,7 @@ export const curriculumSeed = [
   },
 ];
 
-export const lessonSeed = [
-  {
-    moduleSlug: "getting-started", position: 1, sequenceNumber: 1, unlockDay: 1, slug: "build-your-15-minute-routine", title: "Build Your 15-Minute Routine",
-    summary: "Create a small, repeatable practice cue that fits your day.", estimatedMinutes: 8, status: "published" as const,
-    content: [
-      "Consistency starts with a reliable cue. Choose an existing event—such as finishing breakfast—and place CogniSprint immediately after it.",
-      "Keep the first goal deliberately small. Completing a focused session matters more than extending it when your attention has already faded.",
-      "Record completion honestly. A missed day is information, not failure: restart at the next available cue instead of trying to compensate with an exhausting session."
-    ],
-    exercises: [{ prompt: "Which plan is most likely to become a repeatable routine?", options: ["Practise whenever inspiration appears", "Practise after breakfast at the same desk", "Complete a week of exercises every Sunday"], correctIndex: 1, explanation: "Attaching a small session to a stable daily cue makes the behavior easier to repeat." }],
-  },
-  {
-    moduleSlug: "getting-started", position: 2, sequenceNumber: 2, unlockDay: 2, prerequisiteSlug: "build-your-15-minute-routine", slug: "accuracy-before-speed", title: "Accuracy Before Speed",
-    summary: "Learn why controlled, correct practice comes before faster responses.", estimatedMinutes: 7, status: "published" as const,
-    content: ["Speed is useful only when the underlying method is reliable. Begin slowly enough to notice each decision.", "Once a method is accurate, shorten response time gradually while continuing to record mistakes."],
-    exercises: [{ prompt: "What should you do when faster practice causes frequent mistakes?", options: ["Guess more quickly", "Return to a controlled pace and review the method", "Skip the skill"], correctIndex: 1, explanation: "Reducing speed temporarily helps restore a correct and repeatable method." }],
-  },
-  {
-    moduleSlug: "getting-started", position: 3, sequenceNumber: 3, unlockDay: 3, prerequisiteSlug: "accuracy-before-speed", slug: "reflect-on-errors", title: "Reflect on Errors",
-    summary: "Turn mistakes into specific changes for the next attempt.", estimatedMinutes: 8, status: "published" as const,
-    content: ["After an incorrect answer, identify whether the cause was knowledge, attention, or strategy.", "Write one short adjustment for the next attempt. Specific adjustments are more useful than simply promising to try harder."],
-    exercises: [{ prompt: "Which reflection is most actionable?", options: ["I am bad at this", "I will try harder", "I missed the sign; next time I will circle it before calculating"], correctIndex: 2, explanation: "A specific observed cause and a concrete next action make reflection useful." }],
-  },
-];
+export { lessonSeed } from "./curriculum.js";
 
 // This repository seed is a technical baseline only. A qualified reviewer must
 // approve and publish the complete twelve-assessment bank before it is sold.
