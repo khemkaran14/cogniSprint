@@ -1,0 +1,21 @@
+import { createApplicationIndexes } from "./001-create-application-indexes.js";
+import { createLearningProgressionIndexes } from "./002-create-learning-progression-indexes.js";
+import { createAnalyticsIndexes } from "./003-create-analytics-indexes.js";
+import { createAssessmentIndexes } from "./004-create-assessment-indexes.js";
+import { createCertificateDeliveryIndexes } from "./005-create-certificate-delivery-indexes.js";
+import { createSessionManagementIndexes } from "./006-create-session-management-indexes.js";
+import { createAdminAuditIndexes } from "./007-create-admin-audit-indexes.js";
+import { createOrderHistoryIndexes } from "./008-create-order-history-indexes.js";
+import { createRefundIndexes } from "./009-create-refund-indexes.js";
+import { createReconciliationIndexes } from "./010-create-reconciliation-indexes.js";
+import { createEmailDeliveryIndexes } from "./011-create-email-delivery-indexes.js";
+import { createOperationalAlertIndexes } from "./012-create-operational-alert-indexes.js";
+import { createPrivacyRequestIndexes } from "./013-create-privacy-request-indexes.js";
+import { createDisputeIndexes } from "./014-create-dispute-indexes.js";
+import { createEmailProviderEventIndexes } from "./015-create-email-provider-event-indexes.js";
+import { createContentWorkflowIndexes } from "./016-create-content-workflow-indexes.js";
+import { createLearningResourceIndexes } from "./017-create-learning-resource-indexes.js";
+import { createAchievementIndexes } from "./018-create-achievement-indexes.js";
+import type { Migration } from "./types.js";
+
+export const migrations: Migration[] = [createApplicationIndexes, createLearningProgressionIndexes, createAnalyticsIndexes, createAssessmentIndexes, createCertificateDeliveryIndexes, createSessionManagementIndexes, createAdminAuditIndexes, createOrderHistoryIndexes, createRefundIndexes, createReconciliationIndexes, createEmailDeliveryIndexes, createOperationalAlertIndexes, createPrivacyRequestIndexes, createDisputeIndexes, createEmailProviderEventIndexes, createContentWorkflowIndexes, createLearningResourceIndexes, createAchievementIndexes];

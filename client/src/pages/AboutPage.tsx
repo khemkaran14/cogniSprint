@@ -9,7 +9,7 @@ const sections = [
   { title: "The value of deliberate practice", body: "Skills like mental calculation, memory technique and structured reasoning respond well to short, focused, repeated practice — the same principle behind spaced repetition and skill drills in many other fields. CogniSprint applies that principle to a specific set of everyday cognitive skills." },
   { title: "Our educational philosophy", body: "Progress should be visible, practice should be varied enough to stay interesting, and claims about what the program does should always match what it actually delivers. We'd rather understate results than oversell them." },
   { title: "The program's limitations", body: educationalDisclaimer },
-  { title: "The role of consistency", body: "The program is built around a full year because that's roughly how long it takes for a short daily practice to become an established habit rather than a temporary effort. Missing an occasional day doesn't reset your progress — coming back to the routine is what matters." },
+  { title: "The role of consistency", body: "CogniSprint explores how short, repeatable practice can support a learning routine. The currently published preview does not claim or deliver a full-year program, and individual outcomes vary." },
   { title: "The company behind the product", body: `CogniSprint is built and maintained by ${brand.company.owner}.` },
 ];
 

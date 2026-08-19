@@ -60,9 +60,11 @@ export const mockBlogArticle = {
   sections: [{ heading: "Why mental math still matters", paragraphs: ["Some useful paragraph text."] }],
 };
 
-export async function mockApi(page: Page) {
-  await page.route("**/api/products", (route) => route.fulfill({ json: [mockProduct] }));
-  await page.route("**/api/products/cognisprint-complete", (route) => route.fulfill({ json: mockProduct }));
+export async function mockApi(page: Page, options: { enrollmentOpen?: boolean } = {}) {
+  await page.route("**/api/auth/me", (route) => route.fulfill({ json: { user: { id: "learner_1", name: "Test Customer", email: "test@example.com", role: "learner", timezone: "UTC", emailVerified: true } } }));
+  await page.route("**/api/products", (route) => route.fulfill({ json: options.enrollmentOpen ? [mockProduct] : [] }));
+  await page.route("**/api/content-availability", (route) => route.fulfill({ json: { published: { lessons: 3, exercises: 3, assessments: 1, assessmentQuestions: 2, workbooks: 0, worksheets: 0 }, targets: { lessons: 365, assessments: 12, workbooks: 1 }, launchContentComplete: false, enrollmentOpen: Boolean(options.enrollmentOpen) } }));
+  await page.route("**/api/products/cognisprint-complete", (route) => options.enrollmentOpen ? route.fulfill({ json: mockProduct }) : route.fulfill({ status: 404, json: { error: "Enrollment is currently closed." } }));
   await page.route("**/api/curriculum", (route) => route.fulfill({ json: mockModules }));
   await page.route(/\/api\/faq(\?.*)?$/, (route) => route.fulfill({ json: mockFaq }));
   await page.route("**/api/blog", (route) => route.fulfill({ json: [mockBlogArticle] }));
@@ -71,10 +73,9 @@ export async function mockApi(page: Page) {
   await page.route("**/api/contact", (route) => route.fulfill({ json: { success: true } }));
   await page.route("**/api/checkout/create-order", (route) =>
     route.fulfill({
-      status: 501,
+      status: options.enrollmentOpen ? 503 : 404,
       json: {
-        error: "payment_provider_not_configured",
-        message: "Payment processing is not connected in this environment yet.",
+        error: "Enrollment is currently closed while launch content is reviewed.",
       },
     })
   );

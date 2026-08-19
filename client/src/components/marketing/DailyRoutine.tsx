@@ -20,8 +20,8 @@ export function DailyRoutine() {
         <Reveal>
           <SectionHeading
             eyebrow="The daily 15-minute system"
-            title="One short session. Six skills. Every day."
-            description="Each session moves through short, focused blocks — never long enough to feel like a chore, and structured enough to build real skill over time."
+            title="A proposed short-session format across six skills"
+            description="The free challenge demonstrates six skill categories. Published lessons currently cover only the reviewed foundation material shown in the learning catalogue."
           />
         </Reveal>
 
