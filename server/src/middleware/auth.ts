@@ -14,7 +14,9 @@ export async function currentUser(req: Request) {
   if (!token) return null;
   const session = await Session.findOne({ tokenHash: hashToken(decodeURIComponent(token)), expiresAt: { $gt: new Date() } });
   if (!session) return null;
-  return User.findOne({ _id: session.userId, status: "active" });
+  if (!session.lastSeenAt || Date.now() - session.lastSeenAt.getTime() > 5 * 60_000) void session.updateOne({ lastSeenAt: new Date() });
+  (req as Request & { sessionId?: string }).sessionId = String(session._id);
+  return User.findOne({ _id: session.userId, status: "active" }).select("+adminPermissions");
 }
 
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
