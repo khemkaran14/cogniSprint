@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { contactSchema, newsletterSchema, checkoutCustomerSchema } from "../src/lib/validation.js";
+import {
+  contactSchema,
+  newsletterSchema,
+  checkoutCustomerSchema,
+  registerSchema,
+  loginSchema,
+  resetPasswordSchema,
+  refundSchema,
+} from "../src/lib/validation.js";
 
 describe("newsletterSchema", () => {
   it("accepts a valid email", () => {
@@ -44,5 +52,49 @@ describe("checkoutCustomerSchema", () => {
   });
   it("rejects an invalid phone number", () => {
     expect(checkoutCustomerSchema.safeParse({ ...valid, phone: "abc" }).success).toBe(false);
+  });
+});
+
+describe("registerSchema", () => {
+  const valid = { name: "Asha Rao", email: "asha@example.com", password: "correctH0rse" };
+
+  it("accepts a well-formed registration", () => {
+    expect(registerSchema.safeParse(valid).success).toBe(true);
+  });
+  it("rejects a password shorter than 8 characters", () => {
+    expect(registerSchema.safeParse({ ...valid, password: "sh0rt" }).success).toBe(false);
+  });
+  it("rejects a password with no digit", () => {
+    expect(registerSchema.safeParse({ ...valid, password: "noDigitsHere" }).success).toBe(false);
+  });
+  it("rejects a password with no letter", () => {
+    expect(registerSchema.safeParse({ ...valid, password: "12345678" }).success).toBe(false);
+  });
+});
+
+describe("loginSchema", () => {
+  it("accepts email + non-empty password", () => {
+    expect(loginSchema.safeParse({ email: "asha@example.com", password: "anything" }).success).toBe(true);
+  });
+  it("rejects an empty password", () => {
+    expect(loginSchema.safeParse({ email: "asha@example.com", password: "" }).success).toBe(false);
+  });
+});
+
+describe("resetPasswordSchema", () => {
+  it("accepts a token with a valid new password", () => {
+    expect(resetPasswordSchema.safeParse({ token: "abc123", password: "correctH0rse" }).success).toBe(true);
+  });
+  it("rejects a weak new password", () => {
+    expect(resetPasswordSchema.safeParse({ token: "abc123", password: "weak" }).success).toBe(false);
+  });
+});
+
+describe("refundSchema", () => {
+  it("accepts an order id with a reason", () => {
+    expect(refundSchema.safeParse({ orderId: "order123", reason: "Customer request" }).success).toBe(true);
+  });
+  it("rejects a missing reason", () => {
+    expect(refundSchema.safeParse({ orderId: "order123", reason: "" }).success).toBe(false);
   });
 });

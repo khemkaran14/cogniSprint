@@ -67,6 +67,55 @@ export async function fetchRazorpayOrder(orderId: string): Promise<RazorpayOrder
   return (await response.json()) as RazorpayOrder;
 }
 
+export type RazorpayRefund = {
+  id: string;
+  amount: number;
+  currency: string;
+  payment_id: string;
+  status: string;
+};
+
+/**
+ * Issues a real refund via the Razorpay Refunds API against a captured
+ * payment. `amount` is optional — omit it for a full refund, or pass an
+ * amount in paise for a partial refund. `receipt` gives the refund an
+ * idempotency key on Razorpay's side: retrying the same receipt after a
+ * network failure won't double-refund.
+ */
+export async function createRazorpayRefund(options: {
+  paymentId: string;
+  amount?: number;
+  receipt: string;
+  notes?: Record<string, string>;
+}): Promise<RazorpayRefund> {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!keyId || !keySecret) {
+    throw new Error("Razorpay is not configured");
+  }
+
+  const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+  const response = await fetch(`https://api.razorpay.com/v1/payments/${options.paymentId}/refund`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${auth}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      amount: options.amount,
+      receipt: options.receipt,
+      notes: options.notes,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Razorpay refund failed: ${response.status} ${errorBody}`);
+  }
+
+  return (await response.json()) as RazorpayRefund;
+}
+
 /**
  * Verifies the signature Razorpay Checkout returns to the client after a
  * successful payment: hmac_sha256(order_id + "|" + payment_id, key_secret).

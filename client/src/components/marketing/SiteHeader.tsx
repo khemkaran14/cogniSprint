@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Brain } from "lucide-react";
 import { LinkButton } from "@/components/ui/LinkButton";
+import { Button } from "@/components/ui/Button";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { useAuth } from "@/hooks/useAuth";
 import { mainNav } from "@/config/navigation";
 import { brand } from "@/config/brand";
 import { cn } from "@/lib/utils";
@@ -10,6 +12,14 @@ import { cn } from "@/lib/utils";
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  async function handleLogout() {
+    await logout();
+    setOpen(false);
+    navigate("/");
+  }
 
   return (
     <header className="sticky top-0 z-40 glass-panel">
@@ -38,6 +48,21 @@ export function SiteHeader() {
 
         <div className="hidden items-center gap-2 lg:flex">
           <ThemeToggle />
+          {user ? (
+            <>
+              <span className="px-2 text-sm text-[var(--color-ink-muted)]">Hi, {user.name.split(" ")[0]}</span>
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                Log out
+              </Button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-[var(--color-ink-muted)] transition-colors hover:text-[var(--color-ink)]"
+            >
+              Log in
+            </Link>
+          )}
           <LinkButton to="/pricing" size="sm">
             {brand.primaryCta}
           </LinkButton>
@@ -67,6 +92,23 @@ export function SiteHeader() {
                 {link.label}
               </Link>
             ))}
+            {user ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-[var(--radius-sm)] px-3 py-3 text-left text-base font-medium text-[var(--color-ink)] hover:bg-[var(--color-surface-sunken)]"
+              >
+                Log out ({user.name.split(" ")[0]})
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setOpen(false)}
+                className="rounded-[var(--radius-sm)] px-3 py-3 text-base font-medium text-[var(--color-ink)] hover:bg-[var(--color-surface-sunken)]"
+              >
+                Log in
+              </Link>
+            )}
             <div className="mt-2 px-3">
               <LinkButton to="/pricing" className="w-full" onClick={() => setOpen(false)}>
                 {brand.primaryCta}

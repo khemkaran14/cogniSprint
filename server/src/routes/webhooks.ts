@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { verifyWebhookSignature } from "../lib/razorpay.js";
 import { Order } from "../models/Order.js";
+import { WebhookEvent } from "../models/WebhookEvent.js";
+import { grantEntitlementForOrder } from "../lib/entitlements.js";
 
 export const webhooksRouter = Router();
 
@@ -38,20 +40,46 @@ webhooksRouter.post("/razorpay", async (req, res) => {
     return res.status(400).json({ error: "Invalid payload." });
   }
 
-  console.info("[razorpay-webhook] verified event:", event.event);
-
-  const orderId = event.payload?.payment?.entity?.order_id;
+  const eventType = event.event ?? "unknown";
   const paymentId = event.payload?.payment?.entity?.id;
+  const orderId = event.payload?.payment?.entity?.order_id;
 
-  if (event.event === "payment.captured" && orderId) {
-    // Idempotent: re-delivering the same event just re-applies the same state.
-    await Order.updateOne(
+  // Razorpay retries webhook deliveries on timeout, so the same event can
+  // arrive more than once. Record (event type, payment id) before doing
+  // anything with side effects; if we've already recorded it, this is a
+  // redelivery and there's nothing further to do.
+  if (paymentId) {
+    try {
+      await WebhookEvent.create({ provider: "razorpay", eventType, externalId: paymentId });
+    } catch (error) {
+      if (isDuplicateKeyError(error)) {
+        console.info(`[razorpay-webhook] duplicate delivery of ${eventType} for ${paymentId}, skipping`);
+        return res.json({ received: true, duplicate: true });
+      }
+      throw error;
+    }
+  }
+
+  console.info("[razorpay-webhook] verified event:", eventType);
+
+  if (eventType === "payment.captured" && orderId) {
+    const order = await Order.findOneAndUpdate(
       { providerOrderId: orderId },
-      { status: "paid", providerPaymentId: paymentId }
+      { status: "paid", providerPaymentId: paymentId },
+      { new: true }
     );
-  } else if (event.event === "payment.failed" && orderId) {
+    if (order) {
+      await grantEntitlementForOrder(order).catch((error) =>
+        console.error(`[razorpay-webhook] failed to grant entitlement for order ${order._id}`, error)
+      );
+    }
+  } else if (eventType === "payment.failed" && orderId) {
     await Order.updateOne({ providerOrderId: orderId, status: { $ne: "paid" } }, { status: "failed" });
   }
 
   res.json({ received: true });
 });
+
+function isDuplicateKeyError(error: unknown): boolean {
+  return typeof error === "object" && error !== null && "code" in error && (error as { code: unknown }).code === 11000;
+}

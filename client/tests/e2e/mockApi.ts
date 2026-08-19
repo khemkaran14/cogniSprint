@@ -60,6 +60,14 @@ export const mockBlogArticle = {
   sections: [{ heading: "Why mental math still matters", paragraphs: ["Some useful paragraph text."] }],
 };
 
+export const mockAuthUser = {
+  id: "user_1",
+  name: "Asha Rao",
+  email: "asha@example.com",
+  role: "student" as const,
+  emailVerified: true,
+};
+
 export async function mockApi(page: Page) {
   await page.route("**/api/products", (route) => route.fulfill({ json: [mockProduct] }));
   await page.route("**/api/products/cognisprint-complete", (route) => route.fulfill({ json: mockProduct }));
@@ -78,4 +86,36 @@ export async function mockApi(page: Page) {
       },
     })
   );
+
+  // Logged-out by default — individual tests can call mockLoggedIn(page) or
+  // drive the real login/register mocks below to flip this.
+  let loggedIn = false;
+
+  await page.route("**/api/auth/me", (route) => {
+    if (loggedIn) return route.fulfill({ json: { user: mockAuthUser } });
+    return route.fulfill({ status: 401, json: { error: "Please log in to continue." } });
+  });
+
+  await page.route("**/api/auth/login", (route) => {
+    const body = route.request().postDataJSON() as { email: string; password: string };
+    if (body.email === mockAuthUser.email && body.password === "correctH0rse1") {
+      loggedIn = true;
+      return route.fulfill({ json: { user: mockAuthUser } });
+    }
+    return route.fulfill({ status: 401, json: { error: "Incorrect email or password." } });
+  });
+
+  await page.route("**/api/auth/register", (route) => {
+    loggedIn = true;
+    return route.fulfill({ status: 201, json: { user: mockAuthUser } });
+  });
+
+  await page.route("**/api/auth/logout", (route) => {
+    loggedIn = false;
+    return route.fulfill({ json: { success: true } });
+  });
+
+  await page.route("**/api/auth/forgot-password", (route) => route.fulfill({ json: { success: true } }));
+  await page.route("**/api/auth/reset-password", (route) => route.fulfill({ json: { user: mockAuthUser } }));
+  await page.route("**/api/auth/verify-email", (route) => route.fulfill({ json: { success: true } }));
 }

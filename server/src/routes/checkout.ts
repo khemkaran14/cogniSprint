@@ -1,11 +1,18 @@
 import { Router } from "express";
-import { createOrderSchema, verifyPaymentSchema } from "../lib/validation.js";
+import { createOrderSchema, verifyPaymentSchema, refundSchema } from "../lib/validation.js";
 import { Product } from "../models/Product.js";
 import { Price } from "../models/Price.js";
 import { Coupon } from "../models/Coupon.js";
 import { Order } from "../models/Order.js";
 import { applyCoupon } from "../lib/pricing.js";
-import { createRazorpayOrder, isRazorpayConfigured, verifyPaymentSignature } from "../lib/razorpay.js";
+import {
+  createRazorpayOrder,
+  createRazorpayRefund,
+  isRazorpayConfigured,
+  verifyPaymentSignature,
+} from "../lib/razorpay.js";
+import { grantEntitlementForOrder } from "../lib/entitlements.js";
+import { requireFreshRole } from "../middleware/auth.js";
 
 export const checkoutRouter = Router();
 
@@ -130,5 +137,49 @@ checkoutRouter.post("/verify", async (req, res) => {
     { new: true }
   );
 
+  if (order) {
+    try {
+      await grantEntitlementForOrder(order);
+    } catch (error) {
+      // The payment is genuinely verified and paid regardless of whether
+      // entitlement/email delivery succeeds — log and let the webhook's
+      // independent call to the same (idempotent) function catch it.
+      console.error(`Failed to grant entitlement for order ${order._id}`, error);
+    }
+  }
+
   res.json({ verified: true, orderId: order?._id });
+});
+
+checkoutRouter.post("/refund", requireFreshRole("admin"), async (req, res) => {
+  const parsed = refundSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(422).json({ error: "Invalid input.", issues: parsed.error.flatten().fieldErrors });
+  }
+
+  const order = await Order.findById(parsed.data.orderId);
+  if (!order) return res.status(404).json({ error: "Order not found." });
+  if (order.status !== "paid") {
+    return res.status(409).json({ error: `Only paid orders can be refunded (this order is ${order.status}).` });
+  }
+  if (!order.providerPaymentId) {
+    return res.status(409).json({ error: "This order has no associated payment to refund." });
+  }
+
+  try {
+    const refund = await createRazorpayRefund({
+      paymentId: order.providerPaymentId,
+      amount: order.amount,
+      receipt: `refund_${order._id}`,
+      notes: { orderId: String(order._id), reason: parsed.data.reason },
+    });
+
+    order.status = "refunded";
+    await order.save();
+
+    res.json({ success: true, refundId: refund.id, status: refund.status });
+  } catch (error) {
+    console.error(`Failed to refund order ${order._id}`, error);
+    res.status(502).json({ error: "Could not process the refund. Please try again." });
+  }
 });

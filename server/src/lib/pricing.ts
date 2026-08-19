@@ -16,3 +16,13 @@ export function applyCoupon(amount: number, coupon: CouponLike): number {
   }
   return Math.max(0, Math.round(amount * (1 - coupon.discountValue / 100)));
 }
+
+/** Formats an amount in paise as an INR string, e.g. 99900 -> "₹999". */
+export function formatINR(amountInPaise: number): string {
+  const rupees = amountInPaise / 100;
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(rupees);
+}

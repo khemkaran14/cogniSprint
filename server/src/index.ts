@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import cookieParser from "cookie-parser";
 import { connectDB } from "./lib/db.js";
 import { catalogueRouter } from "./routes/catalogue.js";
 import { newsletterRouter } from "./routes/newsletter.js";
@@ -9,7 +10,9 @@ import { contactRouter } from "./routes/contact.js";
 import { challengeRouter } from "./routes/challenge.js";
 import { checkoutRouter } from "./routes/checkout.js";
 import { webhooksRouter } from "./routes/webhooks.js";
-import { publicFormLimiter, checkoutLimiter } from "./middleware/rateLimit.js";
+import { authRouter } from "./routes/auth.js";
+import { publicFormLimiter, checkoutLimiter, authLimiter } from "./middleware/rateLimit.js";
+import { attachUser } from "./middleware/auth.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
@@ -20,7 +23,7 @@ app.use(
     contentSecurityPolicy: false, // the client app (served separately) owns its own CSP
   })
 );
-app.use(cors({ origin: CLIENT_URL, credentials: false }));
+app.use(cors({ origin: CLIENT_URL, credentials: true }));
 
 // Razorpay webhooks need the raw request body to verify the HMAC signature,
 // so that route is mounted with express.raw() before the JSON body parser
@@ -28,12 +31,15 @@ app.use(cors({ origin: CLIENT_URL, credentials: false }));
 app.use("/api/webhooks", express.raw({ type: "application/json" }), webhooksRouter);
 
 app.use(express.json());
+app.use(cookieParser());
+app.use(attachUser);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
 app.use("/api", catalogueRouter);
+app.use("/api/auth", authLimiter, authRouter);
 app.use("/api/newsletter", publicFormLimiter, newsletterRouter);
 app.use("/api/contact", publicFormLimiter, contactRouter);
 app.use("/api/challenge", publicFormLimiter, challengeRouter);

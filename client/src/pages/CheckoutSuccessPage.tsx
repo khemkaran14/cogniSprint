@@ -9,12 +9,14 @@ import { LoadingState } from "@/components/shared/QueryStates";
 import { formatINR } from "@/lib/utils";
 import { apiGet } from "@/lib/api";
 import { brand } from "@/config/brand";
+import { useAuth } from "@/hooks/useAuth";
 
 type OrderDetails = { orderId: string; amount: number; currency: string; status: string; productName?: string };
 
 export default function CheckoutSuccessPage() {
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get("order");
+  const { user } = useAuth();
 
   const { data: order, isLoading } = useQuery({
     queryKey: ["order", orderId],
@@ -56,7 +58,12 @@ export default function CheckoutSuccessPage() {
         </div>
 
         <Alert variant="info" className="mt-6 text-left" title="Check your email">
-          <span className="flex items-center gap-1.5"><Mail className="h-4 w-4 shrink-0" /> A confirmation email with your access details is on its way.</span>
+          <span className="flex items-center gap-1.5">
+            <Mail className="h-4 w-4 shrink-0" />
+            {user
+              ? "A confirmation email is on its way — you're already logged in and ready to go."
+              : "We've sent you an email with a link to set your password and log in to your new account."}
+          </span>
         </Alert>
 
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
