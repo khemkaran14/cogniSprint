@@ -11,6 +11,7 @@ import { User } from "../models/User.js";
 import { learningStats } from "../lib/gamification.js";
 import { calendarDayNumber, isValidTimezone, lessonAvailability } from "../lib/learningProgression.js";
 import { analyticsCsv, buildLearningAnalytics } from "../lib/learningAnalytics.js";
+import { syncAchievements } from "../lib/achievements.js";
 
 export const learningRouter = Router();
 learningRouter.use(requireAuth, requireActiveEntitlement);
@@ -91,6 +92,8 @@ learningRouter.get("/dashboard", async (_req, res, next) => {
       ?? lessons.find((lesson) => lesson.availability?.available && lesson.progress?.status !== "completed")
       ?? null;
     const completedLessons = context.progress.filter((item) => item.status === "completed").length;
+    const stats = learningStats(context.progress);
+    const achievements = await syncAchievements(res.locals.user._id, context.progress);
     res.json({
       summary: {
         totalLessons: context.lessons.length,
@@ -98,7 +101,8 @@ learningRouter.get("/dashboard", async (_req, res, next) => {
         programDay: context.programDay,
         timezone: context.timezone,
         courseComplete: context.lessons.length >= 365 && completedLessons >= context.lessons.length,
-        ...learningStats(context.progress),
+        ...stats,
+        badges: achievements,
       },
       continueLesson,
       modules: modules.map((module) => {
@@ -256,12 +260,15 @@ learningRouter.post("/lessons/:slug/complete", async (req, res, next) => {
     ).lean();
     duplicate ||= !progress;
     progress ??= await LessonProgress.findOne({ userId: res.locals.user._id, lessonId: lesson._id }).lean();
+    const allProgress = await LessonProgress.find({ userId: res.locals.user._id }).select("status bestScore completedAt").lean();
+    const achievements = authoritativePassed ? await syncAchievements(res.locals.user._id, allProgress) : [];
     const nextLesson = context.lessons[lessonIndex + 1];
     const nextAvailable = Boolean(authoritativePassed && nextLesson && nextLesson.unlockDay <= context.programDay);
     res.json({
       score: authoritativeScore, correct: submission.correct, total: submission.total, passed: authoritativePassed, duplicate,
       explanations: lesson.exercises.map((item) => item.explanation),
       progress,
+      achievements,
       nextLesson: authoritativePassed && nextLesson ? { slug: nextLesson.slug, title: nextLesson.title, available: nextAvailable } : null,
     });
   } catch (error) { next(error); }

@@ -83,7 +83,7 @@ Challenge attempts are not persisted. A `User` model now exists, but associating
 ## Learning and certificate flow
 
 1. `requireAuth` resolves the opaque session cookie and `requireActiveEntitlement` requires an active product entitlement for every learning endpoint.
-2. `GET /api/learning/dashboard` joins globally sequenced published lessons with progress, calculates the program day in the learner's IANA timezone, enforces scheduled/prerequisite availability, and derives module/course completion, XP, streak and badge summaries.
+2. `GET /api/learning/dashboard` joins globally sequenced published lessons with progress, calculates the program day in the learner's IANA timezone, enforces scheduled/prerequisite availability, derives module/course completion, XP and streak, and idempotently records newly earned badges.
 3. `GET /api/learning/lessons/:slug` rejects locked lessons, creates an idempotent started-progress record and returns content, resumable draft answers and navigation without `correctIndex` or explanations.
 4. `PATCH /api/learning/lessons/:slug/draft` persists partial answer indexes after validating them against the server-side option lists.
 5. `POST /api/learning/lessons/:slug/complete` validates every answer, scores against server-side keys, applies the pass mark and atomically records attempts/best score. A UUID and answer hash make client retries idempotent and reject conflicting reuse.
@@ -137,5 +137,5 @@ If SEO is a hard requirement for a specific page (most likely the homepage, cour
 - **Challenge questions are a fixed set**, not randomized or DB-backed — acceptable for a lead-generation tool; a determined visitor could look up answers, which doesn't matter for an honest practice snapshot that explicitly isn't a secure assessment.
 - **Browser E2E tests mock the API layer** for deterministic UI coverage. A separate server integration suite runs against a real MongoDB 7 service in CI and covers persisted authentication, entitlement-gated learning and webhook replay; it does not replace a future browser-through-API system test against a deployed environment.
 - **Only three lessons and one technical assessment baseline are seeded** — the workflow is implemented, but the complete 365-day library and twelve qualified, reviewed assessments require human authoring and approval.
-- **Gamification is derived, not event-sourced** — XP, UTC streak and four badges are computed from lesson progress; persistent achievement history, learner timezone rules and notification preferences remain future work.
+- **Gamification uses progress as its authority** — XP, UTC streak and four badge rules are computed from lesson progress. Badge awards are persisted once with their first award date; reminder and notification preferences remain future work.
 - **Certificate delivery is API-only** — eligibility, claiming and public verification exist; learner UI, PDF/email delivery and admin revocation tooling do not.

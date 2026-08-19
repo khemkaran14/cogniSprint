@@ -9,6 +9,7 @@ import { LessonSubmission } from "../models/LessonSubmission.js";
 import { Order } from "../models/Order.js";
 import { PrivacyRequest } from "../models/PrivacyRequest.js";
 import { Refund } from "../models/Refund.js";
+import { Achievement } from "../models/Achievement.js";
 
 export const privacyRouter = Router();
 privacyRouter.use(requireAuth);
@@ -16,12 +17,12 @@ privacyRouter.use(requireAuth);
 privacyRouter.get("/export", async (_req, res, next) => {
   try {
     const user = res.locals.user;
-    const [entitlements, orders, refunds, progress, submissions, assessments, certificates] = await Promise.all([
+    const [entitlements, orders, refunds, progress, submissions, assessments, certificates, achievements] = await Promise.all([
       Entitlement.find({ userId: user._id }).lean(), Order.find({ userId: user._id }).lean(), Refund.find({ userId: user._id }).lean(),
-      LessonProgress.find({ userId: user._id }).lean(), LessonSubmission.find({ userId: user._id }).lean(), AssessmentAttempt.find({ userId: user._id }).lean(), Certificate.find({ userId: user._id }).lean(),
+      LessonProgress.find({ userId: user._id }).lean(), LessonSubmission.find({ userId: user._id }).lean(), AssessmentAttempt.find({ userId: user._id }).lean(), Certificate.find({ userId: user._id }).lean(), Achievement.find({ userId: user._id }).lean(),
     ]);
     res.setHeader("Content-Disposition", `attachment; filename="cognisprint-data-${new Date().toISOString().slice(0, 10)}.json"`);
-    res.json({ exportedAt: new Date().toISOString(), account: { id: String(user._id), name: user.name, email: user.email, role: user.role, status: user.status, timezone: user.timezone, emailVerifiedAt: user.emailVerifiedAt, createdAt: user.createdAt, updatedAt: user.updatedAt }, entitlements, orders, refunds, learning: { progress, submissions, assessmentAttempts: assessments, certificates } });
+    res.json({ exportedAt: new Date().toISOString(), account: { id: String(user._id), name: user.name, email: user.email, role: user.role, status: user.status, timezone: user.timezone, emailVerifiedAt: user.emailVerifiedAt, createdAt: user.createdAt, updatedAt: user.updatedAt }, entitlements, orders, refunds, learning: { progress, submissions, assessmentAttempts: assessments, certificates, achievements } });
   } catch (error) { next(error); }
 });
 

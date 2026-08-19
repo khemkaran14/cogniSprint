@@ -24,3 +24,9 @@ export function learningStats(progress: Array<{ status: string; bestScore: numbe
   ];
   return { streak, xp, badges };
 }
+
+export type AchievementDefinition = { key: string; label: string };
+
+export function earnedAchievements(progress: Array<{ status: string; bestScore: number; completedAt?: Date | null }>, now = new Date()): AchievementDefinition[] {
+  return learningStats(progress, now).badges;
+}

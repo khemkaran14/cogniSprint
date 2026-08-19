@@ -12,7 +12,7 @@ import { apiGet, apiPatch, ApiError } from "@/lib/api";
 
 type DashboardLesson = { _id: string; slug: string; title: string; summary: string; estimatedMinutes: number; unlockDay: number; progress: { status: "started" | "completed"; bestScore: number } | null; availability: { available: boolean; lockReason: "scheduled" | "prerequisite" | null } };
 type DashboardModule = { _id: string; position: number; title: string; description: string; completion: { totalLessons: number; completedLessons: number }; lessons: DashboardLesson[] };
-type Dashboard = { summary: { totalLessons: number; completedLessons: number; programDay: number; timezone: string; courseComplete: boolean; streak: number; xp: number; badges: { key: string; label: string }[] }; continueLesson: DashboardLesson | null; modules: DashboardModule[] };
+type Dashboard = { summary: { totalLessons: number; completedLessons: number; programDay: number; timezone: string; courseComplete: boolean; streak: number; xp: number; badges: { key: string; label: string; earnedAt: string }[] }; continueLesson: DashboardLesson | null; modules: DashboardModule[] };
 
 export default function LearningDashboardPage() {
   const { user, loading } = useAuth();
@@ -58,7 +58,7 @@ export default function LearningDashboardPage() {
               <div className="surface-card p-5"><Sparkles className="text-[var(--color-brand-blue)]" aria-hidden /><p className="mt-3 text-2xl font-semibold">{dashboard.data.summary.xp}</p><p className="text-sm text-[var(--color-ink-muted)]">experience points</p></div>
               <div className="surface-card p-5"><Award className="text-[var(--color-success)]" aria-hidden /><p className="mt-3 text-2xl font-semibold">{dashboard.data.summary.badges.length}</p><p className="text-sm text-[var(--color-ink-muted)]">badges earned</p></div>
             </div>
-            {dashboard.data.summary.badges.length ? <div className="mt-4 flex flex-wrap gap-2" aria-label="Earned badges">{dashboard.data.summary.badges.map((badge) => <span key={badge.key} className="rounded-[var(--radius-full)] bg-[var(--color-success-surface)] px-3 py-1 text-xs font-semibold text-[var(--color-success)]">{badge.label}</span>)}</div> : null}
+            {dashboard.data.summary.badges.length ? <div className="mt-4 flex flex-wrap gap-2" aria-label="Earned badges">{dashboard.data.summary.badges.map((badge) => <span key={badge.key} title={`Earned ${new Date(badge.earnedAt).toLocaleDateString()}`} className="rounded-[var(--radius-full)] bg-[var(--color-success-surface)] px-3 py-1 text-xs font-semibold text-[var(--color-success)]">{badge.label}</span>)}</div> : null}
             <div className="mt-8 space-y-6">
               {dashboard.data.modules.map((module) => (
                 <section key={module._id} className="surface-card p-6">

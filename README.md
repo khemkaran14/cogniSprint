@@ -92,7 +92,7 @@ Nothing beyond MongoDB is required to see the full marketing site, curriculum, b
 
 ## Database
 
-`server/src/models/` defines Mongoose schemas for catalogue content, users, sessions, account tokens, orders, entitlements, lessons, lesson progress, assessment attempts, certificates and retained webhook events. `server/src/seed/` seeds catalogue content, three initial Getting Started lessons and one technical assessment baseline; users and transactional records are created by real application activity. The remaining eleven assessments still require qualified content review, while persistent achievement records, referrals, community and admin/audit models are not implemented yet.
+`server/src/models/` defines Mongoose schemas for catalogue content, users, sessions, account tokens, orders, entitlements, lessons, lesson progress, assessment attempts, persistent achievements, certificates and retained webhook events. `server/src/seed/` seeds catalogue content, three initial Getting Started lessons and one technical assessment baseline; users and transactional records are created by real application activity. The remaining eleven assessments still require qualified content review, while referrals and community features are not implemented.
 
 ## Razorpay integration
 
@@ -124,7 +124,7 @@ CogniSprint now includes secure account registration, sign-in/out, opaque databa
 | Accounts and sessions | Foundation implemented | Registration, login/logout, verification, reset, profile preferences and secure owner-scoped device/session revocation exist; data-rights export/deletion workflows remain. |
 | Checkout and entitlements | Foundation implemented | Server-priced Razorpay orders, signed callback/webhook verification, persisted orders, grant/revoke behavior, owner history, printable receipts, audited refunds, and dispute/chargeback handling exist; production reconciliation and legally reviewed tax invoices remain. |
 | Protected learning | Foundation implemented | Active entitlements gate lessons and versioned workbook/worksheet downloads; sequential prerequisites, daily unlocks, resumable drafts, idempotent submissions and completion are implemented for three lessons. The remaining 362 sessions and reviewed resource files are not present. |
-| Progress and gamification | Partial | Overall, per-skill, per-module and daily activity analytics, CSV export, completion, attempts, recorded duration, best score, computed XP, timezone-aware streak and four badge rules exist. Persistent achievement history does not. |
+| Progress and gamification | Foundation implemented | Overall, per-skill, per-module and daily activity analytics, CSV export, completion, attempts, recorded duration, best score, computed XP, timezone-aware streak and four badge rules exist. Earned badges are persisted idempotently with their original award date and included in learner data exports. |
 | Certificates | Foundation | Eligibility/status, claim, print/save-PDF UI, queued email delivery, signed provider outcome tracking, public verification and audited admin revocation exist. Eligibility deliberately requires at least 365 published and completed lessons. |
 | Monthly assessments | Foundation | Entitlement-gated attempts, server scoring, skill results and one technical baseline exist; eleven qualified and reviewed assessment banks remain. |
 | Admin/support | Foundation | Operational metrics, orders/refunds/disputes, email/privacy handling, certificate revocation and auditable content release operations exist. User management, content authoring and granular permissions remain. |
@@ -133,7 +133,7 @@ CogniSprint now includes secure account registration, sign-in/out, opaque databa
 
 ## Learning foundation
 
-Paid learners have a protected `/learn` dashboard backed by active product entitlements. Published lessons are stored separately from curriculum marketing metadata, learner-facing responses omit answer keys, submissions are scored server-side, and best score, attempt count and completion status are persisted. XP, streak and badges are derived from progress records rather than trusted client state.
+Paid learners have a protected `/learn` dashboard backed by active product entitlements. Published lessons are stored separately from curriculum marketing metadata, learner-facing responses omit answer keys, submissions are scored server-side, and best score, attempt count and completion status are persisted. XP and streak are derived from progress records rather than trusted client state; earned badges are derived server-side and recorded idempotently with their first award date.
 
 Only three initial Getting Started lessons are seeded. They prove the workflow; they do **not** constitute the complete 365-day product. Content claims must remain limited to reviewed, published material until all remaining lessons and assessments are delivered.
 
