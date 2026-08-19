@@ -7,8 +7,10 @@ const userSchema = new Schema(
     passwordHash: { type: String, required: true, select: false },
     emailVerifiedAt: { type: Date },
     role: { type: String, enum: ["learner", "admin"], default: "learner", required: true },
+    adminPermissions: { type: [String], default: [], select: false },
     status: { type: String, enum: ["active", "suspended"], default: "active", required: true },
     lastLoginAt: { type: Date },
+    timezone: { type: String, required: true, default: "UTC", trim: true },
   },
   { timestamps: true }
 );
