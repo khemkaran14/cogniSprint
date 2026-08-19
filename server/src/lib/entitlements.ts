@@ -2,6 +2,10 @@ import { Entitlement } from "../models/Entitlement.js";
 
 type PaidOrder = { _id: unknown; userId: unknown; productId: unknown; status: string };
 
+export function canRestoreEntitlementFromOrder(order: { status: string } | null | undefined) {
+  return Boolean(order && ["paid", "partially_refunded", "disputed"].includes(order.status));
+}
+
 /** Idempotently grants access. Safe to call from both payment verification paths. */
 export async function grantPaidOrderEntitlement(order: PaidOrder | null) {
   if (!order || order.status !== "paid" || !order.userId || !order.productId) return null;

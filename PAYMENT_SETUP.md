@@ -16,8 +16,8 @@
 
 ## What remains before Live Mode
 
-- A documented decision for how partial refunds affect an entitlement
-- Production validation of dispute handling, reconciliation, tax invoices and reliable queued payment/refund email delivery
+- Legal approval that the implemented partial-refund access-retention behavior matches the published policy
+- Production validation of the implemented dispute handling, reconciliation and queued payment/refund email delivery, plus legally reviewed tax invoices
 - A human-owned process for submitting dispute evidence and communicating with affected customers
 - Staging and Live provider tests covering callback loss, redelivery, refunds and entitlement state (MongoDB-backed CI race/refund coverage exists)
 - Owner-controlled Razorpay KYC, Live credentials, production webhook registration and a real payment/refund smoke test
@@ -63,10 +63,10 @@ Compared with a timing-safe comparison. Unit-tested in `server/tests/razorpay-si
 Before switching to live `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`:
 
 - [x] `User`/`Entitlement` models exist and a paid order grants product access
-- [ ] Refund initiation and partial-refund tracking match the published Refund & Cancellation Policy
+- [x] Refund initiation and partial-refund tracking are implemented; legal approval against the published policy remains external
 - [x] A webhook-event ledger deduplicates deliveries by Razorpay event ID
-- [ ] Pending-order reconciliation and payment/entitlement mismatch alerting are operating
-- [ ] Payment, refund and receipt emails are delivered and monitored
+- [x] Pending-order reconciliation and payment/entitlement mismatch alerting are implemented; production scheduling/monitoring remains external
+- [x] Payment, refund and receipt emails use a monitored queue/provider-event foundation; production domain and delivery validation remain external
 - [ ] Live webhook URL registered with its own secret set in the production environment
 - [ ] A real low-value Live payment and full refund have passed end to end
 - [ ] A support process exists for failed/disputed payments before launch

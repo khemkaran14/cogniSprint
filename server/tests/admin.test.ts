@@ -16,7 +16,21 @@ describe("admin authorization", () => {
 
   it("allows an authenticated administrator", () => {
     const next = vi.fn();
-    requireAdmin({} as Request, { locals: { testUser: { role: "admin" } }, headersSent: false } as unknown as Response, next);
+    requireAdmin({ path: "/dashboard", method: "GET" } as Request, { locals: { testUser: { role: "admin", adminPermissions: ["*"] } }, headersSent: false } as unknown as Response, next);
+    expect(next).toHaveBeenCalledOnce();
+  });
+
+  it("enforces the permission required by the administrator route", () => {
+    const status = vi.fn().mockReturnThis(); const json = vi.fn(); const next = vi.fn();
+    requireAdmin({ path: "/orders", method: "GET" } as Request, { locals: { testUser: { role: "admin", adminPermissions: ["content:manage"] } }, headersSent: false, status, json } as unknown as Response, next);
+    expect(status).toHaveBeenCalledWith(403);
+    expect(json).toHaveBeenCalledWith({ error: "Administrator permission payments:manage is required." });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("allows a scoped administrator on the matching route", () => {
+    const next = vi.fn();
+    requireAdmin({ path: "/content", method: "GET" } as Request, { locals: { testUser: { role: "admin", adminPermissions: ["content:manage"] } }, headersSent: false } as unknown as Response, next);
     expect(next).toHaveBeenCalledOnce();
   });
 });

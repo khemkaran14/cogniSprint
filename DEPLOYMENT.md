@@ -46,6 +46,7 @@ Vite values are compiled into the static bundle. Rebuild the web service after c
 4. Register `/api/webhooks/razorpay` in Razorpay Test mode and `/api/webhooks/resend` in Resend using their separate staging signing secrets.
 5. Add repository variables `STAGING_API_URL` and `STAGING_APP_URL`, then manually run **Staging deployment smoke tests**.
 6. Promote an owner account from the API shell with `npm run admin:promote -- owner@example.com`; do not create a shared administrator login.
+7. Create separate verified administrator accounts and restrict them with `npm run admin:permissions -- person@example.com content:manage` (comma-separate multiple permissions). Reserve `*` for the minimum number of owner accounts.
 
 ## 4. Release and rollback
 

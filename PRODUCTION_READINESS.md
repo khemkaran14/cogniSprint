@@ -19,7 +19,7 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 | XP, streak and badges | Foundation | Derived UTC streak and XP plus four badge rules exist; badge awards are persisted idempotently with their original award date. Reminder preferences and delivery remain. |
 | Certificates | Foundation | Eligibility, claim, printable UI, public verification, queued/provider-tracked email delivery with audited retry, and audited admin revocation exist; production provider validation remains. |
 | Assessments | Foundation | Entitlement-protected catalogue, attempt UI, retry-safe server scoring, per-skill results and one technical baseline exist; eleven assessments and qualified content review remain. |
-| Admin/support tooling | Foundation | Operational dashboards, refund/dispute/email/privacy operations, certificate revocation, auditable content review/publishing and immutable mutation records exist; user management, content authoring and granular permissions remain. |
+| Admin/support tooling | Foundation | Operational dashboards, learner search/suspension/session revocation, learner support timelines, paid-order-backed entitlement repair, refund/dispute/email/privacy operations, certificate revocation, auditable content publishing and scoped administrator permissions exist; full content authoring remains. |
 | Community/referrals | Not implemented | No product implementation or moderation operation. |
 | Runtime/deployment foundation | Foundation | CI, containers, SPA fallback, request IDs, readiness and graceful shutdown exist; provider deployment, migrations, monitoring and real full-stack tests remain. |
 
@@ -74,7 +74,7 @@ This document is the authoritative launch checklist for CogniSprint. A checked i
 - [ ] A security review and independent penetration test cover authentication, authorization, payment and webhook paths.
 - [ ] A WCAG 2.2 AA review covers public, auth, checkout and learning flows plus downloadable documents.
 - [ ] A qualified human reviews educational correctness, difficulty progression and cognitive/medical claims.
-- [ ] Customer-support and incident-response owners, contact routes and response expectations are documented.
+- [ ] Assign named customer-support and incident-response owners in the private operations system using `OPERATIONS_OWNERSHIP.md`; the repository runbook and response expectations exist, but `UNASSIGNED` roles are not launch evidence.
 - [ ] Community features, if introduced, have funded moderation, reporting, blocking and age-safety operations.
 
 ### Live validation

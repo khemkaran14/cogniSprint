@@ -17,6 +17,7 @@
     "migrate:status": "tsx src/migrations/cli.ts status",
     "migrate:prod": "node dist/migrations/cli.js",
     "admin:promote": "tsx src/admin/promote.ts",
+    "admin:permissions": "tsx src/admin/permissions.ts",
     "reconcile": "tsx src/ops/reconcile.ts",
     "reconcile:apply": "tsx src/ops/reconcile.ts --apply",
     "email:process": "tsx src/ops/processEmailQueue.ts",

@@ -16,7 +16,7 @@ export async function currentUser(req: Request) {
   if (!session) return null;
   if (!session.lastSeenAt || Date.now() - session.lastSeenAt.getTime() > 5 * 60_000) void session.updateOne({ lastSeenAt: new Date() });
   (req as Request & { sessionId?: string }).sessionId = String(session._id);
-  return User.findOne({ _id: session.userId, status: "active" });
+  return User.findOne({ _id: session.userId, status: "active" }).select("+adminPermissions");
 }
 
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {

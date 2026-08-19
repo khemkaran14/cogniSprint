@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Refund } from "../src/models/Refund.js";
 import { Order } from "../src/models/Order.js";
+import { canRestoreEntitlementFromOrder } from "../src/lib/entitlements.js";
 
 describe("Refund records", () => {
   it("requires positive amounts and bounded lifecycle state", () => {
@@ -16,5 +17,11 @@ describe("Refund records", () => {
   it("indexes provider IDs and order history", () => {
     expect(Refund.schema.path("providerRefundId").options.unique).toBe(true);
     expect(Refund.schema.indexes().some(([keys]) => keys.orderId === 1 && keys.createdAt === -1)).toBe(true);
+  });
+  it("only restores access for qualifying paid order states", () => {
+    expect(canRestoreEntitlementFromOrder({ status: "paid" })).toBe(true);
+    expect(canRestoreEntitlementFromOrder({ status: "partially_refunded" })).toBe(true);
+    expect(canRestoreEntitlementFromOrder({ status: "refunded" })).toBe(false);
+    expect(canRestoreEntitlementFromOrder({ status: "chargeback" })).toBe(false);
   });
 });

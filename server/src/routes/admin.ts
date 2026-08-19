@@ -9,7 +9,7 @@ import { User } from "../models/User.js";
 import { WebhookEvent } from "../models/WebhookEvent.js";
 import { Refund } from "../models/Refund.js";
 import { createRazorpayRefund } from "../lib/razorpay.js";
-import { revokeOrderEntitlement } from "../lib/entitlements.js";
+import { canRestoreEntitlementFromOrder, revokeOrderEntitlement } from "../lib/entitlements.js";
 import { ReconciliationRun } from "../models/ReconciliationRun.js";
 import { EmailDelivery } from "../models/EmailDelivery.js";
 import { enqueueEmail } from "../lib/emailQueue.js";
@@ -70,6 +70,44 @@ adminRouter.get("/users", async (req, res, next) => {
     const counts = (rows: Array<{ _id: unknown; count: number }>) => new Map(rows.map((row) => [String(row._id), row.count]));
     const entitlements = counts(entitlementCounts); const sessions = counts(sessionCounts);
     res.json({ users: users.map((user) => ({ ...user, activeEntitlements: entitlements.get(String(user._id)) ?? 0, activeSessions: sessions.get(String(user._id)) ?? 0 })), pagination: { page, limit, total, pages: Math.ceil(total / limit) } });
+  } catch (error) { next(error); }
+});
+
+adminRouter.get("/users/:id", async (req, res, next) => {
+  try {
+    if (!objectIdSchema.safeParse(req.params.id).success) return res.status(404).json({ error: "Learner not found." });
+    const learner = await User.findOne({ _id: req.params.id, role: "learner" }).select("name email status emailVerifiedAt lastLoginAt timezone createdAt updatedAt").lean();
+    if (!learner) return res.status(404).json({ error: "Learner not found." });
+    const [entitlements, orders, sessions, audits, privacyRequests] = await Promise.all([
+      Entitlement.find({ userId: learner._id }).populate("productId", "name slug").populate("sourceOrderId", "status providerOrderId").sort({ updatedAt: -1 }).lean(),
+      Order.find({ userId: learner._id }).populate("productId", "name slug").select("productId amount currency status refundedAmount providerOrderId providerPaymentId createdAt paidAt").sort({ createdAt: -1 }).limit(50).lean(),
+      Session.find({ userId: learner._id, expiresAt: { $gt: new Date() } }).select("userAgent ipAddress lastSeenAt createdAt expiresAt").sort({ lastSeenAt: -1 }).lean(),
+      AuditEvent.find({ targetType: "User", targetId: String(learner._id) }).populate("actorUserId", "name email").sort({ createdAt: -1 }).limit(100).lean(),
+      PrivacyRequest.find({ userId: learner._id }).sort({ createdAt: -1 }).limit(20).lean(),
+    ]);
+    res.json({ user: learner, entitlements, orders, sessions, audits, privacyRequests });
+  } catch (error) { next(error); }
+});
+
+const entitlementRepairSchema = z.object({ status: z.enum(["active", "revoked"]), reason: z.string().trim().min(10).max(500) });
+adminRouter.patch("/users/:userId/entitlements/:entitlementId", async (req, res, next) => {
+  try {
+    if (!objectIdSchema.safeParse(req.params.userId).success || !objectIdSchema.safeParse(req.params.entitlementId).success) return res.status(404).json({ error: "Entitlement not found." });
+    const parsed = entitlementRepairSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(422).json({ error: "Choose a valid access state and provide a reason of at least 10 characters." });
+    const entitlement = await Entitlement.findOne({ _id: req.params.entitlementId, userId: req.params.userId });
+    if (!entitlement) return res.status(404).json({ error: "Entitlement not found." });
+    if (entitlement.status === parsed.data.status) return res.status(409).json({ error: `Access is already ${parsed.data.status}.` });
+    if (parsed.data.status === "active") {
+      const sourceOrder = await Order.findOne({ _id: entitlement.sourceOrderId, userId: entitlement.userId });
+      if (!canRestoreEntitlementFromOrder(sourceOrder)) return res.status(409).json({ error: "Access cannot be restored without a qualifying paid order." });
+    }
+    const previousStatus = entitlement.status;
+    entitlement.status = parsed.data.status;
+    entitlement.revokedAt = parsed.data.status === "revoked" ? new Date() : null;
+    await entitlement.save();
+    await AuditEvent.create({ actorUserId: res.locals.user._id, action: `entitlement.${parsed.data.status}`, targetType: "User", targetId: req.params.userId, requestId: res.locals.requestId, ipAddress: req.ip || "Unknown", metadata: { entitlementId: String(entitlement._id), productId: String(entitlement.productId), sourceOrderId: String(entitlement.sourceOrderId), previousStatus, status: entitlement.status, reason: parsed.data.reason } });
+    res.json({ entitlement });
   } catch (error) { next(error); }
 });
 

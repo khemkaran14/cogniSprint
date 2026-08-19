@@ -46,6 +46,7 @@ const AdminDisputesPage = lazy(() => import("@/pages/admin/AdminDisputesPage"));
 const AdminContentPage = lazy(() => import("@/pages/admin/AdminContentPage"));
 const AdminResourcesPage = lazy(() => import("@/pages/admin/AdminResourcesPage"));
 const AdminUsersPage = lazy(() => import("@/pages/admin/AdminUsersPage"));
+const AdminUserDetailPage = lazy(() => import("@/pages/admin/AdminUserDetailPage"));
 
 export default function App() {
   return (
@@ -90,6 +91,7 @@ export default function App() {
             <Route path="/admin/content" element={<AdminContentPage />} />
             <Route path="/admin/resources" element={<AdminResourcesPage />} />
             <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
             <Route path="/legal/terms" element={<TermsPage />} />
             <Route path="/legal/privacy" element={<PrivacyPage />} />
             <Route path="/legal/refund-policy" element={<RefundPolicyPage />} />

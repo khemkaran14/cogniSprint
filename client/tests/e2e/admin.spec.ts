@@ -115,3 +115,15 @@ test("administrator can search learner accounts and prepare an audited suspensio
   await page.getByPlaceholder("Ticket reference and reason for this action").fill("Support case CS-1842 compromised device");
   await expect(suspend).toBeEnabled();
 });
+
+test("administrator can review a learner timeline and prepare paid access repair", async ({ page }) => {
+  await page.route("**/api/auth/me", (route) => route.fulfill({ json: { user: admin } }));
+  await page.route("**/api/admin/users/66bb88cc00dd11ee22ff3344", (route) => route.fulfill({ json: { user: { _id: "66bb88cc00dd11ee22ff3344", name: "Asha Rao", email: "asha@example.com", status: "active", timezone: "Asia/Kolkata", createdAt: "2026-07-01T12:00:00Z" }, entitlements: [{ _id: "66bb88cc00dd11ee22ff3355", status: "revoked", grantedAt: "2026-07-01T12:00:00Z", productId: { name: "CogniSprint Complete", slug: "cognisprint-complete" }, sourceOrderId: { status: "paid", providerOrderId: "order_1" } }], orders: [{ _id: "order_1", status: "paid", amount: 99900, refundedAmount: 0, currency: "INR", createdAt: "2026-07-01T12:00:00Z", productId: { name: "CogniSprint Complete" } }], sessions: [], audits: [{ _id: "audit_1", action: "entitlement.revoked", createdAt: "2026-08-18T12:00:00Z", metadata: { reason: "Support investigation" }, actorUserId: { email: "owner@example.com" } }], privacyRequests: [] } }));
+  await page.goto("/admin/users/66bb88cc00dd11ee22ff3344");
+  await expect(page.getByRole("heading", { name: "Asha Rao" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Audited support timeline" })).toBeVisible();
+  const restore = page.getByRole("button", { name: "Restore paid access" });
+  await expect(restore).toBeDisabled();
+  await page.getByPlaceholder("Required repair reason and support ticket").fill("Ticket CS-1843 payment verified");
+  await expect(restore).toBeEnabled();
+});
