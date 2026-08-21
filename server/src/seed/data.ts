@@ -149,21 +149,178 @@ export const curriculumSeed = [
 
 export { lessonSeed } from "./curriculum.js";
 
-// This repository seed is a technical baseline only. A qualified reviewer must
-// approve and publish the complete twelve-assessment bank before it is sold.
-export const assessmentSeed = [{
-  slug: "month-1-foundations-check", title: "Month 1 Foundations Check", month: 1,
-  description: "A short baseline check across the six CogniSprint practice categories.",
-  passingScore: 60, estimatedMinutes: 10, status: "published" as const,
-  questions: [
-    { skill: "mental-math", prompt: "What is 48 + 27?", options: ["65", "75", "85"], correctIndex: 1, explanation: "48 + 20 + 7 = 75." },
-    { skill: "memory", prompt: "Which sequence exactly matches 7, 2, 9, 4?", options: ["7, 2, 9, 4", "7, 9, 2, 4", "2, 7, 9, 4"], correctIndex: 0, explanation: "The first option preserves every item and its order." },
-    { skill: "focus", prompt: "How many times does the letter P appear in APPLE PIE?", options: ["2", "3", "4"], correctIndex: 1, explanation: "APPLE contains two Ps and PIE contains one." },
-    { skill: "logic", prompt: "All tulips are flowers. This is a tulip. What follows?", options: ["It is a flower", "All flowers are tulips", "Nothing follows"], correctIndex: 0, explanation: "The stated rule applies to the identified tulip." },
-    { skill: "observation", prompt: "Which item differs from the others?", options: ["AB12", "AB12", "AB21"], correctIndex: 2, explanation: "The final option reverses the two digits." },
-    { skill: "critical-thinking", prompt: "A claim has no source. What is the best next step?", options: ["Share it immediately", "Check independent reliable evidence", "Assume it is false"], correctIndex: 1, explanation: "Verifying with reliable independent evidence is more justified than accepting or rejecting it without review." },
-  ],
-}];
+// Month 1 is a reviewed, published technical baseline. Months 2-12 are
+// hand-authored drafts (status "in_review") — a qualified reviewer must
+// approve and publish each before it is sold, per PRODUCTION_READINESS.md.
+export const assessmentSeed = [
+  {
+    slug: "month-1-foundations-check", title: "Month 1 Foundations Check", month: 1,
+    description: "A short baseline check across the six CogniSprint practice categories.",
+    passingScore: 60, estimatedMinutes: 10, status: "published" as const,
+    questions: [
+      { skill: "mental-math", prompt: "What is 48 + 27?", options: ["65", "75", "85"], correctIndex: 1, explanation: "Split 27 into 20 and 7: 48 + 20 + 7 = 75." },
+      { skill: "memory", prompt: "Which sequence exactly matches 7, 2, 9, 4?", options: ["7, 2, 9, 4", "7, 9, 2, 4", "2, 7, 9, 4"], correctIndex: 0, explanation: "The first option preserves every item and its order." },
+      { skill: "focus", prompt: "How many times does the letter P appear in APPLE PIE?", options: ["2", "3", "4"], correctIndex: 1, explanation: "APPLE contains two Ps and PIE contains one." },
+      { skill: "logic", prompt: "All tulips are flowers. This is a tulip. What follows?", options: ["It is a flower", "All flowers are tulips", "Nothing follows"], correctIndex: 0, explanation: "The stated rule applies to the identified tulip." },
+      { skill: "observation", prompt: "Which item differs from the others?", options: ["AB12", "AB12", "AB21"], correctIndex: 2, explanation: "The final option reverses the two digits." },
+      { skill: "critical-thinking", prompt: "A claim has no source. What is the best next step?", options: ["Share it immediately", "Check independent reliable evidence", "Assume it is false"], correctIndex: 1, explanation: "Verifying with reliable independent evidence is more justified than accepting or rejecting it without review." },
+    ],
+  },
+  {
+    slug: "month-2-number-sense-check", title: "Month 2 Number Sense Check", month: 2,
+    description: "Checks progress across mental math, memory, focus, logic, observation and critical thinking after the Number Sense month.",
+    passingScore: 60, estimatedMinutes: 12, status: "in_review" as const,
+    reviewNote: "Hand-authored assessment draft. Pending independent educational review.",
+    questions: [
+      { skill: "mental-math", prompt: "What is 64 + 38?", options: ["92", "102", "112"], correctIndex: 1, explanation: "64 + 30 = 94, then + 8 = 102." },
+      { skill: "memory", prompt: "Which sequence exactly matches 5, 1, 8, 3, 6?", options: ["5, 1, 8, 3, 6", "5, 8, 1, 3, 6", "6, 3, 8, 1, 5"], correctIndex: 0, explanation: "The first option preserves every digit in its original position." },
+      { skill: "focus", prompt: "How many times does the letter S appear in SUCCESS IS SWEET?", options: ["4", "5", "6"], correctIndex: 1, explanation: "SUCCESS has three S's, IS has one, and SWEET has one, for five total." },
+      { skill: "logic", prompt: "All engineers on this team use Python. Maria is an engineer on this team. What follows?", options: ["She uses Python", "Everyone who uses Python is an engineer on this team", "Nothing follows"], correctIndex: 0, explanation: "The stated rule applies directly to Maria once she's identified as an engineer on the team." },
+      { skill: "observation", prompt: "Which item differs from the others?", options: ["7B4K", "7B4K", "7B4X"], correctIndex: 2, explanation: "The final option uses X where the others use K." },
+      { skill: "critical-thinking", prompt: "A product claims \"9 out of 10 users prefer it\" without stating how many users were surveyed. What is the best response?", options: ["Trust the claim completely", "Check the sample size and methodology before trusting it", "Dismiss the claim as automatically false"], correctIndex: 1, explanation: "A ratio without a sample size could be based on as few as ten people; checking the methodology is more justified than blind trust or automatic dismissal." },
+    ],
+  },
+  {
+    slug: "month-3-working-memory-check", title: "Month 3 Working Memory Check", month: 3,
+    description: "Checks progress across mental math, memory, focus, logic, observation and critical thinking after the Working Memory month.",
+    passingScore: 60, estimatedMinutes: 12, status: "in_review" as const,
+    reviewNote: "Hand-authored assessment draft. Pending independent educational review.",
+    questions: [
+      { skill: "mental-math", prompt: "What is 91 − 47?", options: ["34", "44", "54"], correctIndex: 1, explanation: "91 − 40 = 51, then − 7 = 44." },
+      { skill: "memory", prompt: "Which sequence exactly matches 4, 7, 1, 9, 2, 5?", options: ["4, 7, 1, 9, 2, 5", "4, 1, 7, 9, 2, 5", "5, 2, 9, 1, 7, 4"], correctIndex: 0, explanation: "The first option preserves every digit in its original position." },
+      { skill: "focus", prompt: "Scan D9D7DD2D. How many exact D characters appear?", options: ["4", "5", "6"], correctIndex: 1, explanation: "A left-to-right scan finds D at five positions; the digits are distractors." },
+      { skill: "logic", prompt: "If the printer is out of paper, the error light turns orange. The error light is not orange. What follows?", options: ["The printer is not out of paper", "All printers are out of paper", "No conclusion is possible"], correctIndex: 0, explanation: "This is a valid inference: when the result described by the rule doesn't hold, the condition that would have produced it doesn't hold either." },
+      { skill: "observation", prompt: "Which item differs from the others?", options: ["M3P7", "M3P7", "M3Q7"], correctIndex: 2, explanation: "The final option uses Q where the others use P." },
+      { skill: "critical-thinking", prompt: "Two unrelated events happened in the same week, and a post claims one caused the other. What is the strongest response?", options: ["Assume causation immediately, since the timing lines up", "Look for evidence connecting them beyond mere timing", "Ignore the possibility that either event is real"], correctIndex: 1, explanation: "Timing alone does not establish causation; a proportionate response looks for evidence of an actual connection." },
+    ],
+  },
+  {
+    slug: "month-4-focused-attention-check", title: "Month 4 Focused Attention Check", month: 4,
+    description: "Checks progress across mental math, memory, focus, logic, observation and critical thinking after the Focused Attention month.",
+    passingScore: 60, estimatedMinutes: 12, status: "in_review" as const,
+    reviewNote: "Hand-authored assessment draft. Pending independent educational review.",
+    questions: [
+      { skill: "mental-math", prompt: "What is 6 × 14?", options: ["74", "84", "94"], correctIndex: 1, explanation: "6 × 14 = 6 × 10 + 6 × 4 = 60 + 24 = 84." },
+      { skill: "memory", prompt: "Study: chair, lantern, bridge, kettle. Which option preserves the exact order?", options: ["chair, lantern, bridge, kettle", "chair, bridge, lantern, kettle", "kettle, bridge, lantern, chair"], correctIndex: 0, explanation: "The first option retains every item in its original position." },
+      { skill: "focus", prompt: "Count the exact word \"again\" in: \"try again fail again try again learn well\"", options: ["2", "3", "4"], correctIndex: 1, explanation: "Reading word by word finds \"again\" exactly three times." },
+      { skill: "logic", prompt: "Every certified driver has passed the exam. Sam has passed the exam. What follows?", options: ["Sam is certified", "Nothing certain follows from this alone", "Sam is not certified"], correctIndex: 1, explanation: "Passing the exam is presented as necessary for certification, not sufficient on its own; concluding Sam is certified from this alone assumes more than the rule states." },
+      { skill: "observation", prompt: "Which item differs from the others?", options: ["K9L3", "K9L3", "K9L8"], correctIndex: 2, explanation: "The final option ends in 8 where the others end in 3." },
+      { skill: "critical-thinking", prompt: "A workout app shows a before/after photo pair with different lighting and camera angles as \"proof\" of results. What is the best response?", options: ["Accept the photos as strong proof", "Note that differing lighting and angles undermine a fair comparison", "Share the photos as conclusive evidence"], correctIndex: 1, explanation: "Inconsistent conditions between the two photos make a fair visual comparison unreliable, regardless of the claimed result." },
+    ],
+  },
+  {
+    slug: "month-5-patterns-and-logic-check", title: "Month 5 Patterns and Logic Check", month: 5,
+    description: "Checks progress across mental math, memory, focus, logic, observation and critical thinking after the Patterns and Logic month.",
+    passingScore: 60, estimatedMinutes: 13, status: "in_review" as const,
+    reviewNote: "Hand-authored assessment draft. Pending independent educational review.",
+    questions: [
+      { skill: "mental-math", prompt: "What is 25% of 160?", options: ["30", "40", "50"], correctIndex: 1, explanation: "25% is one quarter of 160, which is 40." },
+      { skill: "memory", prompt: "Which sequence exactly matches 8, 2, 5, 9, 1, 6?", options: ["8, 2, 5, 9, 1, 6", "8, 5, 2, 9, 1, 6", "6, 1, 9, 5, 2, 8"], correctIndex: 0, explanation: "The first option preserves every digit in its original position." },
+      { skill: "focus", prompt: "Scan Y4YYY7Y1Y. How many exact Y characters appear?", options: ["5", "6", "7"], correctIndex: 1, explanation: "A left-to-right scan finds Y at six positions; the digits are distractors." },
+      { skill: "logic", prompt: "2, 4, 8, 16, ?. What comes next?", options: ["24", "32", "20"], correctIndex: 1, explanation: "Each term doubles the previous one: 16 × 2 = 32." },
+      { skill: "observation", prompt: "Which item differs from the others?", options: ["Q7W2", "Q7W2", "Q7M2"], correctIndex: 2, explanation: "The final option uses M where the others use W." },
+      { skill: "critical-thinking", prompt: "A claim states: \"Every top performer wakes up at 5am, so waking early causes success.\" What is the flaw?", options: ["It is a fully valid causal claim", "It treats a common trait among successful people as a proven cause", "It contains too many words to evaluate"], correctIndex: 1, explanation: "A shared habit among successful people doesn't establish that the habit caused their success; other factors could explain both." },
+    ],
+  },
+  {
+    slug: "month-6-careful-observation-check", title: "Month 6 Careful Observation Check", month: 6,
+    description: "Checks progress across mental math, memory, focus, logic, observation and critical thinking after the Careful Observation month.",
+    passingScore: 60, estimatedMinutes: 13, status: "in_review" as const,
+    reviewNote: "Hand-authored assessment draft. Pending independent educational review.",
+    questions: [
+      { skill: "mental-math", prompt: "What is 130 − 68?", options: ["52", "62", "72"], correctIndex: 1, explanation: "130 − 70 = 60, then + 2 = 62." },
+      { skill: "memory", prompt: "Study: falcon, harbor, meadow. Which of these was NOT in that list?", options: ["Harbor", "Ember", "Falcon"], correctIndex: 1, explanation: "Falcon, harbor and meadow were shown; ember was not part of the original list." },
+      { skill: "focus", prompt: "Count the exact word \"blue\" in: \"the blue sky the clear blue sea the blue horizon\"", options: ["2", "3", "4"], correctIndex: 1, explanation: "Reading word by word finds \"blue\" exactly three times." },
+      { skill: "logic", prompt: "If the seal is broken, the warranty is void. The warranty is void. What follows?", options: ["The seal is broken", "Nothing certain follows from this alone", "The seal is not broken"], correctIndex: 1, explanation: "The warranty could be void for a different reason; concluding the seal is broken from this alone assumes the rule works in reverse, which it doesn't." },
+      { skill: "observation", prompt: "Which item differs from the others?", options: ["9F3H", "9F3H", "9F8H"], correctIndex: 2, explanation: "The final option has 8 where the others have 3." },
+      { skill: "critical-thinking", prompt: "A supplement label says \"clinically tested\" without citing a specific study. What is the best next step?", options: ["Trust the label completely", "Look for the specific study and its actual findings", "Ignore the product without checking anything"], correctIndex: 1, explanation: "An unsupported claim of testing is not itself evidence; the proportionate response is to look for the specific study behind it." },
+    ],
+  },
+  {
+    slug: "month-7-everyday-reasoning-check", title: "Month 7 Everyday Reasoning Check", month: 7,
+    description: "Checks progress across mental math, memory, focus, logic, observation and critical thinking after the Everyday Reasoning month.",
+    passingScore: 65, estimatedMinutes: 13, status: "in_review" as const,
+    reviewNote: "Hand-authored assessment draft. Pending independent educational review.",
+    questions: [
+      { skill: "mental-math", prompt: "What is 45 × 3?", options: ["125", "135", "145"], correctIndex: 1, explanation: "45 × 3 = 40 × 3 + 5 × 3 = 120 + 15 = 135." },
+      { skill: "memory", prompt: "Which sequence exactly matches 7, 3, 9, 2, 5, 8?", options: ["7, 3, 9, 2, 5, 8", "7, 9, 3, 2, 5, 8", "8, 5, 2, 9, 3, 7"], correctIndex: 0, explanation: "The first option preserves every digit in its original position." },
+      { skill: "focus", prompt: "Scan N2NNN5N8N. How many exact N characters appear?", options: ["5", "6", "7"], correctIndex: 1, explanation: "A left-to-right scan finds N at six positions; the digits are distractors." },
+      { skill: "logic", prompt: "If it rains, the picnic moves indoors. It is not raining. What follows about the picnic?", options: ["It stays outdoors as planned", "Nothing certain follows from this alone", "It moves indoors anyway"], correctIndex: 1, explanation: "The rule only states what happens if it rains; it says nothing about what happens otherwise, so no conclusion follows from the absence of rain alone." },
+      { skill: "observation", prompt: "Which item differs from the others?", options: ["L6P9", "L6P9", "L6P0"], correctIndex: 2, explanation: "The final option ends in 0 where the others end in 9." },
+      { skill: "critical-thinking", prompt: "A headline reads \"Study finds coffee cures fatigue,\" but the study only found a small, temporary alertness increase in 12 people. What is the issue?", options: ["The headline accurately reflects the study", "The headline significantly overstates a small, limited finding", "The study must be entirely fake"], correctIndex: 1, explanation: "A small, temporary effect in a dozen people is far short of a \"cure\"; the headline overstates what the study actually found." },
+    ],
+  },
+  {
+    slug: "month-8-processing-fluency-check", title: "Month 8 Processing Fluency Check", month: 8,
+    description: "Checks progress across mental math, memory, focus, logic, observation and critical thinking after the Processing Fluency month.",
+    passingScore: 65, estimatedMinutes: 13, status: "in_review" as const,
+    reviewNote: "Hand-authored assessment draft. Pending independent educational review.",
+    questions: [
+      { skill: "mental-math", prompt: "What is 18 × 4?", options: ["62", "72", "82"], correctIndex: 1, explanation: "18 × 4 = 20 × 4 − 2 × 4 = 80 − 8 = 72." },
+      { skill: "memory", prompt: "Study: velvet, canyon, ember. Which of these was NOT in that list?", options: ["Canyon", "Lantern", "Velvet"], correctIndex: 1, explanation: "Velvet, canyon and ember were shown; lantern was not part of the original list." },
+      { skill: "focus", prompt: "Count the exact word \"fast\" in: \"think fast move fast act fast stay calm\"", options: ["2", "4", "3"], correctIndex: 2, explanation: "Reading word by word finds \"fast\" exactly three times." },
+      { skill: "logic", prompt: "All valid tickets have a barcode. This ticket has no barcode. What follows?", options: ["It is not valid", "It is valid", "No conclusion is possible"], correctIndex: 0, explanation: "This is a valid inference: since every valid ticket has a barcode, a ticket without one cannot be valid." },
+      { skill: "observation", prompt: "Which item differs from the others?", options: ["4D8N", "4B8N", "4D8N"], correctIndex: 1, explanation: "The middle option has B where the others have D." },
+      { skill: "critical-thinking", prompt: "A reviewer gives a product 5 stars without disclosing they were paid to promote it. What is the concern?", options: ["There is no concern; reviews are always honest", "Undisclosed payment is a conflict of interest that can bias the review", "5-star reviews are always accurate"], correctIndex: 1, explanation: "An undisclosed financial incentive can bias a review's content, which is exactly why disclosure matters for judging its reliability." },
+    ],
+  },
+  {
+    slug: "month-9-flexible-problem-solving-check", title: "Month 9 Flexible Problem Solving Check", month: 9,
+    description: "Checks progress across mental math, memory, focus, logic, observation and critical thinking after the Flexible Problem Solving month.",
+    passingScore: 65, estimatedMinutes: 14, status: "in_review" as const,
+    reviewNote: "Hand-authored assessment draft. Pending independent educational review.",
+    questions: [
+      { skill: "mental-math", prompt: "What is 210 ÷ 5?", options: ["32", "42", "52"], correctIndex: 1, explanation: "210 ÷ 5 = 42, since 42 × 5 = 210." },
+      { skill: "memory", prompt: "Which sequence exactly matches 6, 9, 3, 7, 1, 4?", options: ["6, 9, 3, 7, 1, 4", "6, 3, 9, 7, 1, 4", "4, 1, 7, 3, 9, 6"], correctIndex: 0, explanation: "The first option preserves every digit in its original position." },
+      { skill: "focus", prompt: "Scan F3FFF6F9F. How many exact F characters appear?", options: ["5", "7", "6"], correctIndex: 2, explanation: "A left-to-right scan finds F at six positions; the digits are distractors." },
+      { skill: "logic", prompt: "Either the meeting is in Room A or Room B. It is not in Room A. What follows?", options: ["It is in Room B", "It is in Room A", "No conclusion is possible"], correctIndex: 0, explanation: "With exactly two stated possibilities, ruling out one leaves the other as the valid conclusion." },
+      { skill: "observation", prompt: "Which item differs from the others?", options: ["V2X6", "V2X6", "V2X9"], correctIndex: 2, explanation: "The final option ends in 9 where the others end in 6." },
+      { skill: "critical-thinking", prompt: "A friend says, \"I tried this method once and it didn't work, so it must be useless for everyone.\" What is the flaw?", options: ["A single personal attempt is too small a sample to generalize from", "The reasoning is completely valid as stated", "There is no flaw in this reasoning"], correctIndex: 0, explanation: "One person's single attempt cannot reliably establish how a method performs for everyone, given how much can vary between attempts and people." },
+    ],
+  },
+  {
+    slug: "month-10-decision-quality-check", title: "Month 10 Decision Quality Check", month: 10,
+    description: "Checks progress across mental math, memory, focus, logic, observation and critical thinking after the Decision Quality month.",
+    passingScore: 65, estimatedMinutes: 14, status: "in_review" as const,
+    reviewNote: "Hand-authored assessment draft. Pending independent educational review.",
+    questions: [
+      { skill: "mental-math", prompt: "What is 15% of 240?", options: ["26", "36", "46"], correctIndex: 1, explanation: "10% of 240 is 24, and 5% is 12; 24 + 12 = 36." },
+      { skill: "memory", prompt: "Study: harbor, quartz, meadow. Which of these was NOT in that list?", options: ["Quartz", "Lantern", "Meadow"], correctIndex: 1, explanation: "Harbor, quartz and meadow were shown; lantern was not part of the original list." },
+      { skill: "focus", prompt: "Count the exact word \"plan\" in: \"make a plan follow the plan adjust the plan\"", options: ["2", "3", "4"], correctIndex: 1, explanation: "Reading word by word finds \"plan\" exactly three times." },
+      { skill: "logic", prompt: "If the budget is approved, the project starts in March. The project did not start in March. What follows?", options: ["The budget was not approved", "The budget was approved", "No conclusion is possible"], correctIndex: 0, explanation: "This is a valid inference: since approval was said to guarantee a March start, the absence of a March start means approval didn't happen." },
+      { skill: "observation", prompt: "Which item differs from the others?", options: ["8K4R", "8K4R", "8K4T"], correctIndex: 2, explanation: "The final option ends in T where the others end in R." },
+      { skill: "critical-thinking", prompt: "One option is a free trial with a recurring charge hidden in fine print; the other is a clearly priced paid plan. What is the best decision approach?", options: ["Choose whichever is free without reading the terms", "Read the full terms of both options before deciding", "Always avoid free trials in every situation"], correctIndex: 1, explanation: "A sound decision compares the actual terms of each option rather than reacting to the headline price or avoiding a category outright." },
+    ],
+  },
+  {
+    slug: "month-11-integrated-challenges-check", title: "Month 11 Integrated Challenges Check", month: 11,
+    description: "Checks progress across mental math, memory, focus, logic, observation and critical thinking after the Integrated Challenges month.",
+    passingScore: 65, estimatedMinutes: 14, status: "in_review" as const,
+    reviewNote: "Hand-authored assessment draft. Pending independent educational review.",
+    questions: [
+      { skill: "mental-math", prompt: "What is 27 + 58?", options: ["75", "85", "95"], correctIndex: 1, explanation: "27 + 58 = (20 + 50) + (7 + 8) = 70 + 15 = 85." },
+      { skill: "memory", prompt: "Which sequence exactly matches 5, 8, 2, 6, 9, 3?", options: ["5, 8, 2, 6, 9, 3", "5, 2, 8, 6, 9, 3", "3, 9, 6, 2, 8, 5"], correctIndex: 0, explanation: "The first option preserves every digit in its original position." },
+      { skill: "focus", prompt: "Scan H7HHH4H2H. How many exact H characters appear?", options: ["5", "6", "8"], correctIndex: 1, explanation: "A left-to-right scan finds H at six positions; the digits are distractors." },
+      { skill: "logic", prompt: "All certified batches pass inspection. All batches that pass inspection are shipped. This batch is certified. What follows?", options: ["It is shipped", "It failed inspection", "No conclusion is possible"], correctIndex: 0, explanation: "Chaining the two rules together — certified implies inspected, inspected implies shipped — gives a valid two-step conclusion." },
+      { skill: "observation", prompt: "Which item differs from the others?", options: ["Z3B7", "Z3B7", "Z8B7"], correctIndex: 2, explanation: "The final option has 8 where the others have 3." },
+      { skill: "critical-thinking", prompt: "A claim mixes a true statistic with an unsupported conclusion: \"Sales rose 20% this quarter, proving our new strategy is the best in the industry.\" What is the issue?", options: ["The statistic alone doesn't support the broader industry-wide claim", "The statistic is definitely false", "There is no issue with this reasoning"], correctIndex: 0, explanation: "A real internal statistic doesn't automatically establish an industry-wide superiority claim; the two are different scopes of claim entirely." },
+    ],
+  },
+  {
+    slug: "month-12-independent-mastery-check", title: "Month 12 Independent Mastery Check", month: 12,
+    description: "The final checkpoint across mental math, memory, focus, logic, observation and critical thinking, closing out the one-year program.",
+    passingScore: 65, estimatedMinutes: 15, status: "in_review" as const,
+    reviewNote: "Hand-authored assessment draft. Pending independent educational review.",
+    questions: [
+      { skill: "mental-math", prompt: "What is 320 ÷ 8?", options: ["35", "40", "45"], correctIndex: 1, explanation: "320 ÷ 8 = 40, since 40 × 8 = 320." },
+      { skill: "memory", prompt: "Study: compass, ledger, harbor. Which of these was NOT in that list?", options: ["Ledger", "Thistle", "Compass"], correctIndex: 1, explanation: "Compass, ledger and harbor were shown; thistle was not part of the original list." },
+      { skill: "focus", prompt: "Count the exact word \"check\" in: \"check twice check again then check once more\"", options: ["2", "3", "4"], correctIndex: 1, explanation: "Reading word by word finds \"check\" exactly three times." },
+      { skill: "logic", prompt: "All senior reviewers can approve releases. Priya cannot approve releases. What follows?", options: ["Priya is not a senior reviewer", "Priya is a senior reviewer", "No conclusion is possible"], correctIndex: 0, explanation: "This is a valid inference: since every senior reviewer can approve releases, someone who cannot approve releases isn't a senior reviewer." },
+      { skill: "observation", prompt: "Which item differs from the others?", options: ["N5Y8", "N5Y8", "N5Y3"], correctIndex: 2, explanation: "The final option ends in 3 where the others end in 8." },
+      { skill: "critical-thinking", prompt: "A final claim states: \"This is the most-reviewed course online, so it must be the best.\" What is the flaw?", options: ["Popularity and quality are not necessarily the same thing", "The reasoning is fully valid as stated", "Reviews never matter at all"], correctIndex: 0, explanation: "A high review count reflects reach and popularity, not necessarily quality; treating them as equivalent skips a step the evidence doesn't support." },
+    ],
+  },
+];
 
 export const faqSeed = [
   { category: "general", question: "How much time does this take each day?", answer: "Each daily session targets around 15 minutes, split across mental math, memory, focus, logic, observation and critical thinking. It's a target, not a hard cut-off — you can finish a task even if it runs slightly over." },
