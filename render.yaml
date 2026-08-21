@@ -2,7 +2,7 @@ services:
   - type: web
     name: cognisprint-staging-api
     runtime: docker
-    branch: master
+    branch: main
     plan: starter
     region: singapore
     dockerContext: ./server
@@ -45,7 +45,7 @@ services:
   - type: web
     name: cognisprint-staging-web
     runtime: static
-    branch: master
+    branch: main
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
     rootDir: client

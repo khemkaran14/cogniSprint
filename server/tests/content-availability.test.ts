@@ -11,7 +11,25 @@ describe("public content availability", () => {
     expect(lessonSeed.map((lesson) => lesson.unlockDay)).toEqual(Array.from({ length: 365 }, (_, index) => index + 1));
     expect(new Set(lessonSeed.map((lesson) => lesson.slug)).size).toBe(365);
     expect(new Set(lessonSeed.map((lesson) => `${lesson.moduleSlug}:${lesson.position}`)).size).toBe(365);
-    expect(assessmentSeed).toHaveLength(1);
+    expect(assessmentSeed).toHaveLength(12);
+    expect(assessmentSeed.filter((assessment) => assessment.status === "published")).toHaveLength(1);
+    expect(assessmentSeed.filter((assessment) => assessment.status === "in_review")).toHaveLength(11);
+    expect(new Set(assessmentSeed.map((assessment) => assessment.month))).toEqual(new Set(Array.from({ length: 12 }, (_, index) => index + 1)));
+    expect(new Set(assessmentSeed.map((assessment) => assessment.slug)).size).toBe(12);
+  });
+
+  it("provides valid, uniquely answerable questions across every monthly assessment", () => {
+    const validSkills = new Set(["mental-math", "memory", "focus", "logic", "observation", "critical-thinking"]);
+    assessmentSeed.forEach((assessment) => {
+      expect(assessment.questions.length).toBeGreaterThanOrEqual(6);
+      expect(new Set(assessment.questions.map((question) => question.skill))).toEqual(validSkills);
+      for (const question of assessment.questions) {
+        expect(question.options.length).toBeGreaterThanOrEqual(3);
+        expect(question.correctIndex).toBeGreaterThanOrEqual(0);
+        expect(question.correctIndex).toBeLessThan(question.options.length);
+        expect(question.explanation.length).toBeGreaterThan(20);
+      }
+    });
   });
 
   it("provides complete, valid lesson exercises and an unbroken prerequisite chain", () => {

@@ -2,9 +2,9 @@ name: Container build and security scan
 
 on:
   push:
-    branches: [master, work]
+    branches: [main, work]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 permissions:
   contents: read

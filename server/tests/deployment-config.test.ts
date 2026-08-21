@@ -11,6 +11,9 @@ describe("Render staging blueprint", () => {
     expect(blueprint).toContain("destination: /index.html");
     expect(blueprint).toContain("key: ENROLLMENT_OPEN\n        value: false");
   });
+  it("deploys from the repository's actual default branch", () => {
+    expect(blueprint.match(/branch: (\S+)/g)).toEqual(["branch: main", "branch: main"]);
+  });
   it("keeps credentials dashboard-managed", () => {
     for (const key of ["MONGODB_URI", "RAZORPAY_KEY_SECRET", "RAZORPAY_WEBHOOK_SECRET", "RESEND_API_KEY", "LOG_DRAIN_TOKEN"]) expect(blueprint).toMatch(new RegExp(`key: ${key}\\n\\s+sync: false`));
   });
