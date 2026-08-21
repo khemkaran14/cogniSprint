@@ -1,4 +1,4 @@
-export type SmokeCheck = { name: string; url: string; expectedStatus: number; validate?: (response: Response) => Promise<void> };
+export type SmokeCheck = { name: string; url: string; expectedStatus: number; headers?: Record<string, string>; validate?: (response: Response) => Promise<void> };
 export type SmokeResult = { name: string; status: "passed" | "failed"; durationMs: number; error?: string };
 
 function normalizedOrigin(value: string, label: string) {
@@ -20,6 +20,19 @@ async function stagingContentAvailability(response: Response) {
   if (!Number.isInteger(body.published?.lessons) || !Number.isInteger(body.published?.assessments) || !body.targets?.lessons || !body.targets?.assessments) throw new Error("Content availability inventory is incomplete.");
 }
 
+function trustedOriginCorsHeaders(app: string) {
+  return async (response: Response) => {
+    if (response.headers.get("access-control-allow-origin") !== app) throw new Error(`Expected access-control-allow-origin=${app}.`);
+    if (response.headers.get("access-control-allow-credentials") !== "true") throw new Error("Expected access-control-allow-credentials=true for the configured app origin.");
+  };
+}
+
+async function untrustedOriginRejected(response: Response) {
+  if (response.headers.get("access-control-allow-origin")) throw new Error("An untrusted origin must not receive an access-control-allow-origin header.");
+  const body = await response.json() as { error?: string };
+  if (!body.error) throw new Error("Expected a JSON error body for a rejected origin.");
+}
+
 export function deploymentChecks(apiValue: string, appValue: string): SmokeCheck[] {
   const api = normalizedOrigin(apiValue, "API_URL"); const app = normalizedOrigin(appValue, "APP_URL");
   return [
@@ -28,6 +41,8 @@ export function deploymentChecks(apiValue: string, appValue: string): SmokeCheck
     { name: "Content availability", url: `${api}/api/content-availability`, expectedStatus: 200, validate: stagingContentAvailability },
     { name: "Authentication guard", url: `${api}/api/auth/sessions`, expectedStatus: 401 },
     { name: "Learning entitlement guard", url: `${api}/api/learning/dashboard`, expectedStatus: 401 },
+    { name: "CORS allows the configured app origin", url: `${api}/api/health`, expectedStatus: 200, headers: { origin: app }, validate: trustedOriginCorsHeaders(app) },
+    { name: "CORS rejects an untrusted origin", url: `${api}/api/health`, expectedStatus: 500, headers: { origin: "https://cors-smoke-check.invalid" }, validate: untrustedOriginRejected },
     { name: "SPA login fallback", url: `${app}/login`, expectedStatus: 200, validate: async (response) => { if (!response.headers.get("content-type")?.includes("text/html")) throw new Error("Expected an HTML response."); } },
   ];
 }
@@ -37,7 +52,7 @@ export async function runDeploymentSmoke(checks: SmokeCheck[], fetcher: typeof f
   for (const check of checks) {
     const started = Date.now();
     try {
-      const response = await fetcher(check.url, { redirect: "error", signal: AbortSignal.timeout(10_000), headers: { "user-agent": "cognisprint-deployment-smoke/1.0" } });
+      const response = await fetcher(check.url, { redirect: "error", signal: AbortSignal.timeout(10_000), headers: { "user-agent": "cognisprint-deployment-smoke/1.0", ...check.headers } });
       if (response.status !== check.expectedStatus) throw new Error(`Expected HTTP ${check.expectedStatus}, received ${response.status}.`);
       await check.validate?.(response);
       results.push({ name: check.name, status: "passed", durationMs: Date.now() - started });
